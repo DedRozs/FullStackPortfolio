@@ -14,6 +14,7 @@ from pathlib import Path
 import sys
 import os
 import dj_database_url
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -40,10 +41,17 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "django_extensions",
-    'authentication',
+
+
+    # Third-party apps
     'rest_framework',
     'rest_framework.authtoken',
+    'django_q',  # For background processing
+    "django_extensions",
+
+    # Custom apps
+    'tradejournal',
+    'authentication',
 ]
 
 
@@ -82,9 +90,36 @@ WSGI_APPLICATION = "portfolio.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-    'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
+def is_gae_environment():
+    return 'GAE_APPLICATION' in os.environ
+
+if is_gae_environment():
+    DATABASES = {
+        'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
+    }
+else:
+    load_dotenv()
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': os.getenv('DB_NAME'),
+            'USER': os.getenv('DB_USER'),
+            'PASSWORD': os.getenv('DB_PASSWORD'),
+            'HOST': os.getenv('DB_HOST'),
+            'PORT': os.getenv('DB_PORT'),
+        }
+    }
+
+Q_CLUSTER = {
+    "name": "DjangoQ",
+    "workers": 4,  # Adjust worker count based on your system
+    "timeout": 60,  # Ensure tasks have enough time to complete
+    "retry": 90,  # Must be greater than timeout to prevent premature retriggering
+    "queue_limit": 50,
+    "bulk": 10,
+    "orm": "default",
 }
+
 
 
 # Prevent pytest from creating a separate test database
