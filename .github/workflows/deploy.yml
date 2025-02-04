@@ -25,4 +25,8 @@ jobs:
 
     - name: Deploy to Google App Engine
       run: |
-        gcloud app deploy --quiet
+        gcloud app deploy --quiet --promote --stop-previous-version
+
+    - name: Delete old versions
+      run: |
+        gcloud app versions list --format="value(id)" --filter="service=default" | tail -n +2 | xargs -r gcloud app versions delete --quiet
