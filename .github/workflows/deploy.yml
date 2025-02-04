@@ -13,16 +13,15 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
+    - name: Authenticate with Google Cloud
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+
     - name: Set up Google Cloud SDK
       uses: google-github-actions/setup-gcloud@v1
       with:
         project_id: portfolioapi-422802  # Your actual project ID
-
-    - name: Authenticate with Google Cloud
-      run: |
-        echo '${{ secrets.GCP_SA_KEY }}' > gcp-key.json
-        gcloud auth activate-service-account --key-file=gcp-key.json
-        gcloud config set project portfolioapi-422802
 
     - name: Deploy to Google App Engine
       run: |
