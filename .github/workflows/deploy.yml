@@ -16,9 +16,7 @@ jobs:
     - name: Set up Google Cloud SDK
       uses: google-github-actions/setup-gcloud@v1
       with:
-        project_id: portfolioapi-422802
-        service_account_key: ${{ secrets.GCP_SA_KEY }}
-        export_default_credentials: true
+        project_id: portfolioapi-422802  # Your actual project ID
 
     - name: Authenticate with Google Cloud
       run: |
