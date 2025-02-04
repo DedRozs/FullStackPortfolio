@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import sys
+import os
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,7 +28,7 @@ SECRET_KEY = "django-insecure-&c-s+$47t3otj6!(h_d^qcjyn9ukqfjq+*u2a_ux)asa3(x_f2
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["portfolioapi-422802.uc.r.appspot.com ", "127.0.0.1", "localhost"]
 
 
 # Application definition
@@ -38,7 +41,12 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django_extensions",
+    'authentication',
+    'rest_framework',
+    'rest_framework.authtoken',
 ]
+
+
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -75,15 +83,25 @@ WSGI_APPLICATION = "portfolio.wsgi.application"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'Portfolio',
-        'USER': 'portfolioApp',
-        'PASSWORD': 'JuanPaco1!',
-        'HOST':'217.196.48.82',
-        'PORT':'3306',
-    }
+    'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
 }
+
+
+# Prevent pytest from creating a separate test database
+if 'test' in sys.argv:
+    DATABASES['default']['TEST'] = {
+        'MIRROR': 'default'  # Forces Django to use the main database for testing
+    }
+
+# Disable database flushing during tests
+TEST_RUNNER = 'django.test.runner.DiscoverRunner'
+
+
+AUTH_USER_MODEL = 'authentication.CustomUser'
+
+
+
+
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
@@ -124,3 +142,5 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
