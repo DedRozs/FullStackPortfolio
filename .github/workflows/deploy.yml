@@ -33,4 +33,4 @@ jobs:
     
     - name: Delete old versions
       run: |
-        gcloud app versions list --format="value(id)" --filter="traffic_split<0.5" | tail -n +2 | xargs -r gcloud app versions delete --quiet
+        gcloud app versions list --format="value(id)" --filter="traffic_split=0.0" | tail -n +2 | xargs -r gcloud app versions delete --quiet
