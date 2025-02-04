@@ -28,7 +28,7 @@ SECRET_KEY = "django-insecure-&c-s+$47t3otj6!(h_d^qcjyn9ukqfjq+*u2a_ux)asa3(x_f2
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["portfolioapi-422802.uc.r.appspot.com", "127.0.0.1", "localhost"]
+ALLOWED_HOSTS = ['portfolioapi-422802.appspot.com', "127.0.0.1", "localhost"]
 
 
 # Application definition
