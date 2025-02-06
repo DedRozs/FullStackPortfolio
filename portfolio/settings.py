@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'portfolio_app',
     'blog',
     'ai_services',
+    'search',
 
     # Third-Party Libraries
     'rest_framework',
