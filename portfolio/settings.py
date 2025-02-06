@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    
     # Custom Apps
     'authentication',
     'portfolio_app',
@@ -45,8 +46,9 @@ INSTALLED_APPS = [
 
     # Third-Party Libraries
     'rest_framework',
+    'rest_framework_simplejwt',
     'corsheaders',
-    "django_extensions",
+    'django_extensions',
 ]
 
 REST_FRAMEWORK = {
