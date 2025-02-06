@@ -164,3 +164,19 @@ def test_unauthorized_delete_ai_service():
 
     assert response.status_code == 403  # Forbidden
     assert AIService.objects.filter(id=ai_service.id).exists()
+
+@pytest.mark.django_db
+def test_create_ai_service_missing_fields():
+    """Test AI service creation fails when required fields are missing."""
+    client = APIClient()
+    user = User.objects.create_user(username="testuser", password="password", email="testuser@example.com")
+    client.force_authenticate(user=user)
+
+    url = reverse("ai_service_create")
+    data = {}  # Missing required fields
+
+    response = client.post(url, data, format="json")
+
+    assert response.status_code == 400, response.data  # Should return 400 Bad Request
+    assert "name" in response.data  # Ensure error messages are returned
+    assert "description" in response.data

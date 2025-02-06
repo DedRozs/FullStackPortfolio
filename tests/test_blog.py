@@ -112,3 +112,21 @@ def test_delete_blog_post():
 
     assert response.status_code == 204
     assert not BlogPost.objects.filter(id=blog_post.id).exists()
+
+@pytest.mark.django_db
+def test_unauthorized_blog_post_edit():
+    """Ensure users cannot edit someone else's blog post."""
+    client = APIClient()
+
+    owner = User.objects.create_user(username="owner", password="password", email="owner@example.com")
+    hacker = User.objects.create_user(username="hacker", password="password", email="hacker@example.com")
+
+    blog_post = BlogPost.objects.create(title="Original Title", content="Original Content", author=owner)
+
+    client.force_authenticate(user=hacker)  # Unauthorized user
+    url = reverse("blog_detail", kwargs={"pk": blog_post.id})
+    data = {"title": "Hacked Title", "content": "Hacked Content"}
+
+    response = client.put(url, data, format="json")
+
+    assert response.status_code == 403, f"Expected 403 Forbidden, got {response.status_code}"
