@@ -22,11 +22,7 @@ jobs:
           MYSQL_PASSWORD: JuanPaco1993#
         ports:
           - "3306:3306"
-        options: >-
-          --health-cmd="mysqladmin ping --host=localhost"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
+        options: --health-cmd="mysqladmin ping --host=localhost" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
     - name: Checkout Code
@@ -47,6 +43,8 @@ jobs:
       run: |
         python manage.py migrate
 
-    - name: Run Tests
-      run: |
-        pytest --disable-warnings
+      - name: Run Tests
+        env:
+          DATABASE_URL: "mysql://portfolioApp:JuanPaco1993%23@217.196.48.82:3306/Portfolio"
+        run: |
+          pytest
