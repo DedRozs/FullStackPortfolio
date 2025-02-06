@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -48,13 +49,17 @@ INSTALLED_APPS = [
     'search',
 
     # Third-Party Libraries
-    'rest_framework',
-    'rest_framework_simplejwt',
-    'corsheaders',
     'django_extensions',
     'tailwind',
     'theme',
-    'django_browser_reload'
+    'django_browser_reload',
+    'oauth2_provider',
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'corsheaders',  
+
+
+
 ]
 
 TAILWIND_APP_NAME = 'theme'
@@ -62,11 +67,20 @@ NPM_BIN_PATH = "C:/Program Files/nodejs/npm.cmd"
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+        'rest_framework.permissions.IsAuthenticated',
     ),
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
 
