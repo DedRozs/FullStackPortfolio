@@ -1,11 +1,11 @@
 runtime: python39  # Change to your Python version (e.g., python311)
-entrypoint: gunicorn -b :$PORT portfolio.wsgi
+entrypoint: gunicorn -b :$PORT core.wsgi
 
 
 instance_class: F2  # Choose an instance class based on your needs
 
 env_variables:
-  DJANGO_SETTINGS_MODULE: "portfolio.settings"
+  DJANGO_SETTINGS_MODULE: "core.settings"
   SECRET_KEY: "django-insecure-&c-s+$47t3otj6!(h_d^qcjyn9ukqfjq+*u2a_ux)asa3(x_f2"
   DATABASE_URL: "mysql://portfolioApp:JuanPaco1993%23@217.196.48.82:3306/Portfolio"
 
