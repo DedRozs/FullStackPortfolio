@@ -1,10 +1,9 @@
-from rest_framework.routers import DefaultRouter
-from django.urls import path, include
-from .views import AIServiceViewSet
+from django.urls import path
+from .views import *
 
-router = DefaultRouter()
-router.register(r'aiservices', AIServiceViewSet)
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path("create/", AIServiceCreateView.as_view(), name="ai_service_create"),
+    path("", AIServiceListView.as_view(), name="ai_service_list"),
+    path("<int:pk>/", AIServiceDetailView.as_view(), name="ai_service_detail"),
 ]

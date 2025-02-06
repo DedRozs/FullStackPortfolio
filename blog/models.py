@@ -7,7 +7,7 @@ class BlogPost(models.Model):
     title = models.CharField(max_length=255)
     content = models.TextField()
     author = models.ForeignKey(User, on_delete=models.CASCADE)
-    published_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     tags = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
