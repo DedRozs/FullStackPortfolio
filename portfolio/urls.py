@@ -20,11 +20,11 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path("__reload__/", include("django_browser_reload.urls")),
     path('auth/', include('authentication.urls')),
     path('api/portfolio/', include('portfolio_app.urls')),
     path('api/blog/', include('blog.urls')),
     path('api/ai-services/', include('ai_services.urls')),
     path("api/search/", include("search.urls")),
-    path("__reload__/", include("django_browser_reload.urls")),
     path('', include('portfolio_app.urls')),
 ]

@@ -7,5 +7,8 @@ router.register(r'projects', ProjectViewSet)
 
 urlpatterns = [
     path("", home_view, name="home"),
+    path("projects/", projects_view, name="projects"),
+    path("contact/", contact_view, name="contact"),
+    path("about/", about_view, name="about"),
     path('', include(router.urls)),
 ]

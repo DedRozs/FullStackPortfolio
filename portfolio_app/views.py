@@ -9,6 +9,17 @@ class ProjectViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
 from django.shortcuts import render
+from .models import *  # Ensure Project model is imported if needed
 
 def home_view(request):
     return render(request, "portfolio_app/index.html")
+
+def projects_view(request):
+    projects = Project.objects.all()
+    return render(request, "portfolio_app/projects.html", {"projects": projects})
+
+def contact_view(request):
+    return render(request, "portfolio_app/contact.html")
+
+def about_view(request):
+    return render(request, "portfolio_app/about.html")

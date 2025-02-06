@@ -1,17 +1,62 @@
-{% load static tailwind_tags %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}My Portfolio{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-		{% tailwind_css %}
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js"></script>
+
+    <!-- Load Tailwind CSS -->
+    {% load static tailwind_tags %}
+    {% tailwind_css %}
+
+    <!-- anime.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js"></script>
 </head>
-<body>
-    {% block content %}
-    <!-- Content from child templates will be inserted here -->
-    {% endblock %}
+<body class="bg-gray-900 text-white">
+    
+    <!-- Navigation -->
+	<nav class="bg-gray-800 p-4 text-white shadow-md">
+		<div class="container mx-auto flex justify-between items-center">
+			<a href="{% url 'home' %}" class="text-xl font-bold">My Portfolio</a>
+			<div>
+				<a href="{% url 'projects' %}" class="mr-4 hover:underline">Projects</a>
+				<a href="{% url 'about' %}" class="mr-4 hover:underline">About</a>
+				<a href="{% url 'contact' %}" class="hover:underline">Contact</a>
+			</div>
+		</div>
+	</nav>
+
+    <!-- Page Content -->
+    <main class="container mx-auto p-10">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-4 bg-gray-800 text-gray-400">
+        © 2025 My Portfolio. All Rights Reserved.
+    </footer>
+
+    <!-- JavaScript Animations -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            anime({
+                targets: 'body',
+                opacity: [0, 1],
+                duration: 800,
+                easing: 'easeInOutQuad'
+            });
+
+            document.querySelectorAll('a').forEach(anchor => {
+                anchor.addEventListener('click', (event) => {
+                    anime({
+                        targets: 'body',
+                        opacity: [1, 0],
+                        duration: 500,
+                        easing: 'easeInOutQuad'
+                    });
+                });
+            });
+        });
+    </script>
 </body>
 </html>
