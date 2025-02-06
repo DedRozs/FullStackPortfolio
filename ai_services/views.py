@@ -1,3 +1,9 @@
-from django.shortcuts import render
+from rest_framework import viewsets
+from .models import AIService
+from .serializers import AIServiceSerializer
+from rest_framework.permissions import IsAuthenticated
 
-# Create your views here.
+class AIServiceViewSet(viewsets.ModelViewSet):
+    queryset = AIService.objects.all()
+    serializer_class = AIServiceSerializer
+    permission_classes = [IsAuthenticated]
