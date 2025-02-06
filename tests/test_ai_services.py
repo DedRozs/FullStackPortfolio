@@ -1,6 +1,6 @@
 import pytest
 from django.urls import reverse
-from .models import AIService
+from ai_services.models import AIService
 
 @pytest.mark.django_db
 def test_ai_service_creation(client, test_user):

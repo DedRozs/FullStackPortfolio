@@ -1,6 +1,6 @@
 import pytest
 from django.urls import reverse
-from .models import BlogPost
+from blog.models import BlogPost
 
 @pytest.mark.django_db
 def test_create_blog_post(client, test_user):

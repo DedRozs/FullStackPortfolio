@@ -1,6 +1,6 @@
 import pytest
 from django.urls import reverse
-from .models import Project
+from portfolio_app.models import Project
 
 @pytest.mark.django_db
 def test_create_project(client, test_user):
