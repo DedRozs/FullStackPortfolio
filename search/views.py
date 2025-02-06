@@ -5,10 +5,13 @@ from search.models import SearchIndex
 from search.serializers import SearchIndexSerializer
 from search.utils import generate_embedding, save_faiss_index, search_similar
 import numpy as np
+from rest_framework.permissions import IsAuthenticated
+
 
 class AddTextToIndexView(APIView):
     """Adds new text data to FAISS search index."""
-    
+    permission_classes = [IsAuthenticated]  # Ensure authentication
+
     def post(self, request):
         serializer = SearchIndexSerializer(data=request.data)
         if serializer.is_valid():
@@ -21,6 +24,7 @@ class AddTextToIndexView(APIView):
             
             return Response({"message": "Text added to index."}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class SearchView(APIView):
     """Handles search queries and returns relevant results."""
