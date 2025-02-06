@@ -1,12 +1,14 @@
-name: Run Tests
+name: Run Django Tests
 
 on:
   push:
     branches:
       - main
+      - dev
   pull_request:
     branches:
       - main
+      - dev
 
 jobs:
   test:
@@ -16,35 +18,33 @@ jobs:
       mysql:
         image: mysql:5.7
         env:
-          MYSQL_ROOT_PASSWORD: JuanPaco1993#
-          MYSQL_DATABASE: Portfolio
-          MYSQL_USER: portfolioApp
-          MYSQL_PASSWORD: JuanPaco1993#
-        ports:
-          - "3306:3306"
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: test_db
+          MYSQL_USER: test_user
+          MYSQL_PASSWORD: test_password
         options: --health-cmd="mysqladmin ping --host=localhost" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v2
+      - name: Checkout Code
+        uses: actions/checkout@v2
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: "3.9"
+      - name: Set Up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.10'
 
-    - name: Install Dependencies
-      run: |
-        pip install -r requirements.txt
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt
 
-    - name: Run Migrations
-      env:
-        DATABASE_URL: "mysql://portfolioApp:JuanPaco1993%23@217.196.48.82:3306/Portfolio"
-      run: |
-        python manage.py migrate
+      - name: Run Migrations
+        env:
+          DATABASE_URL: mysql://portfolioApp:JuanPaco1993%23@217.196.48.82:3306/Portfolio
+        run: |
+          python manage.py migrate
 
       - name: Run Tests
         env:
-          DATABASE_URL: "mysql://portfolioApp:JuanPaco1993%23@217.196.48.82:3306/Portfolio"
+          DATABASE_URL: mysql://portfolioApp:JuanPaco1993%23@217.196.48.82:3306/Portfolio
         run: |
           pytest
