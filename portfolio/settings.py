@@ -26,7 +26,9 @@ SECRET_KEY = "django-insecure-r=_6hl8eyv6reg+&8hd!+_8!aa_$ctxgq_wlao0rv!52=3v07x
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
+INTERNAL_IPS = [
+    "127.0.0.1",
+]
 
 # Application definition
 
@@ -52,6 +54,7 @@ INSTALLED_APPS = [
     'django_extensions',
     'tailwind',
     'theme',
+    'django_browser_reload'
 ]
 
 TAILWIND_APP_NAME = 'theme'
