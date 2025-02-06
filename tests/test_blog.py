@@ -53,9 +53,12 @@ def test_retrieve_blog_posts():
     test_user = User.objects.create_user(username="testuser", password="securepassword", email="testuser@example.com")
     client.force_authenticate(user=test_user)
 
-    # Ensure objects are created
+    # Ensure objects are created with unique titles
     BlogPost.objects.create(title="Post 1", content="Content 1", author=test_user)
     BlogPost.objects.create(title="Post 2", content="Content 2", author=test_user)
+
+    # Check that objects were saved
+    assert BlogPost.objects.count() == 2, f"Expected 2 blog posts in DB, found {BlogPost.objects.count()}"
 
     url = reverse("blog_list")
     response = client.get(url)
