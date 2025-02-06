@@ -25,4 +25,5 @@ urlpatterns = [
     path('api/blog/', include('blog.urls')),
     path('api/ai-services/', include('ai_services.urls')),
     path("api/search/", include("search.urls")),
+    path('', include('portfolio_app.urls')),
 ]

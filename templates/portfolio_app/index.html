@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - My Portfolio{% endblock %}
+
+{% block content %}
+<div id="animatedElement">Welcome to My Portfolio</div>
+
+<script>
+    anime({
+        targets: '#animatedElement',
+        translateX: 250,
+        duration: 1000,
+        easing: 'easeInOutQuad'
+    });
+</script>
+{% endblock %}
