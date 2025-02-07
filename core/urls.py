@@ -23,6 +23,8 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include("apps.portfolio.urls")),  # Root URL
+    
+    path("__reload__/", include("django_browser_reload.urls")),
 ]
 
 if settings.DEBUG:

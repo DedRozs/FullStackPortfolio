@@ -37,8 +37,9 @@ jobs:
       - name: Ensure static directory exists
         run: mkdir -p staticfiles
 
-      - name: Gather Static Files
+      - name: Build Tailwind CSS & Gather Static Files
         run: |
+          python manage.py tailwind build
           python manage.py collectstatic --noinput
 
       - name: Run Migrations

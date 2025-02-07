@@ -88,3 +88,20 @@ local_settings.py
 
 .env
 db.sqlite3
+
+# 🎨 Tailwind & Node.js Dependencies
+node_modules/
+theme/node_modules/
+theme/package-lock.json
+theme/.tailwind/
+theme/static_src/
+theme/static/css/output.css
+
+# 🛠 IDE / Editor Files
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# 📂 Google Cloud Deployment Files (If secrets are in app.yaml)
+app.yaml
