@@ -1,8 +1,10 @@
-runtime: python39  # Change to your Python version (e.g., python311)
+runtime: python312  # Change to your Python version (e.g., python311)
 entrypoint: gunicorn -b :$PORT portfolio.wsgi
 
 
 instance_class: F2  # Choose an instance class based on your needs
+
+service: production
 
 env_variables:
   DJANGO_SETTINGS_MODULE: "portfolio.settings"
