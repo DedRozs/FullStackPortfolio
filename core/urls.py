@@ -24,12 +24,12 @@ from rest_framework.authtoken.views import obtain_auth_token
 from drf_spectacular.views import *
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
     
     # Include API routes
     path('api/auth/', include('apps.auth_app.urls')),
     # Include Portfolio API
     path('', include('apps.portfolio.urls')),
+    path('admin/', admin.site.urls),
     
     # Swagger & API Docs
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),

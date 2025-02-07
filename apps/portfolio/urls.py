@@ -1,9 +1,5 @@
 from django.urls import path
-from .views import (
-    ProjectListCreateView, ProjectDetailView,
-    SkillListCreateView, SkillDetailView,
-    ExperienceListCreateView, ExperienceDetailView
-)
+from .views import *
 
 urlpatterns = [
     # Project API Endpoints
@@ -17,4 +13,9 @@ urlpatterns = [
     # Experience API Endpoints
     path('api/experiences/', ExperienceListCreateView.as_view(), name='experience-list'),
     path('api/experiences/<int:pk>/', ExperienceDetailView.as_view(), name='experience-detail'),
+
+    path("", home_view, name="home"),
+    path("login/", login_view, name="login"),
+    path("admin/dashboard/", admin_dashboard_view, name="admin-dashboard"),
+
 ]

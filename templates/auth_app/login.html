@@ -1,0 +1,42 @@
+{% extends 'global/base.html' %}
+{% block content %}
+<div class="container">
+    <h1 class="text-center">Login</h1>
+    <form id="login-form">
+        <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" id="username" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" id="password" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Login</button>
+    </form>
+    <p id="login-error" class="text-danger mt-3"></p>
+</div>
+
+<script>
+document.getElementById("login-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+
+    fetch("/api/auth/login/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.token) {
+            localStorage.setItem("authToken", data.token);
+            window.location.href = "/";
+        } else {
+            document.getElementById("login-error").textContent = "Invalid credentials";
+        }
+    })
+    .catch(error => console.error("Login failed:", error));
+});
+</script>
+{% endblock %}

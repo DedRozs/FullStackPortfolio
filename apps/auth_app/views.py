@@ -8,8 +8,9 @@ from .serializers import *
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from drf_spectacular.utils import extend_schema
-
 from django.contrib.auth import get_user_model
+from rest_framework.permissions import IsAuthenticated
+
 
 User = get_user_model()
 
@@ -67,3 +68,11 @@ class JWTLoginView(APIView):
                 "user": UserSerializer(user).data
             })
         return Response({"error": "Invalid Credentials"}, status=400)
+
+
+
+class UserProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response(UserSerializer(request.user).data)

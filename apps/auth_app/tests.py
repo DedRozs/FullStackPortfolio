@@ -49,3 +49,13 @@ def test_login_with_jwt():
     assert response.status_code == 200
     assert "access" in response.data
     assert "refresh" in response.data
+
+@pytest.mark.django_db
+def test_user_profile():
+    user = User.objects.create_user(username="testuser", password="securepassword", role="admin")
+    client = APIClient()
+    client.force_authenticate(user=user)
+
+    response = client.get("/api/auth/me/")
+    assert response.status_code == 200
+    assert response.data["username"] == "testuser"

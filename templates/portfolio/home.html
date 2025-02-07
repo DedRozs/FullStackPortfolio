@@ -2,19 +2,34 @@
 {% block content %}
 <div class="container">
     <h1 class="text-center">My Portfolio</h1>
-    <div class="row">
-        {% for project in projects %}
-            <div class="col-md-4">
-                <div class="card">
-                    <img src="{{ project.image.url }}" class="card-img-top" alt="{{ project.title }}">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ project.title }}</h5>
-                        <p class="card-text">{{ project.description }}</p>
-                        <a href="{{ project.github_link }}" class="btn btn-primary">View on GitHub</a>
-                    </div>
-                </div>
-            </div>
-        {% endfor %}
+    <div id="projects-container" class="row">
+        <!-- Projects will be loaded here dynamically -->
     </div>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    fetch("/api/projects/")
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById("projects-container");
+            container.innerHTML = ""; // Clear existing content
+            data.forEach(project => {
+                container.innerHTML += `
+                    <div class="col-md-4">
+                        <div class="card">
+                            <img src="${project.image || '/static/default.jpg'}" class="card-img-top" alt="${project.title}">
+                            <div class="card-body">
+                                <h5 class="card-title">${project.title}</h5>
+                                <p class="card-text">${project.description}</p>
+                                <a href="${project.github_link}" class="btn btn-primary">View on GitHub</a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        })
+        .catch(error => console.error("Error loading projects:", error));
+});
+</script>
 {% endblock %}

@@ -1,0 +1,54 @@
+{% extends 'global/base.html' %}
+{% block content %}
+<div class="container">
+    <h1 class="text-center">Admin Dashboard</h1>
+    <p>Only admins can see this page.</p>
+    <div id="admin-projects-container" class="row">
+        <!-- Projects will be loaded here dynamically -->
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const token = localStorage.getItem("authToken");
+    console.log(token);
+
+    if (!token) {
+        window.location.href = "/login/";  // Redirect to login if not authenticated
+    } else {
+        fetch("/api/auth/me/", {
+            method: "GET",
+            headers: { "Authorization": "Token " + token }
+        })
+        .then(response => response.json())
+        .then(user => {
+            console.log(user)
+            if (user.role !== "admin") {
+                window.location.href = "/";  // Redirect non-admins
+            }
+        })
+        .catch(error => console.error("Access denied:", error));
+    }
+});
+</script>
+<script>
+    fetch("/api/projects/", {
+        headers: { "Authorization": "Token " + localStorage.getItem("authToken") }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const container = document.getElementById("admin-projects-container");
+        container.innerHTML = "";
+        data.forEach(project => {
+            container.innerHTML += `
+                <div class="col-md-4">
+                    <div class="card">
+                        <h5 class="card-title">${project.title}</h5>
+                        <button onclick="deleteProject(${project.id})" class="btn btn-danger">Delete</button>
+                    </div>
+                </div>
+            `;
+        });
+    });
+    </script
+{% endblock %}

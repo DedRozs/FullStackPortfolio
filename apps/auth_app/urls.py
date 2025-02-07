@@ -1,7 +1,7 @@
 from django.urls import path
 from rest_framework.authtoken.views import obtain_auth_token
 from rest_framework_simplejwt.views import TokenRefreshView
-from .views import RegisterView, LoginView, JWTLoginView
+from .views import *
 
 urlpatterns = [
     # User Registration
@@ -13,4 +13,7 @@ urlpatterns = [
     # JWT Authentication Login
     path('jwt/login/', JWTLoginView.as_view(), name='jwt_login'),
     path('jwt/refresh/', TokenRefreshView.as_view(), name='jwt_refresh'),
+
+    # Fetch Logged-in User Profile
+    path('me/', UserProfileView.as_view(), name='user-profile'),
 ]

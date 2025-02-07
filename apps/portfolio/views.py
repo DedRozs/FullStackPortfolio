@@ -42,3 +42,23 @@ class ExperienceListCreateView(generics.ListCreateAPIView):
 class ExperienceDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Experience.objects.all()
     serializer_class = ExperienceSerializer
+
+from django.shortcuts import render
+from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth.decorators import login_required
+
+# Serve Portfolio Homepage
+def home_view(request):
+    return render(request, "portfolio/home.html")
+
+# Serve Login Page
+def login_view(request):
+    return render(request, "auth_app/login.html")
+
+# Serve Admin Dashboard (Only for Authenticated Admins)
+@login_required
+def admin_dashboard_view(request):
+    print(request.user.is_superuser)
+    if request.user.role == "user":  # Ensure only admins can access
+        return render(request, "403.html")  # Redirect unauthorized users
+    return render(request, "admin/dashboard.html")
