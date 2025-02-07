@@ -28,19 +28,9 @@ jobs:
       - name: Install Requirements
         run: |
           pip install -r requirements.txt
-          
-      - name: Install Tailwind Dependencies
-        env:
-          NPM_BIN_PATH: ${{ env.NPM_BIN_PATH }}
-        run: |
-          python manage.py tailwind install
-      
+                
       - name: Ensure static directory exists
         run: mkdir -p staticfiles
-
-      - name: Build Tailwind CSS
-        run: |
-          python manage.py tailwind build
   
       - name: GCloud Authenticate
         uses: google-github-actions/auth@v2
@@ -97,6 +87,7 @@ jobs:
             - url: /.*
               script: auto
           EOF
+      
       - name: Clean Old Static Files
         run: rm -rf staticfiles/* 
       

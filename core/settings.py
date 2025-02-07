@@ -28,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'default-secret-key')
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'True') == 'false'
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "ai-fullstack-portfolio.uc.r.appspot.com"] 
 INTERNAL_IPS = ["127.0.0.1"]
@@ -50,12 +50,10 @@ INSTALLED_APPS = [
 
     # Third-party Apps
     "django_extensions",
-    'django_browser_reload',
-    'tailwind',
-    'theme',
+
 ]
 
-TAILWIND_APP_NAME = 'theme'
+
 # Define the path where npm is installed
 NPM_BIN_PATH = os.getenv("NPM_BIN_PATH", "/usr/bin/npm")
 
@@ -68,12 +66,9 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    'django_browser_reload.middleware.BrowserReloadMiddleware'
 ]
 
-if not DEBUG:
-    INSTALLED_APPS.remove("django_browser_reload")
-    MIDDLEWARE.remove("django_browser_reload.middleware.BrowserReloadMiddleware")
+
 
 ROOT_URLCONF = "core.urls"
 
@@ -159,7 +154,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # This is where static file
 if DEBUG:
     STATICFILES_DIRS = [
         os.path.join(BASE_DIR, "static"),
-        os.path.join(BASE_DIR, "theme", "static"),
     ]
 else:
     STATICFILES_DIRS = []  # Prevents conflicts in production
