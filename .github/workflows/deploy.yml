@@ -22,7 +22,16 @@ jobs:
       uses: google-github-actions/setup-gcloud@v1
       with:
         project_id: ai-fullstack-portfolio  # Your actual project ID
+
+    - name: Gather Static Files
+      run: |
+          python manage.py collectstatic --noinput
     
+    - name: Run Migrations
+      run: |
+          python manage.py makemigrations
+          python manage.py migrate
+  
     - name: Deploy to Google App Engine
       run: |
         gcloud app deploy --quiet --promote --stop-previous-version --no-cache
