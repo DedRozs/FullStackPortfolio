@@ -41,11 +41,6 @@ jobs:
         run: |
           python manage.py collectstatic --noinput
 
-      - name: Run Migrations
-        run: |
-          python manage.py makemigrations
-          python manage.py migrate
-
       - name: Generate app.yaml with secrets
         run: |
           echo "runtime: python312" > app.yaml
@@ -70,7 +65,11 @@ jobs:
           echo "    static_dir: staticfiles" >> app.yaml
           echo "  - url: /.*" >> app.yaml
           echo "    script: auto" >> app.yaml
-
+      
+      - name: Run Migrations
+        run: |
+          python manage.py makemigrations
+          python manage.py migrate
 
       - name: Deploy to App Engine
         id: deploy
