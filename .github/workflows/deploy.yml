@@ -43,6 +43,17 @@ jobs:
           python manage.py makemigrations
           python manage.py migrate
 
+      - name: Generate app.yaml with secrets
+        run: |
+          echo "runtime: python39" > app.yaml
+          echo "env_variables:" >> app.yaml
+          echo "  DB_NAME: '${{ secrets.DB_NAME }}'" >> app.yaml
+          echo "  DB_USER: '${{ secrets.DB_USER }}'" >> app.yaml
+          echo "  DB_PASSWORD: '${{ secrets.DB_PASSWORD }}'" >> app.yaml
+          echo "  DB_HOST: '${{ secrets.DB_HOST }}'" >> app.yaml
+          echo "  DB_PORT: '${{ secrets.DB_PORT }}'" >> app.yaml
+          echo "  SECRET_KEY: '${{ secrets.SECRET_KEY }}'" >> app.yaml
+
       - name: Deploy to App Engine
         id: deploy
         uses: google-github-actions/deploy-appengine@v2

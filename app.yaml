@@ -8,14 +8,16 @@ service: default
 
 env_variables:
   DJANGO_SETTINGS_MODULE: "core.settings"
-  SECRET_KEY: "django-insecure-%qg#up-xp0wt1=1eliu8fx8$pl5h(c954ie3#m+41e+1v1!i21"
-  DATABASE_URL: "mysql://portfolioApp:JuanPaco1993%23@217.196.48.82:3306/Portfolio"
-  DB_NAME: "Portfolio"
-  DB_USER: "portfolioApp"
-  DB_PASSWORD: "JuanPaco1993#"
-  DB_HOST: "217.196.48.82"
-  DB_PORT: "3306"
+  DB_NAME: ${{ secrets.DB_NAME }}
+  DB_USER: ${{ secrets.DB_USER }}
+  DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+  DB_HOST: ${{ secrets.DB_HOST }}
+  DB_PORT: ${{ secrets.DB_PORT }}
+  SECRET_KEY: ${{ secrets.SECRET_KEY }}
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
   DEBUG: "False"
+
+
 
 automatic_scaling:
   target_cpu_utilization: 0.65
