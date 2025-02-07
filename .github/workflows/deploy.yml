@@ -7,39 +7,46 @@ on:
 
 jobs:
   deploy:
+    name: Deploying to Google Cloud
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Authenticate with Google Cloud
-      uses: google-github-actions/auth@v1
-      with:
-        credentials_json: ${{ secrets.GCP_SA_KEY }}
+      - name: Setup python 3.11.5
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11.5"
 
-    - name: Set up Google Cloud SDK
-      uses: google-github-actions/setup-gcloud@v1
-      with:
-        project_id: ai-fullstack-portfolio  # Your actual project ID
+      - name: Install Requirements
+        run: |
+          pip install -r requirements.txt
 
-    - name: Gather Static Files
-      run: |
+      - name: GCloud Authenticate
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Use GCloud CLI
+        run: |
+          gcloud info
+
+      - name: Gather Static Files
+        run: |
           python manage.py collectstatic --noinput
-    
-    - name: Run Migrations
-      run: |
+
+      - name: Run Migrations
+        run: |
           python manage.py makemigrations
           python manage.py migrate
-  
-    - name: Deploy to Google App Engine
-      run: |
-        gcloud app deploy --quiet --promote --stop-previous-version --no-cache
 
-    - name: Delete replaced version
-      run: |
-        gcloud app versions list --format="value(id)" --filter="service=default AND traffic_split=0.0" | tail -n +2 | xargs -r gcloud app versions delete --quiet
-    
-    - name: Delete old versions
-      run: |
-        gcloud app versions list --format="value(id)" --filter="traffic_split=0.0" | tail -n +2 | xargs -r gcloud app versions delete --quiet
+      - name: Deploy to App Engine
+        id: deploy
+        uses: google-github-actions/deploy-appengine@v2
+        with:
+          deliverables: app.yaml
+          version: v1
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
