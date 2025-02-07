@@ -33,6 +33,9 @@ jobs:
       - name: Use GCloud CLI
         run: |
           gcloud info
+      
+      - name: Ensure static directory exists
+        run: mkdir -p staticfiles
 
       - name: Gather Static Files
         run: |
