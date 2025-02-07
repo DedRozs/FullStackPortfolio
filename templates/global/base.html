@@ -12,6 +12,10 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <a class="navbar-brand" href="/">FullStack Portfolio</a>
         <div class="ms-auto">
+            <span id="user-info" class="text-white me-3"></span>
+            {% if request.user.role == 'admin' %}
+            <a id="admin-dashboard-link" class="btn btn-warning d-none" href="/admin/dashboard/">Admin Dashboard</a>
+            {% endif %}
             <a id="auth-button" class="btn btn-outline-light" href="/login/">Login</a>
         </div>
     </nav>
@@ -23,15 +27,31 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const authButton = document.getElementById("auth-button");
+            const userInfo = document.getElementById("user-info");
+            const adminDashboardLink = document.getElementById("admin-dashboard-link");
+        
             const token = localStorage.getItem("authToken");
         
             if (token) {
-                authButton.textContent = "Logout";
-                authButton.href = "#";
-                authButton.addEventListener("click", function () {
-                    localStorage.removeItem("authToken");
-                    window.location.reload();
-                });
+                fetch("/api/auth/me/", {
+                    method: "GET",
+                    headers: { "Authorization": "Token " + token }
+                })
+                .then(response => response.json())
+                .then(user => {
+                    userInfo.textContent = `Logged in as: ${user.username}`;
+                    authButton.textContent = "Logout";
+                    authButton.href = "#";
+                    authButton.addEventListener("click", function () {
+                        localStorage.removeItem("authToken");
+                        window.location.reload();
+                    });
+        
+                    if (user.role === "admin") {
+                        adminDashboardLink.classList.remove("d-none");  // Show Admin Dashboard link for admins
+                    }
+                })
+                .catch(error => console.error("Error fetching user profile:", error));
             }
         });
         </script>

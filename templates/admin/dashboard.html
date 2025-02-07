@@ -2,19 +2,16 @@
 {% block content %}
 <div class="container">
     <h1 class="text-center">Admin Dashboard</h1>
-    <p>Only admins can see this page.</p>
-    <div id="admin-projects-container" class="row">
-        <!-- Projects will be loaded here dynamically -->
-    </div>
+    <p>Manage projects and users here.</p>
+    <div id="admin-projects-container"></div>
 </div>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const token = localStorage.getItem("authToken");
-    console.log(token);
 
     if (!token) {
-        window.location.href = "/login/";  // Redirect to login if not authenticated
+        window.location.href = "/login/";
     } else {
         fetch("/api/auth/me/", {
             method: "GET",
@@ -22,33 +19,43 @@ document.addEventListener("DOMContentLoaded", function () {
         })
         .then(response => response.json())
         .then(user => {
-            console.log(user)
             if (user.role !== "admin") {
-                window.location.href = "/";  // Redirect non-admins
+                window.location.href = "/";
+            } else {
+                fetch("/api/projects/", {
+                    headers: { "Authorization": "Token " + token }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById("admin-projects-container");
+                    data.forEach(project => {
+                        container.innerHTML += `
+                            <div>
+                                <h5>${project.title}</h5>
+                                <button onclick="deleteProject(${project.id})" class="btn btn-danger">Delete</button>
+                            </div>
+                        `;
+                    });
+                });
             }
         })
         .catch(error => console.error("Access denied:", error));
     }
 });
-</script>
-<script>
-    fetch("/api/projects/", {
-        headers: { "Authorization": "Token " + localStorage.getItem("authToken") }
+
+function deleteProject(projectId) {
+    const token = localStorage.getItem("authToken");
+    fetch(`/api/projects/${projectId}/`, {
+        method: "DELETE",
+        headers: { "Authorization": "Token " + token }
     })
-    .then(response => response.json())
-    .then(data => {
-        const container = document.getElementById("admin-projects-container");
-        container.innerHTML = "";
-        data.forEach(project => {
-            container.innerHTML += `
-                <div class="col-md-4">
-                    <div class="card">
-                        <h5 class="card-title">${project.title}</h5>
-                        <button onclick="deleteProject(${project.id})" class="btn btn-danger">Delete</button>
-                    </div>
-                </div>
-            `;
-        });
+    .then(response => {
+        if (response.ok) {
+            window.location.reload();
+        } else {
+            alert("Failed to delete project.");
+        }
     });
-    </script
+}
+</script>
 {% endblock %}
