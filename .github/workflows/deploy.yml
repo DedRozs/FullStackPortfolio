@@ -18,6 +18,26 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "latest"
+  
+      - name: Install Tailwind Dependencies
+        run: |
+          cd theme  # Navigate to the Tailwind app directory
+          npm install  # Install Tailwind dependencies
+          cd ..
+      
+      - name: Ensure static directory exists
+        run: mkdir -p staticfiles
+
+      - name: Build Tailwind CSS and Gather Static Files
+        run: |
+          python manage.py tailwind build
+          python manage.py collectstatic --noinput
+  
+
       - name: Install Requirements
         run: |
           pip install -r requirements.txt
@@ -33,14 +53,6 @@ jobs:
       - name: Use GCloud CLI
         run: |
           gcloud info
-      
-      - name: Ensure static directory exists
-        run: mkdir -p staticfiles
-
-      - name: Build Tailwind CSS & Gather Static Files
-        run: |
-          python manage.py tailwind build
-          python manage.py collectstatic --noinput
 
       - name: Run Migrations
         env:
