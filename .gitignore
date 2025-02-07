@@ -22,13 +22,13 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
-
+/node_modules/
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
-
+.pytest_cache/
 # C extensions
 *.so
 
