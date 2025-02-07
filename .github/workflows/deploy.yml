@@ -94,7 +94,6 @@ jobs:
       - name: Gather Static Files
         run: |
           python manage.py collectstatic --noinput
-          ls -l staticfiles/css/  # Verify static files exist
   
       - name: Deploy to App Engine
         id: deploy
