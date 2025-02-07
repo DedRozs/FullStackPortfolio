@@ -33,7 +33,7 @@ jobs:
         run: python manage.py spectacular --color --file openapi-schema.yml
   
       - name: Upload API Schema
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: openapi-schema
           path: openapi-schema.yml
