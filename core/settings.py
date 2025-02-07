@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
-import os 
+import os, sys
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -137,6 +137,8 @@ WSGI_APPLICATION = "core.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+
+
 # Database Configuration
 DATABASES = {
     'default': {
@@ -148,11 +150,12 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT', '3306'),
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
+        },
+        'TEST': {
+            'NAME': 'test_Portfolio'  # Ensure test DB name is set
         }
     }
 }
-
-
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
