@@ -22,12 +22,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "latest"
-  
+
+      - name: Install Requirements
+        run: |
+          pip install -r requirements.txt
+          
       - name: Install Tailwind Dependencies
         run: |
-          cd theme  # Navigate to the Tailwind app directory
-          npm install  # Install Tailwind dependencies
-          cd ..
+          python manage.py tailwind install
       
       - name: Ensure static directory exists
         run: mkdir -p staticfiles
@@ -37,11 +39,6 @@ jobs:
           python manage.py tailwind build
           python manage.py collectstatic --noinput
   
-
-      - name: Install Requirements
-        run: |
-          pip install -r requirements.txt
-
       - name: GCloud Authenticate
         uses: google-github-actions/auth@v2
         with:
