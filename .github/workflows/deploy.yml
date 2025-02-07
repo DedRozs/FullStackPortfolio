@@ -97,6 +97,9 @@ jobs:
             - url: /.*
               script: auto
           EOF
+      - name: Clean Old Static Files
+        run: rm -rf staticfiles/* 
+      
       - name: Gather Static Files
         run: |
           python manage.py collectstatic --noinput
