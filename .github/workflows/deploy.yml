@@ -21,7 +21,7 @@ jobs:
     - name: Set up Google Cloud SDK
       uses: google-github-actions/setup-gcloud@v1
       with:
-        project_id: portfolioapi-422802  # Your actual project ID
+        project_id: ai-fullstack-portfolio  # Your actual project ID
     
     - name: Deploy to Google App Engine
       run: |
