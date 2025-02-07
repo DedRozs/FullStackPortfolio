@@ -39,12 +39,12 @@ jobs:
 
       - name: Run Migrations
         env:
-          DATABASE_URL: mysql://portfolioApp:JuanPaco1993%23@217.196.48.82:3306/Portfolio
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           python manage.py migrate
 
       - name: Run Tests
         env:
-          DATABASE_URL: mysql://portfolioApp:JuanPaco1993%23@217.196.48.82:3306/Portfolio
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           pytest
