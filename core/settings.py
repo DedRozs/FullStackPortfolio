@@ -28,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'default-secret-key')
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'True') == 'True'
+DEBUG = os.getenv('DEBUG', 'True') == 'false'
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "ai-fullstack-portfolio.uc.r.appspot.com"] 
 INTERNAL_IPS = ["127.0.0.1"]
@@ -163,7 +163,7 @@ if DEBUG:
     ]
 else:
     STATICFILES_DIRS = []  # Prevents conflicts in production
-    
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
