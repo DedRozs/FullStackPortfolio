@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "blog",
     "ai_services",
     "search",
+    
     # Third-Party Libraries
     "django_extensions",
     "tailwind",
@@ -79,6 +80,7 @@ SIMPLE_JWT = {
 
 
 MIDDLEWARE = [
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -88,7 +90,6 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_browser_reload.middleware.BrowserReloadMiddleware",
 ]
-
 ROOT_URLCONF = "portfolio.urls"
 
 TEMPLATES = [
@@ -168,6 +169,8 @@ STATIC_ROOT = os.path.join(CORE_DIR, 'static')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'staticfiles'),
 ]
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
