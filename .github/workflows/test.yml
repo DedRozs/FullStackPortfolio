@@ -1,37 +1,23 @@
-name: Run Django Tests
+name: Run Automated Tests
 
 on:
   push:
     branches:
-      - main
-      - dev
+      - "**"  # Run tests on all branches
   pull_request:
     branches:
-      - main
-      - dev
+      - main  # Run tests on PRs to main
 
 jobs:
   test:
+    name: Run Tests
     runs-on: ubuntu-latest
 
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          DB_NAME: ${{ secrets.DB_NAME }}
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_HOST: ${{ secrets.DB_HOST }}
-          DB_PORT: ${{ secrets.DB_PORT }}
-          SECRET_KEY: ${{ secrets.SECRET_KEY }}
-          DJANGO_SETTINGS_MODULE: "core.settings"
-        options: --health-cmd="mysqladmin ping --host=localhost" --health-interval=10s --health-timeout=5s --health-retries=3
-
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v2
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-      - name: Set Up Python
+      - name: Set up Python
         uses: actions/setup-python@v3
         with:
           python-version: '3.12'
@@ -39,24 +25,7 @@ jobs:
       - name: Install Dependencies
         run: |
           pip install -r requirements.txt
-
-      - name: Run Migrations
-        env:
-          DB_NAME: ${{ secrets.DB_NAME }}
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_HOST: ${{ secrets.DB_HOST }}
-          DB_PORT: ${{ secrets.DB_PORT }}
-          SECRET_KEY: ${{ secrets.SECRET_KEY }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DJANGO_SETTINGS_MODULE: "core.settings"
-        run: |
-          echo "DEBUG: Database Host is $DB_HOST"
-          python manage.py makemigrations
-          python manage.py migrate
+          pip install pytest pytest-django
 
       - name: Run Tests
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: |
-          pytest -v
+        run: pytest -v
