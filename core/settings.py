@@ -34,6 +34,8 @@ ALLOWED_HOSTS = ["localhost", "127.0.0.1", "ai-fullstack-portfolio.uc.r.appspot.
 INTERNAL_IPS = ["127.0.0.1"]
 
 
+
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -68,6 +70,10 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     'django_browser_reload.middleware.BrowserReloadMiddleware'
 ]
+
+if not DEBUG:
+    INSTALLED_APPS.remove("django_browser_reload")
+    MIDDLEWARE.remove("django_browser_reload.middleware.BrowserReloadMiddleware")
 
 ROOT_URLCONF = "core.urls"
 
@@ -149,9 +155,10 @@ STATIC_URL = '/static/'
 # Define STATIC_ROOT for collectstatic
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # This is where static files will be collected
 
-# Global static files directories
+
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),  # Your existing static directory
+    os.path.join(BASE_DIR, "static"),  # General static files
+    os.path.join(BASE_DIR, "theme", "static"),  # Tailwind output
 ]
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

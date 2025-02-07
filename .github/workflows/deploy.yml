@@ -38,10 +38,9 @@ jobs:
       - name: Ensure static directory exists
         run: mkdir -p staticfiles
 
-      - name: Build Tailwind CSS and Gather Static Files
+      - name: Build Tailwind CSS
         run: |
           python manage.py tailwind build
-          python manage.py collectstatic --noinput
   
       - name: GCloud Authenticate
         uses: google-github-actions/auth@v2
@@ -98,7 +97,11 @@ jobs:
             - url: /.*
               script: auto
           EOF
-
+      - name: Gather Static Files
+        run: |
+          python manage.py collectstatic --noinput
+          ls -l staticfiles/css/  # Verify static files exist
+  
       - name: Deploy to App Engine
         id: deploy
         uses: google-github-actions/deploy-appengine@v2
