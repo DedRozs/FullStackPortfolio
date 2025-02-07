@@ -39,8 +39,17 @@ jobs:
 
       - name: Run Migrations
         env:
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DJANGO_SETTINGS_MODULE: "core.settings"
         run: |
+          echo "DEBUG: Database Host is $DB_HOST"
+          python manage.py makemigrations
           python manage.py migrate
 
       - name: Run Tests
