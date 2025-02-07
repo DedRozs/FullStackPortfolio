@@ -9,24 +9,24 @@ from rest_framework.views import APIView
 
 User = get_user_model()
 
+
 class UserDetailView(generics.RetrieveUpdateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
 
 
-
 # Register a new user
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = (permissions.AllowAny,)
-    
+
     def post(self, request, *args, **kwargs):
         user = User.objects.create_user(
-            username=request.data["username"],
-            password=request.data["password"]
+            username=request.data["username"], password=request.data["password"]
         )
         return Response({"message": "User created successfully"})
+
 
 # Obtain JWT Token
 class ObtainTokenView(APIView):
@@ -35,7 +35,9 @@ class ObtainTokenView(APIView):
     def post(self, request, *args, **kwargs):
         user = User.objects.get(username=request.data["username"])
         refresh = RefreshToken.for_user(user)
-        return Response({
-            "refresh": str(refresh),
-            "access": str(refresh.access_token),
-        })
+        return Response(
+            {
+                "refresh": str(refresh),
+                "access": str(refresh.access_token),
+            }
+        )

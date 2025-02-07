@@ -40,47 +40,40 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    
     # Custom Apps
-    'authentication',
-    'portfolio_app',
-    'blog',
-    'ai_services',
-    'search',
-
+    "authentication",
+    "portfolio_app",
+    "blog",
+    "ai_services",
+    "search",
     # Third-Party Libraries
-    'django_extensions',
-    'tailwind',
-    'theme',
-    'django_browser_reload',
-    'oauth2_provider',
-    'rest_framework',
-    'rest_framework_simplejwt',
-    'corsheaders',  
-
-
-
+    "django_extensions",
+    "tailwind",
+    "theme",
+    "django_browser_reload",
+    "oauth2_provider",
+    "rest_framework",
+    "rest_framework_simplejwt",
+    "corsheaders",
 ]
 
-TAILWIND_APP_NAME = 'theme'
+TAILWIND_APP_NAME = "theme"
 NPM_BIN_PATH = "C:/Program Files/nodejs/npm.cmd"
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "oauth2_provider.contrib.rest_framework.OAuth2Authentication",
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    ),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
-    'ROTATE_REFRESH_TOKENS': True,
-    'BLACKLIST_AFTER_ROTATION': True,
-    'AUTH_HEADER_TYPES': ('Bearer',),
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
 
@@ -123,19 +116,16 @@ AUTH_USER_MODEL = "authentication.CustomUser"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'Portfolio',  # Replace with your database name
-        'USER': 'portfolioApp',  # Replace with your MySQL username
-        'PASSWORD': 'JuanPaco1993#',  # Replace with your MySQL password
-        'HOST': '217.196.48.82',  # Change if using a remote database
-        'PORT': '3306',
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
-        }
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": "Portfolio",  # Replace with your database name
+        "USER": "portfolioApp",  # Replace with your MySQL username
+        "PASSWORD": "JuanPaco1993#",  # Replace with your MySQL password
+        "HOST": "217.196.48.82",  # Change if using a remote database
+        "PORT": "3306",
+        "OPTIONS": {"init_command": "SET sql_mode='STRICT_TRANS_TABLES'"},
     }
 }
-
 
 
 # Password validation

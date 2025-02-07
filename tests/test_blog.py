@@ -6,6 +6,7 @@ from blog.models import BlogPost
 
 User = get_user_model()
 
+
 @pytest.mark.django_db
 def test_create_blog_post():
     """Test creating a blog post with authentication."""
@@ -14,7 +15,7 @@ def test_create_blog_post():
     test_user = User.objects.create_user(
         username="testuser",
         password="securepassword",
-        email="testuser@example.com"  # Ensure unique email
+        email="testuser@example.com",  # Ensure unique email
     )
     client.force_authenticate(user=test_user)
 
@@ -22,7 +23,7 @@ def test_create_blog_post():
     data = {
         "title": "My First Blog",
         "content": "This is my first blog post.",
-        "author": test_user.id  # Ensure author is correctly assigned
+        "author": test_user.id,  # Ensure author is correctly assigned
     }
 
     response = client.post(url, data, format="json")
@@ -35,22 +36,22 @@ def test_unauthenticated_blog_creation():
     """Ensure that blog post creation fails for unauthenticated users."""
     client = APIClient()
 
-    url = reverse("blog_create")  
-    data = {
-        "title": "Unauthorized Blog",
-        "content": "This post should not be created."
-    }
+    url = reverse("blog_create")
+    data = {"title": "Unauthorized Blog", "content": "This post should not be created."}
 
     response = client.post(url, data, format="json")
 
     assert response.status_code == 401  # Unauthorized
+
 
 @pytest.mark.django_db
 def test_retrieve_blog_posts():
     """Test retrieving a list of blog posts."""
     client = APIClient()
 
-    test_user = User.objects.create_user(username="testuser", password="securepassword", email="testuser@example.com")
+    test_user = User.objects.create_user(
+        username="testuser", password="securepassword", email="testuser@example.com"
+    )
     client.force_authenticate(user=test_user)
 
     # Ensure objects are created with unique titles
@@ -58,7 +59,9 @@ def test_retrieve_blog_posts():
     BlogPost.objects.create(title="Post 2", content="Content 2", author=test_user)
 
     # Check that objects were saved
-    assert BlogPost.objects.count() == 2, f"Expected 2 blog posts in DB, found {BlogPost.objects.count()}"
+    assert (
+        BlogPost.objects.count() == 2
+    ), f"Expected 2 blog posts in DB, found {BlogPost.objects.count()}"
 
     url = reverse("blog_list")
     response = client.get(url)
@@ -73,22 +76,28 @@ def test_update_blog_post():
     client = APIClient()
 
     # Create test user and authenticate
-    test_user = User.objects.create_user(username="testuser", password="securepassword", email="testuser@example.com")
+    test_user = User.objects.create_user(
+        username="testuser", password="securepassword", email="testuser@example.com"
+    )
     client.force_authenticate(user=test_user)
 
     # Create a sample blog post
-    blog_post = BlogPost.objects.create(title="Old Title", content="Old Content", author=test_user)
+    blog_post = BlogPost.objects.create(
+        title="Old Title", content="Old Content", author=test_user
+    )
 
     url = reverse("blog_detail", kwargs={"pk": blog_post.id})
     data = {
         "title": "Updated Title",
         "content": "Updated Content",
-        "author": test_user.id  # Ensure the author field is passed if required
+        "author": test_user.id,  # Ensure the author field is passed if required
     }
 
     response = client.put(url, data, format="json")
 
-    assert response.status_code == 200, f"Expected 200 OK, got {response.status_code}. Response: {response.data}"
+    assert (
+        response.status_code == 200
+    ), f"Expected 200 OK, got {response.status_code}. Response: {response.data}"
 
 
 @pytest.mark.django_db
@@ -100,12 +109,14 @@ def test_delete_blog_post():
     test_user = User.objects.create_user(
         username="testuser",
         password="securepassword",
-        email="testuser@example.com"  # Ensure unique email
+        email="testuser@example.com",  # Ensure unique email
     )
     client.force_authenticate(user=test_user)
 
     # Create a sample blog post
-    blog_post = BlogPost.objects.create(title="To be deleted", content="Delete me", author=test_user)
+    blog_post = BlogPost.objects.create(
+        title="To be deleted", content="Delete me", author=test_user
+    )
 
     url = reverse("blog_detail", kwargs={"pk": blog_post.id})
     response = client.delete(url)
@@ -113,15 +124,22 @@ def test_delete_blog_post():
     assert response.status_code == 204
     assert not BlogPost.objects.filter(id=blog_post.id).exists()
 
+
 @pytest.mark.django_db
 def test_unauthorized_blog_post_edit():
     """Ensure users cannot edit someone else's blog post."""
     client = APIClient()
 
-    owner = User.objects.create_user(username="owner", password="password", email="owner@example.com")
-    hacker = User.objects.create_user(username="hacker", password="password", email="hacker@example.com")
+    owner = User.objects.create_user(
+        username="owner", password="password", email="owner@example.com"
+    )
+    hacker = User.objects.create_user(
+        username="hacker", password="password", email="hacker@example.com"
+    )
 
-    blog_post = BlogPost.objects.create(title="Original Title", content="Original Content", author=owner)
+    blog_post = BlogPost.objects.create(
+        title="Original Title", content="Original Content", author=owner
+    )
 
     client.force_authenticate(user=hacker)  # Unauthorized user
     url = reverse("blog_detail", kwargs={"pk": blog_post.id})
@@ -129,4 +147,6 @@ def test_unauthorized_blog_post_edit():
 
     response = client.put(url, data, format="json")
 
-    assert response.status_code == 403, f"Expected 403 Forbidden, got {response.status_code}"
+    assert (
+        response.status_code == 403
+    ), f"Expected 403 Forbidden, got {response.status_code}"

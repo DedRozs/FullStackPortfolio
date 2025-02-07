@@ -2,7 +2,7 @@
 URL configuration for portfolio project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/4.2/topics/http/urls/
+    https://docs.djangoproject.com/en/5.1/topics/http/urls/
 Examples:
 Function views
     1. Add an import:  from my_app import views
@@ -19,12 +19,13 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path("admin/", admin.site.urls),
     path("__reload__/", include("django_browser_reload.urls")),
-    path('auth/', include('authentication.urls')),
-    path('api/portfolio/', include('portfolio_app.urls')),
-    path('api/blog/', include('blog.urls')),
-    path('api/ai_services/', include('ai_services.urls')),
+    path("auth/", include("authentication.urls")),
+    path("api/portfolio/", include("portfolio_app.urls")),
+    path("api/blog/", include("blog.urls")),
+    path("api/ai_services/", include("ai_services.urls")),
     path("api/search/", include("search.urls")),
-    path('', include('portfolio_app.urls')),
+    path("", include("portfolio_app.urls")),
 ]
+

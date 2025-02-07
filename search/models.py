@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class SearchIndex(models.Model):
     text = models.TextField()
     embedding = models.BinaryField()  # Store FAISS-compatible embeddings

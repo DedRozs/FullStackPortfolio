@@ -4,7 +4,7 @@ entrypoint: gunicorn -b :$PORT portfolio.wsgi
 
 instance_class: F2  # Choose an instance class based on your needs
 
-service: production
+service: default
 
 env_variables:
   DJANGO_SETTINGS_MODULE: "portfolio.settings"

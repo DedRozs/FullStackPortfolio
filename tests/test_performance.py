@@ -7,12 +7,15 @@ from blog.models import BlogPost
 
 User = get_user_model()
 
+
 @pytest.mark.django_db
 def test_blog_list_performance():
     """Ensure the blog list API responds within acceptable time limits."""
     client = APIClient()
 
-    user = User.objects.create_user(username="testuser", password="password", email="testuser@example.com")
+    user = User.objects.create_user(
+        username="testuser", password="password", email="testuser@example.com"
+    )
     client.force_authenticate(user=user)
 
     # Create test blog posts
@@ -26,4 +29,6 @@ def test_blog_list_performance():
     end_time = time.time()
 
     assert response.status_code == 200
-    assert (end_time - start_time) < 0.5, f"API took too long: {end_time - start_time} seconds"
+    assert (
+        end_time - start_time
+    ) < 0.5, f"API took too long: {end_time - start_time} seconds"

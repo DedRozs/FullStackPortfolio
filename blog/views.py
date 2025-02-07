@@ -4,11 +4,13 @@ from .serializers import BlogPostSerializer
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework import generics, permissions
 
+
 class BlogCreateView(generics.CreateAPIView):
     """
     API view to create a new blog post.
     Requires authentication.
     """
+
     queryset = BlogPost.objects.all()
     serializer_class = BlogPostSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -16,11 +18,15 @@ class BlogCreateView(generics.CreateAPIView):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
+
 class BlogListView(generics.ListAPIView):
     """
     API view to list all blog posts.
     """
-    queryset = BlogPost.objects.all().order_by("-created_at")  # Ensure no filters are applied
+
+    queryset = BlogPost.objects.all().order_by(
+        "-created_at"
+    )  # Ensure no filters are applied
     serializer_class = BlogPostSerializer
     permission_classes = [permissions.AllowAny]  # Adjust permissions if necessary
 
@@ -31,6 +37,7 @@ class BlogDetailView(generics.RetrieveUpdateDestroyAPIView):
     - Read access: Any user.
     - Edit/Delete access: Only the author.
     """
+
     queryset = BlogPost.objects.all()
     serializer_class = BlogPostSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]

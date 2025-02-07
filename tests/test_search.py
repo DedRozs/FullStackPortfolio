@@ -5,4 +5,3 @@ from rest_framework.test import APIClient
 from search.models import SearchIndex
 
 User = get_user_model()
-
