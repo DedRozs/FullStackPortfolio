@@ -45,7 +45,7 @@ jobs:
         run: |
           echo "runtime: python312" > app.yaml
           echo "entrypoint: gunicorn -b :$PORT core.wsgi" >> app.yaml
-          ehco "instance_class: F2" >> app.yaml
+          echo "instance_class: F2" >> app.yaml
           echo "service: default" >> app.yaml
           echo "env_variables:" >> app.yaml
           echo "  DB_NAME: '${{ secrets.DB_NAME }}'" >> app.yaml
@@ -54,7 +54,7 @@ jobs:
           echo "  DB_HOST: '${{ secrets.DB_HOST }}'" >> app.yaml
           echo "  DB_PORT: '${{ secrets.DB_PORT }}'" >> app.yaml
           echo "  SECRET_KEY: '${{ secrets.SECRET_KEY }}'" >> app.yaml
-          ehco "  DJANGO_SETTINGS_MODULE: 'core.settings'" >> app.yaml
+          echo "  DJANGO_SETTINGS_MODULE: 'core.settings'" >> app.yaml
           echo "  DEBUG: 'False'" >> app.yaml
           echo "automatic_scaling:" >> app.yaml
           echo "  target_cpu_utilization: 0.65" >> app.yaml
