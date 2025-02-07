@@ -84,7 +84,7 @@ jobs:
             DB_PORT: '${{ secrets.DB_PORT }}'
             SECRET_KEY: '${{ secrets.SECRET_KEY }}'
             DJANGO_SETTINGS_MODULE: 'core.settings'
-            DEBUG: 'False'
+            DEBUG: 'True'
 
           automatic_scaling:
             target_cpu_utilization: 0.65
