@@ -47,12 +47,54 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # Custom Apps
     "apps.portfolio",
+    'apps.auth_app',
+
 
     # Third-party Apps
     "django_extensions",
-
+    'rest_framework',
+    'rest_framework.authtoken',
+    'rest_framework_simplejwt',
+    'drf_spectacular', 
+    'drf_spectacular_sidecar', 
+    'debug_toolbar',
 ]
 
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',  # JWT support
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.UserRateThrottle',
+        'rest_framework.throttling.AnonRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'user': '1000/day',  # Authenticated users: 1000 requests/day
+        'anon': '10/minute',  # Guests: 10 requests/minute
+    },
+}
+
+AUTH_USER_MODEL = "auth_app.CustomUser"  # Tell Django to use CustomUser instead of default User
+
+
+REST_FRAMEWORK['DEFAULT_THROTTLE_RATES']['project'] = '5/minute'  # 5 requests/minute
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Joseph\'s FullStack Portfolio API',
+    'DESCRIPTION': 'API documentation for the Joseph\'s FullStack Portfolio project.',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+}
 
 # Define the path where npm is installed
 NPM_BIN_PATH = os.getenv("NPM_BIN_PATH", "/usr/bin/npm")
@@ -66,6 +108,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 
@@ -157,6 +200,11 @@ if DEBUG:
     ]
 else:
     STATICFILES_DIRS = []  # Prevents conflicts in production
+
+
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

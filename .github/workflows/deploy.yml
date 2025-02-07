@@ -29,6 +29,15 @@ jobs:
         run: |
           pip install -r requirements.txt
                 
+      - name: Generate OpenAPI Schema
+        run: python manage.py spectacular --color --file openapi-schema.yml
+  
+      - name: Upload API Schema
+        uses: actions/upload-artifact@v2
+        with:
+          name: openapi-schema
+          path: openapi-schema.yml
+
       - name: Ensure static directory exists
         run: mkdir -p staticfiles
   

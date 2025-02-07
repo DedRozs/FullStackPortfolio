@@ -20,11 +20,32 @@ from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.static import serve
+from rest_framework.authtoken.views import obtain_auth_token
+from drf_spectacular.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include("apps.portfolio.urls")),
+    
+    # Include API routes
+    path('api/auth/', include('apps.auth_app.urls')),
+    # Include Portfolio API
+    path('', include('apps.portfolio.urls')),
+    
+    # Swagger & API Docs
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 ]
 
 if settings.DEBUG:
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    import debug_toolbar
+    urlpatterns += [path('__debug__/', include(debug_toolbar.urls))]
+
+    # Correct way to serve static files in Django 5.1+
+    from django.views.static import serve
+    from django.urls import re_path
+
+    urlpatterns += [
+        re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+        re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT}),
+    ]
