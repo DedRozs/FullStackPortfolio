@@ -96,6 +96,7 @@ theme/package-lock.json
 theme/.tailwind/
 theme/static_src/
 theme/static/css/output.css
+staticfiles/
 
 # 🛠 IDE / Editor Files
 .vscode/
