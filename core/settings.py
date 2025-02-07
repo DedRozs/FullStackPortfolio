@@ -156,10 +156,14 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # This is where static files will be collected
 
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static"),  # General static files
-    os.path.join(BASE_DIR, "theme", "static"),  # Tailwind output
-]
+if DEBUG:
+    STATICFILES_DIRS = [
+        os.path.join(BASE_DIR, "static"),
+        os.path.join(BASE_DIR, "theme", "static"),
+    ]
+else:
+    STATICFILES_DIRS = []  # Prevents conflicts in production
+    
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 

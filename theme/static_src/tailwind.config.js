@@ -25,5 +25,5 @@ module.exports = {
         require('@tailwindcss/typography'),
         require('@tailwindcss/aspect-ratio'),
     ],
-    output: "theme/static/css/"
+    output: "../../staticfiles/css/"
 }
