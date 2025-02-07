@@ -163,11 +163,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATICFILES_DIRS = (
-    os.path.join(CORE_DIR, 'theme/static/css/dist/'),
-)
-STATIC_ROOT = os.path.join(CORE_DIR, 'static')
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(CORE_DIR, 'static')
+STATICFILES_DIRS = [
+    os.path.join(CORE_DIR, 'static'),
+]
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
