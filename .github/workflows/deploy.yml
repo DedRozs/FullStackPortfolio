@@ -22,7 +22,7 @@ jobs:
       uses: google-github-actions/setup-gcloud@v1
       with:
         project_id: portfolioapi-422802  # Your actual project ID
-
+    
     - name: Deploy to Google App Engine
       run: |
         gcloud app deploy --quiet --promote --stop-previous-version
