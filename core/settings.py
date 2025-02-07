@@ -54,7 +54,9 @@ INSTALLED_APPS = [
 ]
 
 TAILWIND_APP_NAME = 'theme'
-NPM_BIN_PATH = "C:/Program Files/nodejs/npm.cmd"
+# Define the path where npm is installed
+NPM_BIN_PATH = os.getenv("NPM_BIN_PATH", "/usr/bin/npm")
+
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

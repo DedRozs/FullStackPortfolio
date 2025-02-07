@@ -22,12 +22,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "latest"
+      - name: Set NPM Path
+        run: echo "NPM_BIN_PATH=$(which npm)" >> $GITHUB_ENV
 
       - name: Install Requirements
         run: |
           pip install -r requirements.txt
           
       - name: Install Tailwind Dependencies
+        env:
+          NPM_BIN_PATH: ${{ env.NPM_BIN_PATH }}
         run: |
           python manage.py tailwind install
       
