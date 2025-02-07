@@ -25,7 +25,7 @@ jobs:
     
     - name: Deploy to Google App Engine
       run: |
-        gcloud app deploy --quiet --promote --stop-previous-version
+        gcloud app deploy --quiet --promote --stop-previous-version --no-cache
 
     - name: Delete replaced version
       run: |
