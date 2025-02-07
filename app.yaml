@@ -1,5 +1,5 @@
 runtime: python312  # Change to your Python version (e.g., python311)
-entrypoint: gunicorn -b :$PORT portfolio.wsgi
+entrypoint: gunicorn -b :$PORT core.wsgi
 
 
 instance_class: F2  # Choose an instance class based on your needs
@@ -7,9 +7,15 @@ instance_class: F2  # Choose an instance class based on your needs
 service: default
 
 env_variables:
-  DJANGO_SETTINGS_MODULE: "portfolio.settings"
-  SECRET_KEY: "django-insecure-&c-s+$47t3otj6!(h_d^qcjyn9ukqfjq+*u2a_ux)asa3(x_f2"
+  DJANGO_SETTINGS_MODULE: "core.settings"
+  SECRET_KEY: "django-insecure-%qg#up-xp0wt1=1eliu8fx8$pl5h(c954ie3#m+41e+1v1!i21"
   DATABASE_URL: "mysql://portfolioApp:JuanPaco1993%23@217.196.48.82:3306/Portfolio"
+  DB_NAME: "Portfolio"
+  DB_USER: "portfolioApp"
+  DB_PASSWORD: "JuanPaco1993#"
+  DB_HOST: "217.196.48.82"
+  DB_PORT: "3306"
+  DEBUG: "False"
 
 automatic_scaling:
   target_cpu_utilization: 0.65
