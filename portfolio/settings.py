@@ -26,7 +26,7 @@ SECRET_KEY = "django-insecure-r=_6hl8eyv6reg+&8hd!+_8!aa_$ctxgq_wlao0rv!52=3v07x
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['ai-fullstack-portfolio.uc.r.appspot.com', 'localhost', "127.0.0.1"]
 INTERNAL_IPS = [
     "127.0.0.1",
 ]
