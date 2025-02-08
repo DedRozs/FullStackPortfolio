@@ -40,6 +40,10 @@
                         <a href="{% url 'login' %}" class="hover:text-blue-500 dark:hover:text-blue-300 transition">Login</a>
                         <a href="{% url 'register' %}" class="hover:text-blue-500 dark:hover:text-blue-300 transition">Register</a>
                     {% endif %}
+                    <!-- Dark Mode Toggle Button -->
+                    <button id="theme-toggle" class="fixed top-4 right-4 p-2 rounded-full bg-gray-200 dark:bg-gray-700 shadow-lg">
+                        <span id="theme-icon">🌙</span>
+                    </button>
                 </div>
     
                 <!-- Mobile Menu Button -->
@@ -64,10 +68,6 @@
                 <a href="{% url 'register' %}" class="block px-4 py-2 hover:bg-blue-100 dark:hover:bg-blue-800">Register</a>
             {% endif %}
         </div>
-    <!-- Dark Mode Toggle Button -->
-    <button id="theme-toggle" class="fixed top-4 right-4 p-2 rounded-full bg-gray-200 dark:bg-gray-700 shadow-lg">
-        <span id="theme-icon">🌙</span>
-    </button>
     </nav>
     
 
