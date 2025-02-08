@@ -1,53 +1,33 @@
-{% extends 'global/base.html' %}
-
-{% block title %}Joseph Prince - Blog{% endblock %}
+{% extends "global/base.html" %}
+{% load static %}
 
 {% block content %}
-<section class="hero text-center">
-    <div class="container">
-        <h1 class="display-3 fw-bold glitch">📡 Neural Logs</h1>
-        <p class="lead">Exploring AI, Automation, and the Digital Future.</p>
-    </div>
-</section>
+<section class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-6">
+        <h1 class="text-4xl font-bold text-gray-900 text-center">Blog</h1>
+        <p class="mt-4 text-lg text-gray-600 text-center">
+            Explore my latest articles on development, AI, and industry insights.
+        </p>
 
-<section class="container my-5">
-    <h2 class="text-center text-neon">Latest Posts 📜</h2>
-    <div class="row g-4" id="blog-container">
-        <!-- Blog posts will be loaded dynamically here -->
-    </div>
-</section>
-
-<section class="container text-center my-5">
-    <h2 class="text-neon">Connect With Me 🌐</h2>
-    <a href="https://github.com/yourprofile" class="btn btn-outline-light btn-lg m-2">GitHub</a>
-    <a href="https://linkedin.com/in/yourprofile" class="btn btn-outline-light btn-lg m-2">LinkedIn</a>
-    <a href="/contact/" class="btn btn-primary btn-lg m-2">Let's Connect</a>
-</section>
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    fetch("/api/blog/")
-        .then(response => response.json())
-        .then(data => {
-            const container = document.getElementById("blog-container");
-            container.innerHTML = "";
-            data.forEach(post => {
-                container.innerHTML += `
-                    <div class="col-md-6">
-                        <div class="card blog-card">
-                            <div class="card-body">
-                                <h5 class="card-title fw-bold">${post.title}</h5>
-                                <p class="card-text">${post.content.substring(0, 150)}...</p>
-                                <p class="text-muted">Published on ${new Date(post.created_at).toDateString()}</p>
-                                <a href="/blog/${post.id}/" class="btn btn-primary">Read More</a>
-                            </div>
-                        </div>
+        <!-- Blog Posts Grid -->
+        <div class="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for blog in blogs %}
+            <div class="bg-white shadow-md rounded-lg overflow-hidden">
+                <img src="{{ blog.image.url }}" alt="{{ blog.title }}" class="w-full h-56 object-cover">
+                <div class="p-6">
+                    <h3 class="text-xl font-semibold text-gray-800">{{ blog.title }}</h3>
+                    <p class="mt-2 text-gray-600">{{ blog.content|truncatewords:20 }}</p>
+                    <div class="mt-4">
+                        <a href="{% url 'blog_detail' blog.id %}" class="inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition">
+                            Read More
+                        </a>
                     </div>
-                `;
-            });
-        })
-        .catch(error => console.error("Error fetching blog posts:", error));
-});
-</script>
-
+                </div>
+            </div>
+            {% empty %}
+            <p class="col-span-3 text-center text-gray-500">No blog posts available.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
 {% endblock %}

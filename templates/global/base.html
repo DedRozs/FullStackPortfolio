@@ -1,136 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>{% block title %}Joseph Prince | Full-Stack Developer & AI Engineer{% endblock %}</title>
-    
-        <!-- SEO Meta Tags -->
-        <meta name="description" content="Joseph Prince - Full-Stack Developer specializing in AI-driven applications, Django, React, and automation.">
-        <meta name="keywords" content="Joseph Prince, Full-Stack Developer, AI Engineer, Django, React, Python, Automation">
-        <meta name="author" content="Joseph Prince">
-        <meta name="robots" content="index, follow">
-    
-        <!-- Open Graph (OG) Tags for Social Media Sharing -->
-        <meta property="og:title" content="Joseph Prince | Full-Stack Developer & AI Engineer">
-        <meta property="og:description" content="Building AI-powered applications with Django, React, and automation technologies.">
-        <meta property="og:image" content="https://your-website.com/static/images/profile.jpg">
-        <meta property="og:url" content="https://your-website.com">
-        <meta property="og:type" content="website">
-        
-        <!-- Twitter Card -->
-        <meta name="twitter:card" content="summary_large_image">
-        <meta name="twitter:title" content="Joseph Prince | Full-Stack Developer & AI Engineer">
-        <meta name="twitter:description" content="Crafting AI-powered applications with cutting-edge technology.">
-        <meta name="twitter:image" content="https://your-website.com/static/images/profile.jpg">
-    
-        <!-- JSON-LD Structured Data -->
-        <script type="application/ld+json">
-        {
-            "@context": "https://schema.org",
-            "@type": "Person",
-            "name": "Joseph Prince",
-            "jobTitle": "Full-Stack Developer & AI Engineer",
-            "url": "https://your-website.com",
-            "sameAs": [
-                "https://github.com/yourprofile",
-                "https://linkedin.com/in/yourprofile"
-            ]
-        }
-        </script>
-    
-        <!-- Bootstrap 5 -->
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-        
-        <!-- Custom CSS -->
-        <link rel="stylesheet" href="/static/css/styles.css">
-        {% block header %}{% endblock header %}
-    </head>
-    
-<body>
-    <!-- Animated Stars Background -->
-    <div class="stars"></div>
-    <div class="twinkling"></div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}My Portfolio{% endblock %}</title>
+    {% load static %}
 
-    <!-- Sci-Fi Themed Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-transparent fixed-top">
-        <div class="container">
-            <a class="navbar-brand glow-text" href="/">⚡Joseph Prince</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link fw-bold" href="/">Home</a></li>
-                    <li class="nav-item"><a class="nav-link fw-bold" href="/about/">About</a></li>
-                    <li class="nav-item"><a class="nav-link fw-bold" href="/projects/">Projects</a></li>
-                    <li class="nav-item"><a class="nav-link fw-bold" href="/blog/">Blog</a></li>
-                    <li class="nav-item"><a class="nav-link fw-bold" href="/contact/">Contact</a></li>
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
+</head>
+<body class="bg-gray-100 text-gray-900">
 
-                    <!-- Admin Dashboard (Only for Admins) -->
-                    <li class="nav-item d-none" id="admin-dashboard">
-                        <a class="nav-link btn btn-warning text-dark" href="/admin/dashboard/">Admin</a>
-                    </li>
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                
+                <!-- Logo -->
+                <a href="{% url 'home' %}" class="text-2xl font-bold text-gray-800">MyPortfolio</a>
 
-                    <!-- Authentication Links -->
-                    <li class="nav-item">
-                        <span id="user-info" class="nav-link text-white"></span>
-                    </li>
-                    <li class="nav-item">
-                        <a id="auth-button" class="btn btn-outline-light fw-bold" href="/login/">Login</a>
-                    </li>
-                </ul>
+                <!-- Navigation Links -->
+                <div class="hidden md:flex space-x-6">
+                    <a href="{% url 'home' %}" class="text-gray-600 hover:text-gray-900">Home</a>
+                    <a href="{% url 'projects' %}" class="text-gray-600 hover:text-gray-900">Projects</a>
+                    <a href="{% url 'blog' %}" class="text-gray-600 hover:text-gray-900">Blog</a>
+                    <a href="{% url 'about' %}" class="text-gray-600 hover:text-gray-900">About</a>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'logout' %}" class="text-gray-600 hover:text-gray-900">Logout</a>
+                    {% else %}
+                    <a href="{% url 'login' %}" class="text-gray-600 hover:text-gray-900">Login</a>
+                    {% endif %}
+                    <a href="{% url 'contact' %}" class="px-4 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 transition">Contact</a>
+
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-button" class="md:hidden text-gray-800 focus:outline-none">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/>
+                    </svg>
+                </button>
             </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden flex flex-col space-y-2 p-4">
+            <a href="{% url 'home' %}" class="text-gray-600 hover:text-gray-900">Home</a>
+            <a href="{% url 'projects' %}" class="text-gray-600 hover:text-gray-900">Projects</a>
+            <a href="{% url 'blog' %}" class="text-gray-600 hover:text-gray-900">Blog</a>
+            <a href="{% url 'about' %}" class="text-gray-600 hover:text-gray-900">About</a>
+            <a href="{% url 'contact' %}" class="px-4 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 transition">Contact</a>
         </div>
     </nav>
 
-    <!-- Main Content Block -->
-    <main class="container mt-5">
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-10">
         {% block content %}{% endblock %}
     </main>
 
     <!-- Footer -->
-    <footer class="text-center text-white py-3">
-        <p>&copy; 2025 Joseph Prince </p>
+    <footer class="bg-gray-800 text-white text-center py-4 mt-10">
+        <p>&copy; 2025 My Portfolio. All rights reserved.</p>
     </footer>
 
-    <!-- Bootstrap 5 & JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Custom Scripts -->
-    <script src="/static/js/scripts.js"></script>
-
-    <!-- Authentication & Admin Check -->
     <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const authButton = document.getElementById("auth-button");
-        const userInfo = document.getElementById("user-info");
-        const adminDashboard = document.getElementById("admin-dashboard");
-
-        const token = localStorage.getItem("authToken");
-
-        if (token) {
-            fetch("api/auth/me/", {
-                method: "GET",
-                headers: { "Authorization": "Token " + token }
-            })
-            .then(response => response.json())
-            .then(user => {
-                userInfo.textContent = `Logged in as: ${user.username}`;
-                authButton.textContent = "Logout";
-                authButton.href = "#";
-                authButton.addEventListener("click", function () {
-                    localStorage.removeItem("authToken");
-                    window.location.reload();
-                });
-
-                if (user.role === "admin") {
-                    adminDashboard.classList.remove("d-none");  // Show Admin Dashboard link
-                }
-            })
-            .catch(error => console.error("Error fetching user profile:", error));
-        }
-    });
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        });
     </script>
+
 </body>
 </html>

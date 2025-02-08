@@ -1,134 +1,73 @@
-{% extends 'global/base.html' %}
-{% block header %}
-<style>
-/* 🌌 Sci-Fi Themed Text Effects */
-.text-neon {
-    color: cyan;
-    text-shadow: 0px 0px 10px cyan;
-}
-
-/* 🔮 Glowing Cards */
-.project-card {
-    background: rgba(0, 0, 0, 0.8);
-    border: 1px solid cyan;
-    box-shadow: 0px 0px 15px rgba(0, 255, 255, 0.5);
-    transition: 0.3s;
-}
-.project-card:hover {
-    transform: scale(1.05);
-    box-shadow: 0px 0px 30px rgba(0, 255, 255, 0.8);
-}
-
-/* 🛸 Lazy Loading Images */
-.lazyload {
-    opacity: 0;
-    transition: opacity 0.5s ease-in-out;
-}
-.lazyload.loaded {
-    opacity: 1;
-}
-   
-</style>
-{% endblock header %}
-{% block title %}Joseph Prince | Full-Stack Developer & AI Engineer{% endblock %}
+{% extends "global/base.html" %}
+{% load static %}
 
 {% block content %}
-<!-- 🌌 Hero Section -->
-<section class="hero text-center">
-    <div class="container">
-        <h1 class="display-3 fw-bold glitch">Joseph Prince</h1>
-        <p class="lead">Full-Stack Developer | AI Engineer | Innovator</p>
-        <p class="lead text-neon">"Building Scalable AI-Powered Applications for the Future"</p>
-        <a href="/projects/" class="btn btn-primary btn-lg mt-3">Explore My Work</a>
-    </div>
-</section>
-
-<!-- 👨‍💻 About Me Section -->
-<section class="container my-5 text-center">
-    <h2 class="text-neon">Meet Joseph Prince 👨‍💻</h2>
-    <img src="/static/images/profile.jpg" alt="Joseph Prince" class="img-fluid rounded-circle shadow-lg lazyload" width="200">
-    <p class="lead mt-3">I specialize in Full-Stack Web Development and AI-powered automation, crafting scalable solutions using Python, Django, and modern JavaScript frameworks.</p>
-    <a href="/about/" class="btn btn-outline-light btn-lg">Learn More</a>
-</section>
-
-<!-- 🚀 Featured Projects -->
-<section class="container my-5">
-    <h2 class="text-center text-neon">Featured Projects 🛠️</h2>
-    <div class="row g-4" id="projects-container">
-        <!-- Projects will be dynamically loaded -->
-    </div>
-</section>
-
-<!-- 🧠 Skills & Technologies -->
-<section class="container my-5">
-    <h2 class="text-center text-neon">Technologies & Skills 🧠</h2>
-    <div class="row text-center">
-        <div class="col-md-3"><span class="badge bg-primary">Python</span></div>
-        <div class="col-md-3"><span class="badge bg-warning">Django</span></div>
-        <div class="col-md-3"><span class="badge bg-danger">FastAPI</span></div>
-        <div class="col-md-3"><span class="badge bg-success">PostgreSQL</span></div>
-    </div>
-</section>
-
-<!-- 🌟 Testimonials -->
-<section class="container my-5">
-    <h2 class="text-center text-neon">Testimonials 🌟</h2>
-    <div id="testimonialCarousel" class="carousel slide" data-bs-ride="carousel">
-        <div class="carousel-inner">
-            <div class="carousel-item active">
-                <p class="text-center lead text-cyan">"An absolute genius! Built an AI-powered stock predictor that changed our workflow." - 🚀 John Doe</p>
-            </div>
-            <div class="carousel-item">
-                <p class="text-center lead text-cyan">"Crafted a fully scalable API with Django & FastAPI. Future-ready engineering!" - 🛸 Jane Smith</p>
-            </div>
-            <div class="carousel-item">
-                <p class="text-center lead text-cyan">"Sci-Fi themed UX and API automation, just mind-blowing." - 🤖 Neo Anderson</p>
+<!-- Hero Section -->
+<section class="relative bg-gray-900 text-white py-20">
+    <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center">
+        <!-- Hero Text -->
+        <div class="text-center md:text-left md:w-1/2">
+            <h1 class="text-4xl font-bold leading-tight">
+                Welcome to My Portfolio
+            </h1>
+            <p class="mt-4 text-lg text-gray-300">
+                Showcasing my latest projects, blogs, and experiences in full-stack development.
+            </p>
+            <div class="mt-6">
+                <a href="{% url 'projects' %}" class="px-6 py-3 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 transition">
+                    View Projects
+                </a>
+                <a href="{% url 'contact' %}" class="ml-4 px-6 py-3 bg-gray-700 text-white rounded-lg shadow hover:bg-gray-800 transition">
+                    Get in Touch
+                </a>
             </div>
         </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon"></span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="next">
-            <span class="carousel-control-next-icon"></span>
-        </button>
+
+        <!-- Hero Image -->
+        <div class="md:w-1/2 flex justify-center mt-6 md:mt-0">
+            <img src="{% static 'images/hero-image.jpg' %}" alt="Portfolio Hero" class="w-3/4 max-w-md rounded-lg shadow-lg">
+        </div>
     </div>
 </section>
 
-<!-- 📡 Contact & CTA -->
-<section class="container text-center my-5">
-    <h2 class="text-neon">Let's Connect 📡</h2>
-    <a href="/contact/" class="btn btn-primary btn-lg">Send a Message</a>
+<!-- Projects Section -->
+<section class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-6">
+        <h2 class="text-3xl font-bold text-gray-900 text-center">Recent Projects</h2>
+        <div class="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for project in projects %}
+            <div class="bg-white shadow-md rounded-lg overflow-hidden">
+                <img src="{{ project.image.url }}" alt="{{ project.title }}" class="w-full h-56 object-cover">
+                <div class="p-6">
+                    <h3 class="text-xl font-semibold text-gray-800">{{ project.title }}</h3>
+                    <p class="mt-2 text-gray-600">{{ project.description|truncatewords:20 }}</p>
+                    <a href="{% url 'project_detail' project.id %}" class="mt-4 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                        Learn More
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
 </section>
 
-<!-- Dynamic Content Loading for Projects -->
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        fetch("/api/projects/")
-            .then(response => response.json())
-            .then(data => {
-                const container = document.getElementById("projects-container");
-                container.innerHTML = "";
-                data.slice(0, 3).forEach(project => {
-                    container.innerHTML += `
-                        <div class="col-md-4">
-                            <div class="card project-card">
-                                <img src="${project.image || '/static/images/default-project.jpg'}" class="card-img-top" alt="${project.title}">
-                                <div class="card-body">
-                                    <h5 class="card-title fw-bold">${project.title}</h5>
-                                    <p class="card-text">${project.description.substring(0, 100)}...</p>
-                                    <div class="d-flex justify-content-between">
-                                        <a href="/projects/${project.id}/" class="btn btn-primary">View Details</a>
-                                        <a href="${project.github_link}" class="btn btn-outline-light" target="_blank">
-                                            <i class="fab fa-github"></i> GitHub
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                });
-            })
-            .catch(error => console.error("Error fetching projects:", error));
-    });
-    </script>
+<!-- Blog Section -->
+<section class="py-16 bg-gray-100">
+    <div class="max-w-7xl mx-auto px-6">
+        <h2 class="text-3xl font-bold text-gray-900 text-center">Latest Blog Posts</h2>
+        <div class="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for blog in blogs %}
+            <div class="bg-white shadow-md rounded-lg overflow-hidden">
+                <div class="p-6">
+                    <h3 class="text-xl font-semibold text-gray-800">{{ blog.title }}</h3>
+                    <p class="mt-2 text-gray-600">{{ blog.content|truncatewords:20 }}</p>
+                    <a href="{% url 'blog_detail' blog.id %}" class="mt-4 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                        Read More
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
 {% endblock %}

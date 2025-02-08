@@ -111,7 +111,9 @@ MIDDLEWARE = [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
-
+LOGIN_REDIRECT_URL = "dashboard"
+LOGOUT_REDIRECT_URL = "home"
+LOGIN_URL = "login"
 
 ROOT_URLCONF = "core.urls"
 

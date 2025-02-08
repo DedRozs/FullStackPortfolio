@@ -1,42 +1,55 @@
-{% extends 'global/base.html' %}
+{% extends "global/base.html" %}
+{% load static %}
+
 {% block content %}
-<div class="container">
-    <h1 class="text-center">Login</h1>
-    <form id="login-form">
-        <div class="mb-3">
-            <label for="username" class="form-label">Username</label>
-            <input type="text" id="username" class="form-control" required>
-        </div>
-        <div class="mb-3">
-            <label for="password" class="form-label">Password</label>
-            <input type="password" id="password" class="form-control" required>
-        </div>
-        <button type="submit" class="btn btn-primary">Login</button>
-    </form>
-    <p id="login-error" class="text-danger mt-3"></p>
-</div>
+<section class="py-16 bg-gray-100 flex justify-center items-center">
+    <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+        <h1 class="text-3xl font-bold text-gray-900 text-center">Login</h1>
+        <p class="mt-2 text-gray-600 text-center">Access your account</p>
 
-<script>
-document.getElementById("login-form").addEventListener("submit", function (e) {
-    e.preventDefault();
-    const username = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
+        <!-- Display errors -->
+        {% if form.errors %}
+        <div class="mt-4 p-4 bg-red-100 text-red-500 rounded-lg">
+            <p>Invalid username or password. Please try again.</p>
+        </div>
+        {% endif %}
 
-    fetch("/api/auth/login/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.token) {
-            localStorage.setItem("authToken", data.token);
-            window.location.href = "/";
-        } else {
-            document.getElementById("login-error").textContent = "Invalid credentials";
-        }
-    })
-    .catch(error => console.error("Login failed:", error));
-});
-</script>
+        <!-- Login Form -->
+        <form method="post" class="mt-6 space-y-4">
+            {% csrf_token %}
+
+            <!-- Username Field -->
+            <div>
+                <label for="username" class="block text-gray-700 font-semibold">Username</label>
+                <input type="text" id="username" name="username" required 
+                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <!-- Password Field -->
+            <div>
+                <label for="password" class="block text-gray-700 font-semibold">Password</label>
+                <input type="password" id="password" name="password" required 
+                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <!-- Login Button -->
+            <div class="mt-6">
+                <button type="submit" 
+                    class="w-full px-6 py-3 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 transition">
+                    Login
+                </button>
+            </div>
+        </form>
+
+        <!-- Registration & Forgot Password Links -->
+        <div class="mt-6 text-center text-gray-600">
+            <p>Don't have an account? 
+                <a href="{% url 'register' %}" class="text-blue-500 hover:underline">Sign up</a>
+            </p>
+            <p class="mt-2">
+                <a href="{% url 'password_reset' %}" class="text-blue-500 hover:underline">Forgot password?</a>
+            </p>
+        </div>
+    </div>
+</section>
 {% endblock %}

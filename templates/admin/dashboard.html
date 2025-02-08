@@ -1,61 +1,48 @@
-{% extends 'global/base.html' %}
+{% extends "global/base.html" %}
+
 {% block content %}
-<div class="container">
-    <h1 class="text-center">Admin Dashboard</h1>
-    <p>Manage projects and users here.</p>
-    <div id="admin-projects-container"></div>
+<div class="grid grid-cols-1 md:grid-cols-4 min-h-screen">
+    
+    <!-- Sidebar -->
+    <aside class="bg-gray-800 text-white py-8 px-6 md:col-span-1">
+        <h2 class="text-2xl font-bold">Admin Dashboard</h2>
+        <nav class="mt-6 space-y-4">
+            <a href="{% url 'dashboard' %}" class="block px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 transition">
+                Dashboard
+            </a>
+            <a href="{% url 'manage_users' %}" class="block px-4 py-2 hover:bg-gray-600 transition">
+                Manage Users
+            </a>
+            <a href="{% url 'manage_projects' %}" class="block px-4 py-2 hover:bg-gray-600 transition">
+                Manage Projects
+            </a>
+            <a href="{% url 'manage_blogs' %}" class="block px-4 py-2 hover:bg-gray-600 transition">
+                Manage Blogs
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="md:col-span-3 p-8 bg-gray-100">
+        <h1 class="text-3xl font-bold text-gray-900">Welcome, Admin</h1>
+        <p class="mt-2 text-gray-600">Manage users, projects, and blog posts.</p>
+
+        <!-- Dashboard Cards -->
+        <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="shadow-md rounded-lg p-6 bg-white">
+                <h3 class="text-xl font-semibold text-gray-800">Users</h3>
+                <p class="mt-2 text-gray-600">{{ user_count }} registered users</p>
+            </div>
+            <div class="shadow-md rounded-lg p-6 bg-white">
+                <h3 class="text-xl font-semibold text-gray-800">Projects</h3>
+                <p class="mt-2 text-gray-600">{{ project_count }} active projects</p>
+            </div>
+            <div class="shadow-md rounded-lg p-6 bg-white">
+                <h3 class="text-xl font-semibold text-gray-800">Blog Posts</h3>
+                <p class="mt-2 text-gray-600">{{ blog_count }} published posts</p>
+            </div>
+        </div>
+    </main>
+
 </div>
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const token = localStorage.getItem("authToken");
-
-    if (!token) {
-        window.location.href = "/login/";
-    } else {
-        fetch("/api/auth/me/", {
-            method: "GET",
-            headers: { "Authorization": "Token " + token }
-        })
-        .then(response => response.json())
-        .then(user => {
-            if (user.role !== "admin") {
-                window.location.href = "/";
-            } else {
-                fetch("/api/projects/", {
-                    headers: { "Authorization": "Token " + token }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    const container = document.getElementById("admin-projects-container");
-                    data.forEach(project => {
-                        container.innerHTML += `
-                            <div>
-                                <h5>${project.title}</h5>
-                                <button onclick="deleteProject(${project.id})" class="btn btn-danger">Delete</button>
-                            </div>
-                        `;
-                    });
-                });
-            }
-        })
-        .catch(error => console.error("Access denied:", error));
-    }
-});
-
-function deleteProject(projectId) {
-    const token = localStorage.getItem("authToken");
-    fetch(`/api/projects/${projectId}/`, {
-        method: "DELETE",
-        headers: { "Authorization": "Token " + token }
-    })
-    .then(response => {
-        if (response.ok) {
-            window.location.reload();
-        } else {
-            alert("Failed to delete project.");
-        }
-    });
-}
-</script>
 {% endblock %}

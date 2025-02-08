@@ -1,66 +1,47 @@
-{% extends 'global/base.html' %}
-
-{% block title %}Contact Joseph Prince{% endblock %}
+{% extends "global/base.html" %}
+{% load static %}
 
 {% block content %}
-<section class="hero text-center">
-    <div class="container">
-        <h1 class="display-3 fw-bold glitch">📡 Transmission Hub</h1>
-        <p class="lead">Connect with me in the digital universe.</p>
+<section class="py-16 bg-white">
+    <div class="max-w-4xl mx-auto px-6">
+        <h1 class="text-4xl font-bold text-gray-900 text-center">Contact Me</h1>
+        <p class="mt-4 text-lg text-gray-600 text-center">
+            Feel free to reach out for collaborations, project inquiries, or just to say hello!
+        </p>
+
+        <!-- Contact Form -->
+        <form method="post" class="mt-10 bg-gray-100 p-6 rounded-lg shadow-md max-w-lg mx-auto space-y-4">
+            {% csrf_token %}
+
+            <!-- Name Field -->
+            <div>
+                <label for="name" class="block text-gray-700 font-semibold">Name</label>
+                <input type="text" id="name" name="name" required 
+                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <!-- Email Field -->
+            <div>
+                <label for="email" class="block text-gray-700 font-semibold">Email</label>
+                <input type="email" id="email" name="email" required 
+                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <!-- Message Field -->
+            <div>
+                <label for="message" class="block text-gray-700 font-semibold">Message</label>
+                <textarea id="message" name="message" rows="5" required 
+                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500"></textarea>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="mt-6">
+                <button type="submit" 
+                    class="w-full px-6 py-3 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 transition">
+                    Send Message
+                </button>
+            </div>
+        </form>
     </div>
 </section>
-
-<section class="container my-5">
-    <h2 class="text-center text-neon">Send Me a Message 🚀</h2>
-    <form id="contact-form" class="p-4 rounded shadow-lg contact-card">
-        <div class="mb-3">
-            <label class="form-label text-white">Name</label>
-            <input type="text" id="name" class="form-control bg-dark text-white" required>
-        </div>
-        <div class="mb-3">
-            <label class="form-label text-white">Email</label>
-            <input type="email" id="email" class="form-control bg-dark text-white" required>
-        </div>
-        <div class="mb-3">
-            <label class="form-label text-white">Message</label>
-            <textarea id="message" class="form-control bg-dark text-white" rows="4" required></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary w-100">Send Message</button>
-        <p id="response-message" class="text-center mt-3"></p>
-    </form>
-</section>
-
-<section class="container text-center my-5">
-    <h2 class="text-neon">Find Me Online 🌐</h2>
-    <a href="https://github.com/yourprofile" class="btn btn-outline-light btn-lg m-2">GitHub</a>
-    <a href="https://linkedin.com/in/yourprofile" class="btn btn-outline-light btn-lg m-2">LinkedIn</a>
-    <a href="mailto:your-email@example.com" class="btn btn-outline-light btn-lg m-2">Email Me</a>
-</section>
-
-<script>
-document.getElementById("contact-form").addEventListener("submit", function (e) {
-    e.preventDefault();
-    
-    const name = document.getElementById("name").value;
-    const email = document.getElementById("email").value;
-    const message = document.getElementById("message").value;
-
-    fetch("/api/contact/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, message })
-    })
-    .then(response => response.json())
-    .then(data => {
-        document.getElementById("response-message").textContent = "Message sent successfully!";
-        document.getElementById("response-message").style.color = "lime";
-        document.getElementById("contact-form").reset();
-    })
-    .catch(error => {
-        document.getElementById("response-message").textContent = "Error sending message!";
-        document.getElementById("response-message").style.color = "red";
-    });
-});
-</script>
-
 {% endblock %}

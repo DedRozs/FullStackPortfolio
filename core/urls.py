@@ -18,24 +18,15 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include, re_path
 from django.conf import settings
-from django.conf.urls.static import static
 from django.views.static import serve
-from rest_framework.authtoken.views import obtain_auth_token
 from drf_spectacular.views import *
 
 urlpatterns = [
-    
-    # Include API routes
-    path('api/auth/', include('apps.auth_app.urls')),
-    # Include Portfolio API
-    path('', include('apps.portfolio.urls')),
-    path('admin/', admin.site.urls),
-    
-    # Swagger & API Docs
-    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
-    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-    path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+    path("admin/", admin.site.urls),
+    path("", include("apps.portfolio.urls")),  # Home, projects, blogs, contact
+    path("auth/", include("apps.auth_app.urls")),  # Login, logout, registration
 ]
+
 
 if settings.DEBUG:
     import debug_toolbar

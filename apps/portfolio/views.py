@@ -1,96 +1,46 @@
-from rest_framework import generics, permissions
-from .models import *
-from .serializers import *
-from drf_spectacular.utils import extend_schema
-from apps.auth_app.permissions import IsAdminUser
-from rest_framework.throttling import ScopedRateThrottle
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Project, BlogPost
+from django.core.mail import send_mail
+from django.contrib import messages
+from django.conf import settings
 
-# List all projects (GET) & Create new project (POST)
-class ProjectListCreateView(generics.ListCreateAPIView):
-    queryset = Project.objects.all()
-    serializer_class = ProjectSerializer
-
-    def get_permissions(self):
-        if self.request.method in ['POST', 'PUT', 'DELETE']:
-            return [IsAdminUser()]  # Restrict modifications to admins
-        return [permissions.AllowAny()]
-
-    throttle_classes = [ScopedRateThrottle]
-    throttle_scope = 'project'
-
-# Retrieve, Update, or Delete a specific project (GET, PUT, DELETE)
-class ProjectDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Project.objects.all()
-    serializer_class = ProjectSerializer
-
-# Skill API
-class SkillListCreateView(generics.ListCreateAPIView):
-    queryset = Skill.objects.all()
-    serializer_class = SkillSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]  
-
-class SkillDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Skill.objects.all()
-    serializer_class = SkillSerializer
-
-# Experience API
-class ExperienceListCreateView(generics.ListCreateAPIView):
-    queryset = Experience.objects.all()
-    serializer_class = ExperienceSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]  
-
-class ExperienceDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Experience.objects.all()
-    serializer_class = ExperienceSerializer
-
-class BlogPostListCreateView(generics.ListCreateAPIView):
-    queryset = BlogPost.objects.all().order_by("-created_at")
-    serializer_class = BlogPostSerializer
-
-class BlogPostDetailView(generics.RetrieveAPIView):
-    queryset = BlogPost.objects.all()
-    serializer_class = BlogPostSerializer
-
-
-from django.shortcuts import render
-from rest_framework.permissions import IsAuthenticated
-from django.contrib.auth.decorators import login_required
-
-# Serve Portfolio Homepage
 def home_view(request):
-    return render(request, "portfolio/home.html")
+    projects = Project.objects.all()[:3]  # Show latest 3 projects
+    blogs = BlogPost.objects.all()[:3]  # Show latest 3 blog posts
+    return render(request, "portfolio/home.html", {"projects": projects, "blogs": blogs})
 
-# Serve About Page
-def about_view(request):
-    return render(request, "portfolio/about.html")
-
-# Serve Projects List Page
 def projects_view(request):
-    return render(request, "portfolio/projects.html")
+    projects = Project.objects.all()
+    return render(request, "portfolio/projects.html", {"projects": projects})
 
-# Serve Individual Project Details Page
 def project_detail_view(request, project_id):
-    return render(request, "portfolio/project_detail.html", {"project_id": project_id})
+    project = get_object_or_404(Project, id=project_id)
+    return render(request, "portfolio/project_detail.html", {"project": project})
 
-# Serve Blog Page
 def blog_view(request):
-    return render(request, "portfolio/blog.html")
+    blogs = BlogPost.objects.all()
+    return render(request, "portfolio/blog.html", {"blogs": blogs})
 
-# Serve Individual Blog Post
-def blog_post_view(request, post_id):
-    return render(request, "portfolio/blog_detail.html", {"post_id": post_id})
+def blog_detail_view(request, blog_id):
+    blog = get_object_or_404(BlogPost, id=blog_id)
+    return render(request, "portfolio/blog_detail.html", {"blog": blog})
 
-# Serve Contact Page
 def contact_view(request):
+    if request.method == "POST":
+        name = request.POST.get("name")
+        email = request.POST.get("email")
+        message = request.POST.get("message")
+
+        if name and email and message:
+            send_mail(
+                subject=f"New Contact from {name}",
+                message=message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[settings.ADMIN_EMAIL],
+            )
+            messages.success(request, "Your message has been sent!")
+            return redirect("contact")
+        else:
+            messages.error(request, "All fields are required.")
+
     return render(request, "portfolio/contact.html")
-
-# Serve Login Page
-def login_view(request):
-    return render(request, "auth_app/login.html")
-
-# Serve Admin Dashboard (Only for Authenticated Admins)
-@login_required
-def admin_dashboard_view(request):
-    if request.user.role == "user":  # Ensure only admins can access
-        return render(request, "403.html")  # Redirect unauthorized users
-    return render(request, "admin/dashboard.html")

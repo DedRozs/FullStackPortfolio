@@ -1,78 +1,29 @@
-{% extends 'global/base.html' %}
-
-{% block title %}Joseph Prince - Blog Post{% endblock %}
+{% extends "global/base.html" %}
+{% load static %}
 
 {% block content %}
-<section class="hero text-center">
-    <div class="container">
-        <h1 id="blog-title" class="display-3 fw-bold glitch">Loading...</h1>
-        <p id="blog-date" class="lead text-muted">Publishing Date</p>
-    </div>
-</section>
+<section class="py-16 bg-white">
+    <div class="max-w-4xl mx-auto px-6">
+        <!-- Blog Title -->
+        <h1 class="text-4xl font-bold text-gray-900">{{ blog.title }}</h1>
+        <p class="mt-4 text-gray-500">Published on {{ blog.created_at|date:"F d, Y" }}</p>
 
-<section class="container my-5">
-    <div class="row">
-        <div class="col-md-8 mx-auto">
-            <div class="card blog-detail-card">
-                <div class="card-body">
-                    <p id="blog-content" class="lead">Loading content...</p>
-                </div>
-            </div>
+        <!-- Blog Image -->
+        <div class="mt-6 flex justify-center">
+            <img src="{{ blog.image.url }}" alt="{{ blog.title }}" class="w-full max-w-2xl rounded-lg shadow-lg">
+        </div>
+
+        <!-- Blog Content -->
+        <article class="mt-10 space-y-6 text-lg leading-relaxed text-gray-700">
+            <p>{{ blog.content|linebreaks }}</p>
+        </article>
+
+        <!-- Back Button -->
+        <div class="mt-10">
+            <a href="{% url 'blog' %}" class="px-6 py-3 bg-gray-700 text-white rounded-lg shadow hover:bg-gray-800 transition">
+                ← Back to Blog
+            </a>
         </div>
     </div>
 </section>
-
-<section class="container my-5">
-    <h2 class="text-center text-neon">Related Posts 🧠</h2>
-    <div class="row g-4" id="related-posts-container">
-        <!-- Related blog posts will be loaded dynamically -->
-    </div>
-</section>
-
-<section class="container text-center my-5">
-    <h2 class="text-neon">Explore More 🌐</h2>
-    <a href="/blog/" class="btn btn-outline-light btn-lg m-2">Back to Blog</a>
-    <a href="https://github.com/yourprofile" class="btn btn-outline-light btn-lg m-2">GitHub</a>
-    <a href="/contact/" class="btn btn-primary btn-lg m-2">Let's Connect</a>
-</section>
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const postId = window.location.pathname.split("/").filter(Boolean).pop();
-
-    // Fetching the blog post
-    fetch(`/api/blog/${postId}/`)
-        .then(response => response.json())
-        .then(post => {
-            document.getElementById("blog-title").innerText = post.title;
-            document.getElementById("blog-date").innerText = "Published on " + new Date(post.created_at).toDateString();
-            document.getElementById("blog-content").innerText = post.content;
-            document.title = `Joseph Prince - ${post.title}`;
-        })
-        .catch(error => console.error("Error fetching blog post:", error));
-
-    // Fetching related blog posts
-    fetch("/api/blog/")
-        .then(response => response.json())
-        .then(posts => {
-            const container = document.getElementById("related-posts-container");
-            container.innerHTML = "";
-            posts.filter(p => p.id !== parseInt(postId)).slice(0, 3).forEach(post => {
-                container.innerHTML += `
-                    <div class="col-md-4">
-                        <div class="card blog-card">
-                            <div class="card-body">
-                                <h5 class="card-title fw-bold">${post.title}</h5>
-                                <p class="card-text">${post.content.substring(0, 100)}...</p>
-                                <a href="/blog/${post.id}/" class="btn btn-primary">Read More</a>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-        })
-        .catch(error => console.error("Error fetching related posts:", error));
-});
-</script>
-
 {% endblock %}
