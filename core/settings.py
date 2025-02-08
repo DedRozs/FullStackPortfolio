@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import os, sys
 from dotenv import load_dotenv
+from google.auth import default
+from google.auth.exceptions import DefaultCredentialsError
 
 # Load environment variables from .env file
 load_dotenv()
@@ -202,9 +204,11 @@ from google.oauth2 import service_account
 
 # Google Cloud Storage Configuration
 GS_BUCKET_NAME = os.getenv("GS_BUCKET_NAME")
-GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
-    os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
-)
+# Auto-detect credentials if running on Google Cloud
+try:
+    GS_CREDENTIALS, _ = default()
+except DefaultCredentialsError:
+    GS_CREDENTIALS = None
 
 # Configure Django to use GCS for static and media files
 
@@ -221,8 +225,15 @@ STORAGES = {
 STATIC_URL = f"https://storage.googleapis.com/ai-fullstack-portfolio.appspot.com/static/"
 MEDIA_URL = f"https://storage.googleapis.com/ai-fullstack-portfolio.appspot.com/media/"
 
+
+# Static files settings
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),  # Ensure Django detects your static folder
+]
+
+
 # Collect static files in GCS
-STATIC_ROOT = "static/"
+STATIC_ROOT = "staticfiles/"
 MEDIA_ROOT = "media/"
 
 
