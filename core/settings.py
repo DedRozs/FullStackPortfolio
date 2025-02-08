@@ -30,7 +30,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'default-secret-key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "ai-fullstack-portfolio.uc.r.appspot.com"] 
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "ai-fullstack-portfolio.uc.r.appspot.com", "www.thejosephprince.com", "thejosephprince.com", "portfolio.thejosephprince.com"] 
 INTERNAL_IPS = ["127.0.0.1"]
 
 
