@@ -15,10 +15,6 @@
     <!-- Custom Styles -->
     <link rel="stylesheet" href="{% static 'css/output.css' %}">
 
-    <!-- Dark Mode Support -->
-    <script>
-        document.documentElement.classList.toggle('dark', localStorage.getItem('theme') === 'dark');
-    </script>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-200 transition-all">
 
@@ -36,7 +32,7 @@
                     <a href="{% url 'projects' %}" class="hover:text-blue-500 dark:hover:text-blue-300 transition">Projects</a>
                     <a href="{% url 'blog' %}" class="hover:text-blue-500 dark:hover:text-blue-300 transition">Blog</a>
                     <a href="{% url 'contact' %}" class="hover:text-blue-500 dark:hover:text-blue-300 transition">Contact</a>
-    
+
                     <!-- Show Login/Register if user is not authenticated -->
                     {% if user.is_authenticated %}
                         <a href="{% url 'dashboard' %}" class="hover:text-green-500 dark:hover:text-green-300 transition">Dashboard</a>
@@ -69,6 +65,10 @@
                 <a href="{% url 'register' %}" class="block px-4 py-2 hover:bg-blue-100 dark:hover:bg-blue-800">Register</a>
             {% endif %}
         </div>
+    <!-- Dark Mode Toggle Button -->
+    <button id="theme-toggle" class="fixed top-4 right-4 p-2 rounded-full bg-gray-200 dark:bg-gray-700 shadow-lg">
+        <span id="theme-icon">🌙</span>
+    </button>
     </nav>
     
 
@@ -89,21 +89,12 @@
         </div>
     </footer>
 
-    <!-- Dark Mode Toggle -->
-    <button id="dark-mode-toggle" class="fixed bottom-6 right-6 bg-gray-800 text-white p-3 rounded-full shadow-lg">
-        🌙
-    </button>
+
     <!-- JavaScript -->
     <script>
         // Mobile Menu Toggle
         document.getElementById("menu-btn").addEventListener("click", function () {
             document.getElementById("mobile-menu").classList.toggle("hidden");
-        });
-
-        // Dark Mode Toggle
-        document.getElementById("dark-mode-toggle").addEventListener("click", function () {
-            document.documentElement.classList.toggle("dark");
-            localStorage.setItem("theme", document.documentElement.classList.contains("dark") ? "dark" : "light");
         });
 
         // Smooth Page Load Animation (Anime.js)
@@ -115,5 +106,35 @@
             easing: 'easeOutQuad'
         });
     </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const themeToggle = document.getElementById("theme-toggle");
+            const themeIcon = document.getElementById("theme-icon");
+            const htmlElement = document.documentElement;
+        
+            // Function to apply theme
+            function applyTheme(theme) {
+                if (theme === "dark") {
+                    htmlElement.classList.add("dark");
+                    localStorage.setItem("theme", "dark");
+                    themeIcon.innerText = "🌞"; // Sun icon when dark mode is active
+                } else {
+                    htmlElement.classList.remove("dark");
+                    localStorage.setItem("theme", "light");
+                    themeIcon.innerText = "🌙"; // Moon icon when light mode is active
+                }
+            }
+        
+            // Load the saved theme preference
+            const savedTheme = localStorage.getItem("theme") || "light";
+            applyTheme(savedTheme);
+        
+            // Toggle dark mode on button click
+            themeToggle.addEventListener("click", function () {
+                const newTheme = htmlElement.classList.contains("dark") ? "light" : "dark";
+                applyTheme(newTheme);
+            });
+        });
+        </script>
 </body>
 </html>

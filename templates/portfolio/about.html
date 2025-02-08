@@ -10,57 +10,72 @@
                 About Me
             </h1>
             <p id="about-subtext" class="text-lg text-gray-600 dark:text-gray-300 mt-2 opacity-0">
-                A passionate Full-Stack Developer & AI enthusiast.
+                A passionate Full-Stack Developer specializing in AI-driven analytics and web solutions.
             </p>
         </div>
 
-        <!-- Profile & Story -->
-        <div class="mt-10 flex flex-col md:flex-row items-center space-y-6 md:space-y-0 md:space-x-10">
+        <div class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <!-- Profile Image -->
-            <div id="profile-image" class="w-48 h-48 rounded-full overflow-hidden shadow-lg opacity-0">
-                <img src="{% static 'images/headshot.jpg' %}" alt="Profile Picture" class="w-full">
+            <div class="w-full rounded-lg shadow-lg overflow-hidden opacity-0" id="about-image">
+                <img src="{% static 'images/profile.jpg' %}" alt="My Profile" class="w-full">
             </div>
 
-            <!-- Bio -->
-            <div id="bio" class="flex-1 opacity-0">
-                <h3 class="text-2xl font-semibold text-gray-900 dark:text-white">My Journey</h3>
-                <p class="mt-4 text-gray-700 dark:text-gray-300 leading-relaxed">
-                    I specialize in **full-stack development** and **AI-powered analytics**.  
-                    With a background in **Python, Django, and JavaScript**, I build  
-                    **scalable, AI-driven solutions** that bridge technology and business needs.  
-                    Passionate about finance & trading algorithms, I’ve worked on AI models  
-                    for market predictions and real-time analytics.
+            <!-- Bio Section -->
+            <div class="opacity-0" id="about-text">
+                <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">Who Am I?</h2>
+                <p class="mt-4 text-gray-700 dark:text-gray-300">
+                    I am a Full-Stack Developer with a strong focus on Python, Django, and JavaScript.
+                    With a background in AI-powered analytics and cloud computing, I build scalable,
+                    data-driven applications for businesses and individuals.
                 </p>
-
-                <div class="mt-6">
-                    <a href="{% static 'resume.pdf' %}" class="btn-primary">📄 Download Resume</a>
+                <p class="mt-4 text-gray-700 dark:text-gray-300">
+                    My expertise lies in designing and implementing robust APIs, optimizing backend performance,
+                    and crafting beautiful, responsive UI using modern frameworks.
+                </p>
+                <div class="mt-6 flex space-x-4">
+                    <a href="{% static 'resume.pdf' %}" class="btn-primary dark:bg-gray-700 dark:text-white">
+                        📄 Download Resume
+                    </a>
+                    <a href="https://github.com/yourprofile" class="btn-secondary">💻 GitHub</a>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Skills & Tech Stack -->
-<section class="py-16 bg-gray-900 text-white text-center">
+<!-- Skills Section -->
+<section class="py-20 bg-gray-900 text-white text-center">
     <div class="max-w-6xl mx-auto px-6">
-        <h2 class="text-3xl font-bold">Skills & Tech Stack</h2>
-        <p class="mt-2 text-gray-300">Tools & technologies I work with:</p>
+        <h2 class="text-3xl font-bold">Skills & Expertise</h2>
+        <p class="mt-2 text-gray-300">Technologies I work with daily</p>
 
-        <div class="mt-10 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-            {% for tech in tech_stack %}
+        <div class="mt-10 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
             <div class="skill-card opacity-0">
-                <div class="p-6 bg-gray-800 rounded-lg shadow-lg">
-                    <h3 class="text-lg font-semibold">{{ tech }}</h3>
-                </div>
+                <span class="text-4xl">🐍</span>
+                <p class="mt-2">Python</p>
             </div>
-            {% endfor %}
+            <div class="skill-card opacity-0">
+                <span class="text-4xl">🌐</span>
+                <p class="mt-2">Django & DRF</p>
+            </div>
+            <div class="skill-card opacity-0">
+                <span class="text-4xl">⚛️</span>
+                <p class="mt-2">React.js</p>
+            </div>
+            <div class="skill-card opacity-0">
+                <span class="text-4xl">☁️</span>
+                <p class="mt-2">Cloud & DevOps</p>
+            </div>
+            <div class="skill-card opacity-0">
+                <span class="text-4xl">📊</span>
+                <p class="mt-2">AI & Analytics</p>
+            </div>
         </div>
     </div>
 </section>
 
 <!-- Anime.js Animations -->
 <script>
-    // About Page Animations
     anime.timeline({ easing: 'easeOutExpo' })
         .add({
             targets: "#about-title",
@@ -75,24 +90,26 @@
             duration: 800
         }, "-=500")
         .add({
-            targets: "#profile-image",
-            opacity: [0, 1],
-            translateY: [-10, 0],
-            duration: 800
-        }, "-=400")
-        .add({
-            targets: "#bio",
+            targets: "#about-image",
             opacity: [0, 1],
             translateY: [-10, 0],
             duration: 1000
-        }, "-=300")
+        }, "-=400")
         .add({
-            targets: ".skill-card",
+            targets: "#about-text",
             opacity: [0, 1],
-            translateY: [20, 0],
-            duration: 800,
-            delay: anime.stagger(200)
-        });
+            translateY: [-10, 0],
+            duration: 800
+        }, "-=300");
+
+    // Skills Animation
+    anime({
+        targets: ".skill-card",
+        opacity: [0, 1],
+        translateY: [20, 0],
+        duration: 800,
+        delay: anime.stagger(200)
+    });
 </script>
 
 {% endblock %}
