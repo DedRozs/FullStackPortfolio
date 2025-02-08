@@ -100,7 +100,7 @@ jobs:
             SECRET_KEY: '${{ secrets.SECRET_KEY }}'
             GS_BUCKET_NAME: "ai-fullstack-portfolio.appspot.com"
             DJANGO_SETTINGS_MODULE: 'core.settings'
-            DEBUG: 'False'
+            DEBUG: 'True'
 
           automatic_scaling:
             target_cpu_utilization: 0.65
