@@ -219,13 +219,13 @@ STORAGES = {
     "default": {
         "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
         "OPTIONS": {
-            "bucket_name": GS_BUCKET_NAME,  # Ensure the bucket name is correctly set
+            "bucket_name": "ai-fullstack-portfolio.appspot.com",  # Ensure the bucket name is correctly set
         },
     },
     "staticfiles": {
         "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
         "OPTIONS": {
-            "bucket_name": GS_BUCKET_NAME,  # Ensure the bucket name is correctly set
+            "bucket_name": "ai-fullstack-portfolio.appspot.com",  # Ensure the bucket name is correctly set
         },
     },
 }
