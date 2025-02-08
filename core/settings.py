@@ -202,7 +202,7 @@ USE_TZ = True
 
 from google.oauth2 import service_account
 
-GS_BUCKET_NAME = os.getenv("GS_BUCKET_NAME", "ai-fullstack-portfolio.appspot.com").strip()
+GS_BUCKET_NAME = "ai-fullstack-portfolio.appspot.com"
 
 if not GS_BUCKET_NAME:
     raise ValueError("GS_BUCKET_NAME is not set. Ensure it's defined in your environment variables.")
@@ -219,20 +219,20 @@ STORAGES = {
     "default": {
         "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
         "OPTIONS": {
-            "bucket_name": "ai-fullstack-portfolio.appspot.com",  # Ensure the bucket name is correctly set
+            "bucket_name": GS_BUCKET_NAME,  # Ensure the bucket name is correctly set
         },
     },
     "staticfiles": {
         "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
         "OPTIONS": {
-            "bucket_name": "ai-fullstack-portfolio.appspot.com",  # Ensure the bucket name is correctly set
+            "bucket_name": GS_BUCKET_NAME,  # Ensure the bucket name is correctly set
         },
     },
 }
 
 # Define Static & Media URLs
-STATIC_URL = f"https://storage.googleapis.com/ai-fullstack-portfolio.appspot.com/"
-MEDIA_URL = f"https://storage.googleapis.com/ai-fullstack-portfolio.appspot.com/"
+STATIC_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/"
+MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/"
 
 
 # Static files settings
