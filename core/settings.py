@@ -202,8 +202,11 @@ USE_TZ = True
 
 from google.oauth2 import service_account
 
-# Google Cloud Storage Configuration
-GS_BUCKET_NAME = os.getenv("GS_BUCKET_NAME")
+GS_BUCKET_NAME = os.getenv("GS_BUCKET_NAME", "ai-fullstack-portfolio.appspot.com").strip()
+
+if not GS_BUCKET_NAME:
+    raise ValueError("GS_BUCKET_NAME is not set. Ensure it's defined in your environment variables.")
+
 # Auto-detect credentials if running on Google Cloud
 try:
     GS_CREDENTIALS, _ = default()
@@ -215,9 +218,15 @@ except DefaultCredentialsError:
 STORAGES = {
     "default": {
         "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
+        "OPTIONS": {
+            "bucket_name": GS_BUCKET_NAME,  # Ensure the bucket name is correctly set
+        },
     },
     "staticfiles": {
         "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
+        "OPTIONS": {
+            "bucket_name": GS_BUCKET_NAME,  # Ensure the bucket name is correctly set
+        },
     },
 }
 
