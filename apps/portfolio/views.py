@@ -1,6 +1,6 @@
 from rest_framework import generics, permissions
-from .models import Project, Skill, Experience
-from .serializers import ProjectSerializer, SkillSerializer, ExperienceSerializer
+from .models import *
+from .serializers import *
 from drf_spectacular.utils import extend_schema
 from apps.auth_app.permissions import IsAdminUser
 from rest_framework.throttling import ScopedRateThrottle
@@ -43,6 +43,15 @@ class ExperienceDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Experience.objects.all()
     serializer_class = ExperienceSerializer
 
+class BlogPostListCreateView(generics.ListCreateAPIView):
+    queryset = BlogPost.objects.all().order_by("-created_at")
+    serializer_class = BlogPostSerializer
+
+class BlogPostDetailView(generics.RetrieveAPIView):
+    queryset = BlogPost.objects.all()
+    serializer_class = BlogPostSerializer
+
+
 from django.shortcuts import render
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.decorators import login_required
@@ -51,6 +60,30 @@ from django.contrib.auth.decorators import login_required
 def home_view(request):
     return render(request, "portfolio/home.html")
 
+# Serve About Page
+def about_view(request):
+    return render(request, "portfolio/about.html")
+
+# Serve Projects List Page
+def projects_view(request):
+    return render(request, "portfolio/projects.html")
+
+# Serve Individual Project Details Page
+def project_detail_view(request, project_id):
+    return render(request, "portfolio/project_detail.html", {"project_id": project_id})
+
+# Serve Blog Page
+def blog_view(request):
+    return render(request, "portfolio/blog.html")
+
+# Serve Individual Blog Post
+def blog_post_view(request, post_id):
+    return render(request, "portfolio/blog_detail.html", {"post_id": post_id})
+
+# Serve Contact Page
+def contact_view(request):
+    return render(request, "portfolio/contact.html")
+
 # Serve Login Page
 def login_view(request):
     return render(request, "auth_app/login.html")
@@ -58,7 +91,6 @@ def login_view(request):
 # Serve Admin Dashboard (Only for Authenticated Admins)
 @login_required
 def admin_dashboard_view(request):
-    print(request.user.is_superuser)
     if request.user.role == "user":  # Ensure only admins can access
         return render(request, "403.html")  # Redirect unauthorized users
     return render(request, "admin/dashboard.html")

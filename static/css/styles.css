@@ -1,0 +1,185 @@
+@import "tailwindcss";
+
+/* 🌌 Sci-Fi Themed Global Styles */
+body {
+    background-color: #0a0f1c !important; /* Dark space background */
+    color: #ffffff !important; /* Bright text for contrast */
+    font-family: 'Orbitron', sans-serif;
+    overflow-x: hidden;
+}
+
+/* 🌠 Sci-Fi Navbar */
+.navbar {
+    background-color: rgba(0, 0, 0, 0.9) !important;
+    border-bottom: 2px solid cyan;
+    backdrop-filter: blur(10px);
+}
+.navbar .nav-link {
+    color: cyan !important;
+    transition: 0.3s ease-in-out;
+}
+.navbar .nav-link:hover {
+    color: #00ffcc !important;
+    text-shadow: 0px 0px 10px cyan;
+}
+.glow-text {
+    font-size: 1.8rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: cyan !important;
+    text-shadow: 0px 0px 10px cyan, 0px 0px 20px cyan;
+}
+
+/* 🛸 Hero Section */
+.hero {
+    background: url('/static/images/futuristic-bg.jpg') center/cover no-repeat;
+    color: white;
+    text-align: center;
+    padding: 120px 0;
+    text-shadow: 0px 0px 10px cyan;
+    position: relative;
+}
+.hero .btn-primary {
+    background: linear-gradient(45deg, #0077ff, #00ffcc);
+    border: none;
+    box-shadow: 0px 0px 10px cyan;
+    transition: 0.3s ease-in-out;
+}
+.hero .btn-primary:hover {
+    transform: scale(1.05);
+    box-shadow: 0px 0px 15px cyan;
+}
+
+/* 🌟 Glowing Buttons */
+.btn {
+    font-weight: bold;
+    text-transform: uppercase;
+    border-radius: 8px;
+    transition: 0.3s ease-in-out;
+}
+.btn-primary {
+    background: linear-gradient(45deg, #0077ff, #00ffcc);
+    box-shadow: 0px 0px 10px cyan;
+}
+.btn-primary:hover {
+    transform: scale(1.05);
+    box-shadow: 0px 0px 15px cyan;
+}
+.btn-outline-light {
+    border: 2px solid cyan;
+    color: cyan;
+}
+.btn-outline-light:hover {
+    background-color: cyan;
+    color: #0a0f1c;
+    box-shadow: 0px 0px 10px cyan;
+}
+
+/* 🚀 Bootstrap 5 Grid Styling for Projects */
+.row {
+    margin-top: 20px;
+}
+.card {
+    background: rgba(0, 0, 0, 0.8) !important;
+    border: 1px solid cyan;
+    box-shadow: 0px 0px 15px rgba(0, 255, 255, 0.5);
+    transition: 0.3s;
+}
+.card:hover {
+    box-shadow: 0px 0px 30px rgba(0, 255, 255, 0.8);
+    transform: translateY(-5px);
+}
+
+/* 🔄 Smooth Section Reveal on Scroll */
+section {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+section.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* 🔮 Holographic Footer */
+footer {
+    text-align: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    color: cyan;
+    border-top: 2px solid cyan;
+    text-shadow: 0px 0px 10px cyan;
+}
+
+/* 🔥 Bootstrap 5 Buttons with Hover Effects */
+.btn-glow {
+    background-color: transparent;
+    color: cyan;
+    border: 2px solid cyan;
+    box-shadow: 0px 0px 10px cyan;
+    transition: 0.3s ease-in-out;
+}
+.btn-glow:hover {
+    background-color: cyan;
+    color: #0a0f1c;
+    box-shadow: 0px 0px 20px cyan;
+}
+
+/* 🎭 Glitch Effect for Titles */
+@keyframes glitch {
+    0% { text-shadow: 2px 2px #ff00ff, -2px -2px #00ffff; }
+    50% { text-shadow: -2px -2px #ff00ff, 2px 2px #00ffff; }
+    100% { text-shadow: 2px 2px #ff00ff, -2px -2px #00ffff; }
+}
+.glitch {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: cyan;
+    text-transform: uppercase;
+    text-shadow: 0px 0px 10px cyan;
+    animation: glitch 0.5s infinite alternate;
+}
+
+/* 🎞️ Loading Animation */
+.loader {
+    width: 50px;
+    height: 50px;
+    border: 5px solid rgba(0, 255, 255, 0.3);
+    border-top-color: cyan;
+    border-radius: 50%;
+    animation: spin 1s infinite linear;
+    margin: 50px auto;
+}
+@keyframes spin {
+    100% { transform: rotate(360deg); }
+}
+
+/* 🔮 Contact Form Card */
+.contact-card {
+    background: rgba(0, 0, 0, 0.9);
+    border: 1px solid cyan;
+    box-shadow: 0px 0px 20px rgba(0, 255, 255, 0.5);
+    padding: 20px;
+    transition: 0.3s;
+}
+.contact-card:hover {
+    box-shadow: 0px 0px 30px rgba(0, 255, 255, 0.8);
+}
+
+/* 🌠 Glowing Form Inputs */
+.form-control {
+    border: 2px solid cyan !important;
+    color: white !important;
+}
+.form-control:focus {
+    background: rgba(0, 0, 0, 0.8);
+    box-shadow: 0px 0px 10px cyan;
+}
+/* Lazy Loading Fix */
+.lazyload {
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+}
+.lazyload.loaded {
+    opacity: 1;
+}

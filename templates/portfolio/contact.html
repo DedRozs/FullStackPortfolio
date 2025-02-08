@@ -1,0 +1,66 @@
+{% extends 'global/base.html' %}
+
+{% block title %}Contact Joseph Prince{% endblock %}
+
+{% block content %}
+<section class="hero text-center">
+    <div class="container">
+        <h1 class="display-3 fw-bold glitch">📡 Transmission Hub</h1>
+        <p class="lead">Connect with me in the digital universe.</p>
+    </div>
+</section>
+
+<section class="container my-5">
+    <h2 class="text-center text-neon">Send Me a Message 🚀</h2>
+    <form id="contact-form" class="p-4 rounded shadow-lg contact-card">
+        <div class="mb-3">
+            <label class="form-label text-white">Name</label>
+            <input type="text" id="name" class="form-control bg-dark text-white" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label text-white">Email</label>
+            <input type="email" id="email" class="form-control bg-dark text-white" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label text-white">Message</label>
+            <textarea id="message" class="form-control bg-dark text-white" rows="4" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Send Message</button>
+        <p id="response-message" class="text-center mt-3"></p>
+    </form>
+</section>
+
+<section class="container text-center my-5">
+    <h2 class="text-neon">Find Me Online 🌐</h2>
+    <a href="https://github.com/yourprofile" class="btn btn-outline-light btn-lg m-2">GitHub</a>
+    <a href="https://linkedin.com/in/yourprofile" class="btn btn-outline-light btn-lg m-2">LinkedIn</a>
+    <a href="mailto:your-email@example.com" class="btn btn-outline-light btn-lg m-2">Email Me</a>
+</section>
+
+<script>
+document.getElementById("contact-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    
+    const name = document.getElementById("name").value;
+    const email = document.getElementById("email").value;
+    const message = document.getElementById("message").value;
+
+    fetch("/api/contact/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, message })
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById("response-message").textContent = "Message sent successfully!";
+        document.getElementById("response-message").style.color = "lime";
+        document.getElementById("contact-form").reset();
+    })
+    .catch(error => {
+        document.getElementById("response-message").textContent = "Error sending message!";
+        document.getElementById("response-message").style.color = "red";
+    });
+});
+</script>
+
+{% endblock %}

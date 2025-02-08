@@ -1,0 +1,53 @@
+{% extends 'global/base.html' %}
+
+{% block title %}Joseph Prince - Blog{% endblock %}
+
+{% block content %}
+<section class="hero text-center">
+    <div class="container">
+        <h1 class="display-3 fw-bold glitch">📡 Neural Logs</h1>
+        <p class="lead">Exploring AI, Automation, and the Digital Future.</p>
+    </div>
+</section>
+
+<section class="container my-5">
+    <h2 class="text-center text-neon">Latest Posts 📜</h2>
+    <div class="row g-4" id="blog-container">
+        <!-- Blog posts will be loaded dynamically here -->
+    </div>
+</section>
+
+<section class="container text-center my-5">
+    <h2 class="text-neon">Connect With Me 🌐</h2>
+    <a href="https://github.com/yourprofile" class="btn btn-outline-light btn-lg m-2">GitHub</a>
+    <a href="https://linkedin.com/in/yourprofile" class="btn btn-outline-light btn-lg m-2">LinkedIn</a>
+    <a href="/contact/" class="btn btn-primary btn-lg m-2">Let's Connect</a>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    fetch("/api/blog/")
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById("blog-container");
+            container.innerHTML = "";
+            data.forEach(post => {
+                container.innerHTML += `
+                    <div class="col-md-6">
+                        <div class="card blog-card">
+                            <div class="card-body">
+                                <h5 class="card-title fw-bold">${post.title}</h5>
+                                <p class="card-text">${post.content.substring(0, 150)}...</p>
+                                <p class="text-muted">Published on ${new Date(post.created_at).toDateString()}</p>
+                                <a href="/blog/${post.id}/" class="btn btn-primary">Read More</a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        })
+        .catch(error => console.error("Error fetching blog posts:", error));
+});
+</script>
+
+{% endblock %}

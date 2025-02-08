@@ -1,0 +1,93 @@
+{% extends 'global/base.html' %}
+
+{% block title %}About Joseph Prince{% endblock %}
+
+{% block content %}
+<section class="hero text-center">
+    <div class="container">
+        <h1 class="display-3 fw-bold glitch">Who Am I? 🤖</h1>
+        <p class="lead">Exploring the unknown, crafting AI-powered solutions, and designing the future.</p>
+    </div>
+</section>
+
+<section class="container my-5">
+    <div class="row align-items-center">
+        <div class="col-md-6 text-center">
+            <img src="/static/images/profile.jpg" alt="Profile Image" class="img-fluid rounded-circle shadow-lg" width="250">
+        </div>
+        <div class="col-md-6">
+            <h2 class="fw-bold text-neon">A Visionary Developer 🚀</h2>
+            <p class="lead">
+                I specialize in backend development, APIs, and AI-driven automation. 
+                My expertise spans from crafting high-performance Django applications 
+                to integrating machine learning models for futuristic AI experiences.
+            </p>
+            <a href="/contact/" class="btn btn-primary btn-lg">Contact Me</a>
+        </div>
+    </div>
+</section>
+
+<section class="container my-5">
+    <h2 class="text-center text-neon">My Skillset 🛠️</h2>
+    <div class="row text-center">
+        <div class="col-md-4">
+            <div class="card skill-card">
+                <h3 class="card-title text-cyan">💻 Programming</h3>
+                <p class="card-text">Python, JavaScript, C++, Bash</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card skill-card">
+                <h3 class="card-title text-cyan">🛠️ Frameworks</h3>
+                <p class="card-text">Django, Flask, React.js, FastAPI</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card skill-card">
+                <h3 class="card-title text-cyan">🤖 AI & Automation</h3>
+                <p class="card-text">TensorFlow, OpenAI, LangChain</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="container my-5">
+    <h2 class="text-center text-neon">Technologies I Love 🛸</h2>
+    <div class="row">
+        <div class="col-md-3"><span class="badge bg-primary">Python</span></div>
+        <div class="col-md-3"><span class="badge bg-warning">Django</span></div>
+        <div class="col-md-3"><span class="badge bg-danger">FastAPI</span></div>
+        <div class="col-md-3"><span class="badge bg-success">PostgreSQL</span></div>
+    </div>
+</section>
+
+<section class="container my-5">
+    <h2 class="text-center text-neon">Holographic Testimonials 🛠️</h2>
+    <div id="testimonialCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <p class="text-center lead text-cyan">"An absolute genius! Built an AI-powered stock predictor that changed our workflow." - 🚀 John Doe</p>
+            </div>
+            <div class="carousel-item">
+                <p class="text-center lead text-cyan">"Crafted a fully scalable API with Django & FastAPI. Future-ready engineering!" - 🛸 Jane Smith</p>
+            </div>
+            <div class="carousel-item">
+                <p class="text-center lead text-cyan">"Sci-Fi themed UX and API automation, just mind-blowing." - 🤖 Neo Anderson</p>
+            </div>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span>
+        </button>
+    </div>
+</section>
+
+<section class="container text-center my-5">
+    <h2 class="text-neon">Connect With Me 🌐</h2>
+    <a href="https://github.com/yourprofile" class="btn btn-outline-light btn-lg m-2">GitHub</a>
+    <a href="https://linkedin.com/in/yourprofile" class="btn btn-outline-light btn-lg m-2">LinkedIn</a>
+    <a href="/contact/" class="btn btn-primary btn-lg m-2">Let's Talk</a>
+</section>
+{% endblock %}

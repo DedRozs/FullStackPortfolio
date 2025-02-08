@@ -1,0 +1,62 @@
+[
+    {
+        "model": "portfolio.project",
+        "pk": 1,
+        "fields": {
+            "title": "AI Stock Prediction",
+            "description": "An AI-powered stock market prediction tool using machine learning.",
+            "technologies": "Python, TensorFlow, Django",
+            "github_link": "https://github.com/example/ai-stock-predictor",
+            "image": "projects/stock.jpg"
+        }
+    },
+    {
+        "model": "portfolio.project",
+        "pk": 2,
+        "fields": {
+            "title": "E-Commerce Dashboard",
+            "description": "A complete e-commerce admin dashboard with analytics.",
+            "technologies": "Django, React, PostgreSQL",
+            "github_link": "https://github.com/example/ecommerce-dashboard",
+            "image": "projects/ecommerce.jpg"
+        }
+    },
+    {
+        "model": "portfolio.project",
+        "pk": 3,
+        "fields": {
+            "title": "Chatbot Assistant",
+            "description": "An AI chatbot built for customer support automation.",
+            "technologies": "Python, OpenAI API, Django",
+            "github_link": "https://github.com/example/chatbot-assistant",
+            "image": "projects/chatbot.jpg"
+        }
+    },
+    {
+        "model": "portfolio.blogpost",
+        "pk": 1,
+        "fields": {
+            "title": "How AI is Revolutionizing Finance",
+            "content": "AI is transforming the financial sector by providing real-time insights, automating trading strategies, and improving risk management.",
+            "created_at": "2024-01-10T12:00:00Z"
+        }
+    },
+    {
+        "model": "portfolio.blogpost",
+        "pk": 2,
+        "fields": {
+            "title": "The Future of Web Development in 2024",
+            "content": "Web development is evolving with AI-driven frameworks, low-code solutions, and serverless computing.",
+            "created_at": "2024-02-05T14:00:00Z"
+        }
+    },
+    {
+        "model": "portfolio.blogpost",
+        "pk": 3,
+        "fields": {
+            "title": "Building Scalable APIs with Django",
+            "content": "Django Rest Framework (DRF) makes it easy to build, test, and scale APIs efficiently.",
+            "created_at": "2024-03-15T10:00:00Z"
+        }
+    }
+]
