@@ -222,8 +222,8 @@ STORAGES = {
 }
 
 # Define Static & Media URLs
-STATIC_URL = f"https://storage.googleapis.com/ai-fullstack-portfolio.appspot.com/static/"
-MEDIA_URL = f"https://storage.googleapis.com/ai-fullstack-portfolio.appspot.com/media/"
+STATIC_URL = f"https://storage.googleapis.com/ai-fullstack-portfolio.appspot.com/"
+MEDIA_URL = f"https://storage.googleapis.com/ai-fullstack-portfolio.appspot.com/"
 
 
 # Static files settings
