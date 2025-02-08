@@ -198,20 +198,32 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-# Static files settings
-STATIC_URL = '/static/'
+from google.oauth2 import service_account
 
-# Define STATIC_ROOT for collectstatic
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # This is where static files will be collected
+# Google Cloud Storage Configuration
+GS_BUCKET_NAME = os.getenv("GS_BUCKET_NAME")
+GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
+    os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+)
 
+# Configure Django to use GCS for static and media files
 
-if DEBUG:
-    STATICFILES_DIRS = [
-        os.path.join(BASE_DIR, "static"),
-    ]
-else:
-    STATICFILES_DIRS = []  # Prevents conflicts in production
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
+    },
+}
 
+# Define Static & Media URLs
+STATIC_URL = f"https://storage.googleapis.com/ai-fullstack-portfolio.appspot.com/static/"
+MEDIA_URL = f"https://storage.googleapis.com/ai-fullstack-portfolio.appspot.com/media/"
+
+# Collect static files in GCS
+STATIC_ROOT = "static/"
+MEDIA_ROOT = "media/"
 
 
 MEDIA_URL = '/media/'

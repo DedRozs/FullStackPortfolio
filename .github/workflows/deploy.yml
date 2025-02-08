@@ -67,6 +67,7 @@ jobs:
           DB_HOST: ${{ secrets.DB_HOST }}
           DB_PORT: ${{ secrets.DB_PORT }}
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SA_KEY }}
           DJANGO_SETTINGS_MODULE: "core.settings"
         run: |
           echo "DEBUG: Database Host is $DB_HOST"
@@ -88,6 +89,7 @@ jobs:
             DB_HOST: '${{ secrets.DB_HOST }}'
             DB_PORT: '${{ secrets.DB_PORT }}'
             SECRET_KEY: '${{ secrets.SECRET_KEY }}'
+            GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SA_KEY }}
             DJANGO_SETTINGS_MODULE: 'core.settings'
             DEBUG: 'False'
 

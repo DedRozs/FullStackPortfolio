@@ -106,3 +106,4 @@ staticfiles/
 
 # 📂 Google Cloud Deployment Files (If secrets are in app.yaml)
 app.yaml
+creds.json
