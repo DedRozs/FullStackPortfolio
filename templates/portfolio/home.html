@@ -3,47 +3,38 @@
 
 {% block content %}
 <!-- Hero Section -->
-<section class="relative bg-gray-900 text-white py-20">
-    <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center">
-        <!-- Hero Text -->
-        <div class="text-center md:text-left md:w-1/2">
-            <h1 class="text-4xl font-bold leading-tight">
-                Welcome to My Portfolio
-            </h1>
-            <p class="mt-4 text-lg text-gray-300">
-                Showcasing my latest projects, blogs, and experiences in full-stack development.
-            </p>
-            <div class="mt-6">
-                <a href="{% url 'projects' %}" class="px-6 py-3 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 transition">
-                    View Projects
-                </a>
-                <a href="{% url 'contact' %}" class="ml-4 px-6 py-3 bg-gray-700 text-white rounded-lg shadow hover:bg-gray-800 transition">
-                    Get in Touch
-                </a>
-            </div>
-        </div>
+<section class="relative bg-gray-900 text-white py-20 text-center">
+    <div class="max-w-6xl mx-auto px-6">
+        <h1 id="hero-title" class="text-4xl md:text-6xl font-bold opacity-0">
+            Building AI-Driven Solutions for the Future
+        </h1>
+        <p id="hero-subtext" class="mt-4 text-lg opacity-0">
+            I specialize in full-stack development and AI-powered analytics.
+        </p>
 
-        <!-- Hero Image -->
-        <div class="md:w-1/2 flex justify-center mt-6 md:mt-0">
-            <img src="{% static 'images/hero-image.jpg' %}" alt="Portfolio Hero" class="w-3/4 max-w-md rounded-lg shadow-lg">
+        <div class="mt-6 flex justify-center space-x-4">
+            <a href="{% static 'resume.pdf' %}" class="btn-primary opacity-0">📄 Download Resume</a>
+            <a href="https://github.com/yourprofile" class="btn-secondary opacity-0">💻 GitHub</a>
+            <a href="https://linkedin.com/in/yourprofile" class="btn-secondary opacity-0">🔗 LinkedIn</a>
         </div>
     </div>
 </section>
 
-<!-- Projects Section -->
-<section class="py-16 bg-white">
-    <div class="max-w-7xl mx-auto px-6">
-        <h2 class="text-3xl font-bold text-gray-900 text-center">Recent Projects</h2>
+<!-- Project Showcase -->
+<section class="py-16 bg-gray-100 dark:bg-gray-900">
+    <div class="max-w-7xl mx-auto px-6 text-center">
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Recent Projects</h2>
+        <p class="mt-2 text-gray-600 dark:text-gray-300">Check out some of my latest work.</p>
+
         <div class="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {% for project in projects %}
-            <div class="bg-white shadow-md rounded-lg overflow-hidden">
-                <img src="{{ project.image.url }}" alt="{{ project.title }}" class="w-full h-56 object-cover">
-                <div class="p-6">
-                    <h3 class="text-xl font-semibold text-gray-800">{{ project.title }}</h3>
-                    <p class="mt-2 text-gray-600">{{ project.description|truncatewords:20 }}</p>
-                    <a href="{% url 'project_detail' project.id %}" class="mt-4 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                        Learn More
-                    </a>
+            <div class="project-card opacity-0">
+                <img src="{{ project.image.url }}" alt="{{ project.title }}" class="rounded-lg shadow-lg">
+                <h3 class="text-xl font-semibold mt-4">{{ project.title }}</h3>
+                <p class="text-gray-500 mt-2">{{ project.description|truncatewords:20 }}</p>
+                <div class="mt-4 flex justify-center space-x-4">
+                    <a href="{{ project.github_link }}" class="btn-secondary">🔗 GitHub</a>
+                    <a href="{% url 'project_detail' project.id %}" class="btn-primary">🔍 View</a>
                 </div>
             </div>
             {% endfor %}
@@ -51,23 +42,47 @@
     </div>
 </section>
 
-<!-- Blog Section -->
-<section class="py-16 bg-gray-100">
-    <div class="max-w-7xl mx-auto px-6">
-        <h2 class="text-3xl font-bold text-gray-900 text-center">Latest Blog Posts</h2>
-        <div class="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {% for blog in blogs %}
-            <div class="bg-white shadow-md rounded-lg overflow-hidden">
-                <div class="p-6">
-                    <h3 class="text-xl font-semibold text-gray-800">{{ blog.title }}</h3>
-                    <p class="mt-2 text-gray-600">{{ blog.content|truncatewords:20 }}</p>
-                    <a href="{% url 'blog_detail' blog.id %}" class="mt-4 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                        Read More
-                    </a>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
+<!-- Contact Section -->
+<section class="py-16 bg-gray-900 text-white text-center">
+    <div class="max-w-4xl mx-auto px-6">
+        <h2 class="text-3xl font-bold">Get In Touch</h2>
+        <p class="mt-2 text-gray-300">I'm open to new opportunities. Let's work together.</p>
+        <a href="{% url 'contact' %}" class="btn-primary mt-6">📩 Contact Me</a>
     </div>
 </section>
+
+<!-- Anime.js Animations -->
+<script>
+    // Hero Section Animation
+    anime.timeline({ easing: 'easeOutExpo' })
+        .add({
+            targets: "#hero-title",
+            opacity: [0, 1],
+            translateY: [-20, 0],
+            duration: 1000
+        })
+        .add({
+            targets: "#hero-subtext",
+            opacity: [0, 1],
+            translateY: [-10, 0],
+            duration: 800
+        }, "-=500")
+        .add({
+            targets: ".btn-primary, .btn-secondary",
+            opacity: [0, 1],
+            translateY: [-10, 0],
+            duration: 600,
+            delay: anime.stagger(200)
+        }, "-=400");
+
+    // Project Cards Animation
+    anime({
+        targets: ".project-card",
+        opacity: [0, 1],
+        translateY: [20, 0],
+        duration: 800,
+        delay: anime.stagger(200)
+    });
+</script>
+
 {% endblock %}

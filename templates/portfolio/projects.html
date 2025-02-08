@@ -2,37 +2,67 @@
 {% load static %}
 
 {% block content %}
-<section class="py-16 bg-white">
+<!-- Projects Section -->
+<section class="py-20 bg-gray-100 dark:bg-gray-900">
     <div class="max-w-7xl mx-auto px-6">
-        <h1 class="text-4xl font-bold text-gray-900 text-center">Projects</h1>
-        <p class="mt-4 text-lg text-gray-600 text-center">
-            Browse my latest work in full-stack development and AI-driven analytics.
+        <h1 id="projects-title" class="text-4xl font-bold text-gray-900 dark:text-white text-center opacity-0">
+            My Projects
+        </h1>
+        <p id="projects-subtext" class="text-lg text-gray-600 dark:text-gray-300 text-center mt-2 opacity-0">
+            AI-powered solutions, full-stack development, and analytics tools.
         </p>
 
         <!-- Projects Grid -->
         <div class="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {% for project in projects %}
-            <div class="bg-white shadow-md rounded-lg overflow-hidden">
-                <img src="{{ project.image.url }}" alt="{{ project.title }}" class="w-full h-56 object-cover">
+            <div class="project-card opacity-0">
+                <div class="rounded-lg shadow-lg overflow-hidden bg-white dark:bg-gray-800">
+                    <img src="{{ project.image.url }}" alt="{{ project.title }}" class="w-full">
+                </div>
                 <div class="p-6">
-                    <h3 class="text-xl font-semibold text-gray-800">{{ project.title }}</h3>
-                    <p class="mt-2 text-gray-600">{{ project.description|truncatewords:20 }}</p>
-                    <div class="mt-4 flex justify-between">
-                        <a href="{% url 'project_detail' project.id %}" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition">
-                            Learn More
-                        </a>
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">{{ project.title }}</h3>
+                    <p class="text-gray-600 dark:text-gray-300 mt-2">
+                        {{ project.description|truncatewords:20 }}
+                    </p>
+                    <div class="mt-4 flex space-x-4">
                         {% if project.github_link %}
-                        <a href="{{ project.github_link }}" target="_blank" class="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800 transition">
-                            GitHub
-                        </a>
+                        <a href="{{ project.github_link }}" class="btn-secondary">🔗 GitHub</a>
                         {% endif %}
+                        {% if project.live_demo %}
+                        <a href="{{ project.live_demo }}" class="btn-primary">🚀 Live Demo</a>
+                        {% endif %}
+                        <a href="{% url 'project_detail' project.id %}" class="btn-primary">🔍 View</a>
                     </div>
                 </div>
             </div>
-            {% empty %}
-            <p class="col-span-3 text-center text-gray-500">No projects available.</p>
             {% endfor %}
         </div>
     </div>
 </section>
+
+<!-- Anime.js Animations -->
+<script>
+    // Project Page Animations
+    anime.timeline({ easing: 'easeOutExpo' })
+        .add({
+            targets: "#projects-title",
+            opacity: [0, 1],
+            translateY: [-20, 0],
+            duration: 1000
+        })
+        .add({
+            targets: "#projects-subtext",
+            opacity: [0, 1],
+            translateY: [-10, 0],
+            duration: 800
+        }, "-=500")
+        .add({
+            targets: ".project-card",
+            opacity: [0, 1],
+            translateY: [20, 0],
+            duration: 800,
+            delay: anime.stagger(200)
+        });
+</script>
+
 {% endblock %}

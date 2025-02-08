@@ -1,0 +1,101 @@
+{% extends "global/base.html" %}
+{% load static %}
+
+{% block content %}
+<!-- Registration Section -->
+<section class="py-20 bg-gray-100 dark:bg-gray-900 flex justify-center items-center">
+    <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full opacity-0" id="register-box">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white text-center opacity-0" id="register-title">
+            Create an Account
+        </h1>
+        <p class="mt-2 text-gray-600 dark:text-gray-300 text-center opacity-0" id="register-subtext">
+            Join the platform and start exploring.
+        </p>
+
+        <!-- Display Errors -->
+        {% if form.errors %}
+        <div class="mt-4 p-4 bg-red-100 dark:bg-red-800 text-red-500 dark:text-red-200 rounded-lg opacity-0" id="register-error">
+            <ul>
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                        <li>❌ {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <!-- Registration Form -->
+        <form method="post" class="mt-6 opacity-0" id="register-form">
+            {% csrf_token %}
+            
+            <div class="mb-4">
+                <label for="id_username" class="block text-gray-700 dark:text-gray-200 text-sm font-semibold">Username</label>
+                {{ form.username }}
+            </div>
+
+            <div class="mb-4">
+                <label for="id_email" class="block text-gray-700 dark:text-gray-200 text-sm font-semibold">Email</label>
+                {{ form.email }}
+            </div>
+
+            <div class="mb-4">
+                <label for="id_password" class="block text-gray-700 dark:text-gray-200 text-sm font-semibold">Password</label>
+                {{ form.password }}
+            </div>
+
+            <div class="mb-4">
+                <label for="id_password_confirm" class="block text-gray-700 dark:text-gray-200 text-sm font-semibold">Confirm Password</label>
+                {{ form.password_confirm }}
+            </div>
+
+            <button type="submit" class="btn-primary w-full">
+                ✅ Register
+            </button>
+        </form>
+
+        <!-- Links -->
+        <div class="mt-6 text-center opacity-0" id="register-links">
+            <p class="mt-2 text-gray-600 dark:text-gray-300">
+                Already have an account? <a href="{% url 'login' %}" class="text-blue-500 dark:text-blue-300 hover:underline">Login</a>
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Anime.js Animations -->
+<script>
+    anime.timeline({ easing: 'easeOutExpo' })
+        .add({
+            targets: "#register-box",
+            opacity: [0, 1],
+            translateY: [-20, 0],
+            duration: 1000
+        })
+        .add({
+            targets: "#register-title",
+            opacity: [0, 1],
+            translateY: [-10, 0],
+            duration: 800
+        }, "-=500")
+        .add({
+            targets: "#register-subtext",
+            opacity: [0, 1],
+            translateY: [-10, 0],
+            duration: 800
+        }, "-=500")
+        .add({
+            targets: "#register-form",
+            opacity: [0, 1],
+            translateY: [-10, 0],
+            duration: 1000
+        }, "-=400")
+        .add({
+            targets: "#register-links",
+            opacity: [0, 1],
+            translateY: [-10, 0],
+            duration: 600
+        }, "-=300");
+</script>
+
+{% endblock %}

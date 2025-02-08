@@ -2,41 +2,97 @@
 {% load static %}
 
 {% block content %}
-<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="text-center py-12">
-        <h1 class="text-4xl font-bold text-gray-900">About Me</h1>
-        <p class="mt-4 text-lg text-gray-600">
-            Welcome to my portfolio. Here you can learn more about my journey and skills.
-        </p>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-        <!-- Profile Image -->
-        <div class="flex justify-center">
-            <img src="{% static 'images/profile.jpg' %}" alt="Profile Picture" class="rounded-lg shadow-lg w-64 h-64 object-cover">
+<!-- About Section -->
+<section class="py-20 bg-gray-100 dark:bg-gray-900">
+    <div class="max-w-6xl mx-auto px-6">
+        <div class="text-center">
+            <h1 id="about-title" class="text-4xl font-bold text-gray-900 dark:text-white opacity-0">
+                About Me
+            </h1>
+            <p id="about-subtext" class="text-lg text-gray-600 dark:text-gray-300 mt-2 opacity-0">
+                A passionate Full-Stack Developer & AI enthusiast.
+            </p>
         </div>
 
-        <!-- About Text -->
-        <div>
-            <h2 class="text-2xl font-semibold text-gray-800">Who I Am</h2>
-            <p class="mt-4 text-gray-600">
-                I'm a passionate developer with experience in full-stack development, AI-driven analytics, and cloud deployment.
-                I specialize in building intelligent, scalable applications that enhance decision-making processes.
-            </p>
+        <!-- Profile & Story -->
+        <div class="mt-10 flex flex-col md:flex-row items-center space-y-6 md:space-y-0 md:space-x-10">
+            <!-- Profile Image -->
+            <div id="profile-image" class="w-48 h-48 rounded-full overflow-hidden shadow-lg opacity-0">
+                <img src="{% static 'images/headshot.jpg' %}" alt="Profile Picture" class="w-full">
+            </div>
 
-            <h3 class="mt-6 text-xl font-semibold text-gray-800">Skills</h3>
-            <ul class="mt-2 space-y-2 text-gray-600">
-                <li>🚀 Full-Stack Development (Django, React, Tailwind CSS)</li>
-                <li>📊 AI-Driven Analytics & Trend Prediction</li>
-                <li>☁️ Cloud Deployment (Google Cloud, CI/CD)</li>
-            </ul>
+            <!-- Bio -->
+            <div id="bio" class="flex-1 opacity-0">
+                <h3 class="text-2xl font-semibold text-gray-900 dark:text-white">My Journey</h3>
+                <p class="mt-4 text-gray-700 dark:text-gray-300 leading-relaxed">
+                    I specialize in **full-stack development** and **AI-powered analytics**.  
+                    With a background in **Python, Django, and JavaScript**, I build  
+                    **scalable, AI-driven solutions** that bridge technology and business needs.  
+                    Passionate about finance & trading algorithms, I’ve worked on AI models  
+                    for market predictions and real-time analytics.
+                </p>
 
-            <div class="mt-6">
-                <a href="{% url 'contact' %}" class="px-6 py-3 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 transition">
-                    Get in Touch
-                </a>
+                <div class="mt-6">
+                    <a href="{% static 'resume.pdf' %}" class="btn-primary">📄 Download Resume</a>
+                </div>
             </div>
         </div>
     </div>
-</div>
+</section>
+
+<!-- Skills & Tech Stack -->
+<section class="py-16 bg-gray-900 text-white text-center">
+    <div class="max-w-6xl mx-auto px-6">
+        <h2 class="text-3xl font-bold">Skills & Tech Stack</h2>
+        <p class="mt-2 text-gray-300">Tools & technologies I work with:</p>
+
+        <div class="mt-10 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+            {% for tech in tech_stack %}
+            <div class="skill-card opacity-0">
+                <div class="p-6 bg-gray-800 rounded-lg shadow-lg">
+                    <h3 class="text-lg font-semibold">{{ tech }}</h3>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Anime.js Animations -->
+<script>
+    // About Page Animations
+    anime.timeline({ easing: 'easeOutExpo' })
+        .add({
+            targets: "#about-title",
+            opacity: [0, 1],
+            translateY: [-20, 0],
+            duration: 1000
+        })
+        .add({
+            targets: "#about-subtext",
+            opacity: [0, 1],
+            translateY: [-10, 0],
+            duration: 800
+        }, "-=500")
+        .add({
+            targets: "#profile-image",
+            opacity: [0, 1],
+            translateY: [-10, 0],
+            duration: 800
+        }, "-=400")
+        .add({
+            targets: "#bio",
+            opacity: [0, 1],
+            translateY: [-10, 0],
+            duration: 1000
+        }, "-=300")
+        .add({
+            targets: ".skill-card",
+            opacity: [0, 1],
+            translateY: [20, 0],
+            duration: 800,
+            delay: anime.stagger(200)
+        });
+</script>
+
 {% endblock %}

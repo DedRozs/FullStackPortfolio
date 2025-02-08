@@ -9,6 +9,9 @@ def home_view(request):
     blogs = BlogPost.objects.all()[:3]  # Show latest 3 blog posts
     return render(request, "portfolio/home.html", {"projects": projects, "blogs": blogs})
 
+def about_view(request):
+    return render(request, "portfolio/about.html")  
+
 def projects_view(request):
     projects = Project.objects.all()
     return render(request, "portfolio/projects.html", {"projects": projects})

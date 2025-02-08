@@ -1,48 +1,122 @@
 {% extends "global/base.html" %}
+{% load static %}
 
 {% block content %}
-<div class="grid grid-cols-1 md:grid-cols-4 min-h-screen">
-    
-    <!-- Sidebar -->
-    <aside class="bg-gray-800 text-white py-8 px-6 md:col-span-1">
-        <h2 class="text-2xl font-bold">Admin Dashboard</h2>
-        <nav class="mt-6 space-y-4">
-            <a href="{% url 'dashboard' %}" class="block px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 transition">
-                Dashboard
-            </a>
-            <a href="{% url 'manage_users' %}" class="block px-4 py-2 hover:bg-gray-600 transition">
-                Manage Users
-            </a>
-            <a href="{% url 'manage_projects' %}" class="block px-4 py-2 hover:bg-gray-600 transition">
-                Manage Projects
-            </a>
-            <a href="{% url 'manage_blogs' %}" class="block px-4 py-2 hover:bg-gray-600 transition">
-                Manage Blogs
-            </a>
-        </nav>
-    </aside>
+<!-- Dashboard Container -->
+<section class="py-20 bg-gray-100 dark:bg-gray-900">
+    <div class="max-w-7xl mx-auto px-6">
+        <h1 id="dashboard-title" class="text-4xl font-bold text-gray-900 dark:text-white text-center opacity-0">
+            Admin Dashboard
+        </h1>
+        <p id="dashboard-subtext" class="text-lg text-gray-600 dark:text-gray-300 text-center mt-2 opacity-0">
+            Manage your portfolio, projects, and insights in one place.
+        </p>
 
-    <!-- Main Content -->
-    <main class="md:col-span-3 p-8 bg-gray-100">
-        <h1 class="text-3xl font-bold text-gray-900">Welcome, Admin</h1>
-        <p class="mt-2 text-gray-600">Manage users, projects, and blog posts.</p>
+        <!-- Dashboard Layout -->
+        <div class="mt-10 grid grid-cols-1 md:grid-cols-4 gap-6">
+            <!-- Sidebar -->
+            <aside class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg md:col-span-1 opacity-0" id="dashboard-sidebar">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Navigation</h3>
+                <ul class="mt-4 space-y-3">
+                    <li><a href="{% url 'dashboard' %}" class="hover:text-blue-500 dark:hover:text-blue-300">🏠 Dashboard Home</a></li>
+                    <li><a href="{% url 'manage_projects' %}" class="hover:text-blue-500 dark:hover:text-blue-300">📁 Manage Projects</a></li>
+                    <li><a href="{% url 'manage_blogs' %}" class="hover:text-blue-500 dark:hover:text-blue-300">📝 Manage Blog</a></li>
+                    <li><a href="{% url 'manage_users' %}" class="hover:text-blue-500 dark:hover:text-blue-300">👤 Manage Users</a></li>
+                    <li><a href="{% url 'settings' %}" class="hover:text-blue-500 dark:hover:text-blue-300">⚙️ Settings</a></li>
+                </ul>
+            </aside>
 
-        <!-- Dashboard Cards -->
-        <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div class="shadow-md rounded-lg p-6 bg-white">
-                <h3 class="text-xl font-semibold text-gray-800">Users</h3>
-                <p class="mt-2 text-gray-600">{{ user_count }} registered users</p>
-            </div>
-            <div class="shadow-md rounded-lg p-6 bg-white">
-                <h3 class="text-xl font-semibold text-gray-800">Projects</h3>
-                <p class="mt-2 text-gray-600">{{ project_count }} active projects</p>
-            </div>
-            <div class="shadow-md rounded-lg p-6 bg-white">
-                <h3 class="text-xl font-semibold text-gray-800">Blog Posts</h3>
-                <p class="mt-2 text-gray-600">{{ blog_count }} published posts</p>
+            <!-- Main Content -->
+            <div class="md:col-span-3">
+                <!-- Quick Stats -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="stat-card opacity-0">
+                        <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">📊 Total Projects</h3>
+                            <p class="text-3xl font-bold text-blue-500 mt-2">{{ total_projects }}</p>
+                        </div>
+                    </div>
+                    <div class="stat-card opacity-0">
+                        <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">📝 Total Blog Posts</h3>
+                            <p class="text-3xl font-bold text-green-500 mt-2">{{ total_blogs }}</p>
+                        </div>
+                    </div>
+                    <div class="stat-card opacity-0">
+                        <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">👥 Total Users</h3>
+                            <p class="text-3xl font-bold text-purple-500 mt-2">{{ total_users }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activities -->
+                <div class="mt-10 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg opacity-0" id="recent-activities">
+                    <h3 class="text-2xl font-semibold text-gray-900 dark:text-white">Recent Activities</h3>
+                    <ul class="mt-4 text-gray-700 dark:text-gray-300">
+                        {% for activity in recent_activities %}
+                        <li class="py-2 border-b dark:border-gray-700">
+                            {{ activity.timestamp|date:"M d, Y H:i" }} - {{ activity.message }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="mt-10 opacity-0" id="dashboard-actions">
+                    <h3 class="text-2xl font-semibold text-gray-900 dark:text-white">Quick Actions</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
+                        <a href="{% url 'add_project' %}" class="btn-primary">➕ Add Project</a>
+                        <a href="{% url 'add_blog' %}" class="btn-secondary">📝 Write Blog</a>
+                        <a href="{% url 'settings' %}" class="btn-secondary">⚙️ Update Settings</a>
+                    </div>
+                </div>
             </div>
         </div>
-    </main>
+    </div>
+</section>
 
-</div>
+<!-- Anime.js Animations -->
+<script>
+    // Dashboard Animations
+    anime.timeline({ easing: 'easeOutExpo' })
+        .add({
+            targets: "#dashboard-title",
+            opacity: [0, 1],
+            translateY: [-20, 0],
+            duration: 1000
+        })
+        .add({
+            targets: "#dashboard-subtext",
+            opacity: [0, 1],
+            translateY: [-10, 0],
+            duration: 800
+        }, "-=500")
+        .add({
+            targets: "#dashboard-sidebar",
+            opacity: [0, 1],
+            translateY: [-10, 0],
+            duration: 800
+        }, "-=400")
+        .add({
+            targets: ".stat-card",
+            opacity: [0, 1],
+            translateY: [20, 0],
+            duration: 800,
+            delay: anime.stagger(200)
+        })
+        .add({
+            targets: "#recent-activities",
+            opacity: [0, 1],
+            translateY: [-10, 0],
+            duration: 1000
+        }, "-=300")
+        .add({
+            targets: "#dashboard-actions",
+            opacity: [0, 1],
+            translateY: [-10, 0],
+            duration: 600
+        }, "-=200");
+</script>
+
 {% endblock %}

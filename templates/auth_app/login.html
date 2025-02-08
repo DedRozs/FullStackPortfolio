@@ -2,54 +2,109 @@
 {% load static %}
 
 {% block content %}
-<section class="py-16 bg-gray-100 flex justify-center items-center">
-    <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
-        <h1 class="text-3xl font-bold text-gray-900 text-center">Login</h1>
-        <p class="mt-2 text-gray-600 text-center">Access your account</p>
+<!-- Login Section -->
+<section class="py-20 bg-gray-100 dark:bg-gray-900 flex justify-center items-center">
+    <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full opacity-0" id="login-box">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white text-center opacity-0" id="login-title">
+            Welcome Back
+        </h1>
+        <p class="mt-2 text-gray-600 dark:text-gray-300 text-center opacity-0" id="login-subtext">
+            Log in to access your account.
+        </p>
 
-        <!-- Display errors -->
+        <!-- Display Errors -->
         {% if form.errors %}
-        <div class="mt-4 p-4 bg-red-100 text-red-500 rounded-lg">
-            <p>Invalid username or password. Please try again.</p>
+        <div class="mt-4 p-4 bg-red-100 dark:bg-red-800 text-red-500 dark:text-red-200 rounded-lg opacity-0" id="login-error">
+            <ul>
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                        <li>❌ {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
         </div>
         {% endif %}
 
         <!-- Login Form -->
-        <form method="post" class="mt-6 space-y-4">
+        <form method="post" class="mt-6 opacity-0" id="login-form">
             {% csrf_token %}
-
-            <!-- Username Field -->
-            <div>
-                <label for="username" class="block text-gray-700 font-semibold">Username</label>
-                <input type="text" id="username" name="username" required 
-                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">
+            
+            <!-- Username -->
+            <div class="mb-4">
+                <label for="username" class="block text-gray-700 dark:text-gray-200 text-sm font-semibold">Username</label>
+                <input type="text" id="username" name="username" class="w-full p-3 rounded-lg border dark:border-gray-700 focus:ring focus:ring-blue-300 dark:focus:ring-blue-600">
             </div>
 
-            <!-- Password Field -->
-            <div>
-                <label for="password" class="block text-gray-700 font-semibold">Password</label>
-                <input type="password" id="password" name="password" required 
-                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">
-            </div>
-
-            <!-- Login Button -->
-            <div class="mt-6">
-                <button type="submit" 
-                    class="w-full px-6 py-3 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 transition">
-                    Login
+            <!-- Password -->
+            <div class="mb-4 relative">
+                <label for="password" class="block text-gray-700 dark:text-gray-200 text-sm font-semibold">Password</label>
+                <input type="password" id="password" name="password" class="w-full p-3 rounded-lg border dark:border-gray-700 focus:ring focus:ring-blue-300 dark:focus:ring-blue-600">
+                <button type="button" id="toggle-password" class="absolute right-3 top-10 text-gray-500 dark:text-gray-400">
+                    👁
                 </button>
             </div>
+
+            <button type="submit" class="btn-primary w-full">
+                🔑 Log In
+            </button>
         </form>
 
-        <!-- Registration & Forgot Password Links -->
-        <div class="mt-6 text-center text-gray-600">
-            <p>Don't have an account? 
-                <a href="{% url 'register' %}" class="text-blue-500 hover:underline">Sign up</a>
-            </p>
-            <p class="mt-2">
-                <a href="{% url 'password_reset' %}" class="text-blue-500 hover:underline">Forgot password?</a>
+        <!-- Links -->
+        <div class="mt-6 text-center opacity-0" id="login-links">
+            <a href="{% url 'password_reset' %}" class="text-blue-500 dark:text-blue-300 hover:underline">Forgot Password?</a>
+            <p class="mt-2 text-gray-600 dark:text-gray-300">
+                New user? <a href="{% url 'register' %}" class="text-blue-500 dark:text-blue-300 hover:underline">Create an account</a>
             </p>
         </div>
     </div>
 </section>
+
+<!-- Anime.js Animations -->
+<script>
+    // Login Page Animations
+    anime.timeline({ easing: 'easeOutExpo' })
+        .add({
+            targets: "#login-box",
+            opacity: [0, 1],
+            translateY: [-20, 0],
+            duration: 1000
+        })
+        .add({
+            targets: "#login-title",
+            opacity: [0, 1],
+            translateY: [-10, 0],
+            duration: 800
+        }, "-=500")
+        .add({
+            targets: "#login-subtext",
+            opacity: [0, 1],
+            translateY: [-10, 0],
+            duration: 800
+        }, "-=500")
+        .add({
+            targets: "#login-form",
+            opacity: [0, 1],
+            translateY: [-10, 0],
+            duration: 1000
+        }, "-=400")
+        .add({
+            targets: "#login-links",
+            opacity: [0, 1],
+            translateY: [-10, 0],
+            duration: 600
+        }, "-=300");
+
+    // Show/hide password toggle
+    document.getElementById("toggle-password").addEventListener("click", function() {
+        let passwordField = document.getElementById("password");
+        if (passwordField.type === "password") {
+            passwordField.type = "text";
+            this.textContent = "🙈";
+        } else {
+            passwordField.type = "password";
+            this.textContent = "👁";
+        }
+    });
+</script>
+
 {% endblock %}
