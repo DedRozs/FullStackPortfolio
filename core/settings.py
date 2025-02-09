@@ -3,7 +3,8 @@ from pathlib import Path
 import pymysql
 from dotenv import load_dotenv
 from google.oauth2 import service_account
-from google.auth import default
+from google.auth import compute_engine, impersonated_credentials
+from google.oauth2 import service_account
 
 # Install MySQL Client
 pymysql.install_as_MySQLdb()
@@ -101,7 +102,12 @@ GS_BUCKET_NAME = os.getenv("GS_BUCKET_NAME")
 
 
 if ON_GAE:
-    GS_CREDENTIALS, _ = default()
+    base_credentials = compute_engine.Credentials()
+    GS_CREDENTIALS = impersonated_credentials.Credentials(
+        source_credentials=base_credentials,
+        target_principal=os.getenv("GAE_SERVICE_ACCOUNT", "ai-fullstack-portfolio@appspot.gserviceaccount.com"),
+        target_scopes=["https://www.googleapis.com/auth/cloud-platform"],
+    )
 else:
     # Use service account credentials for local development
     GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
