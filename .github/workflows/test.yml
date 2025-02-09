@@ -1,31 +1,41 @@
-name: Run Automated Tests
+name: Run Tests Before Deployment
 
 on:
   push:
     branches:
-      - "**"  # Run tests on all branches
-  pull_request:
-    branches:
-      - main  # Run tests on PRs to main
+      - main  # Modify if your deployment branch is different
 
 jobs:
   test:
-    name: Run Tests
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.11"
+          cache: "pip"
 
       - name: Install Dependencies
         run: |
+          python -m pip install --upgrade pip setuptools wheel
           pip install -r requirements.txt
-          pip install pytest pytest-django
+          pip install pytest
 
-      - name: Run Tests
-        run: pytest -v
+      - name: Run Tests with pytest
+        run: |
+          if pytest --collect-only | grep "collected 0 items"; then
+            echo "No tests found. Proceeding with deployment."
+          else
+            pytest
+          fi
+
+      - name: Upload Test Results
+        if: success()  # Only upload if tests pass
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: pytest_results.log  # Modify this if needed

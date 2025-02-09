@@ -1,140 +1,51 @@
-name: Deploy to Google App Engine
+name: Deploy Django to Google App Engine (Production)
 
 on:
-  push:
-    branches:
-      - main  # Deploy only when changes are pushed to main
+  workflow_run:
+    workflows: ["Run Tests Before Deployment"]
+    types:
+      - completed
 
 jobs:
   deploy:
-    name: Deploying to Google Cloud
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}  # Only deploy if tests pass
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup python 3.12
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.11"
+          cache: "pip"
 
-      - name: Install Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "latest"
-      - name: Set NPM Path
-        run: echo "NPM_BIN_PATH=$(which npm)" >> $GITHUB_ENV
-      - name: Install Node.js dependencies
-        run: npm install
-      
-      - name: Build Tailwind CSS
+      - name: Install Dependencies
         run: |
-          npm run build:css
-          npm run watch:css
-      - name: Install Requirements
-        run: |
+          python -m pip install --upgrade pip setuptools wheel
           pip install -r requirements.txt
-                
-      - name: Generate OpenAPI Schema
-        env:
-          DB_NAME: ${{ secrets.DB_NAME }}
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_HOST: ${{ secrets.DB_HOST }}
-          DB_PORT: ${{ secrets.DB_PORT }}
-          SECRET_KEY: ${{ secrets.SECRET_KEY }}
-          GS_BUCKET_NAME: "ai-fullstack-portfolio.appspot.com"
-          DJANGO_SETTINGS_MODULE: "core.settings"
-        run: python manage.py spectacular --color --file openapi-schema.yml
-  
-      - name: Upload API Schema
-        uses: actions/upload-artifact@v4
-        with:
-          name: openapi-schema
-          path: openapi-schema.yml
 
-      - name: Ensure static directory exists
-        run: mkdir -p staticfiles
-  
-      - name: GCloud Authenticate
+      - name: Authenticate with Google Cloud
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-
-      - name: Use GCloud CLI
-        run: |
-          gcloud info
-
-      - name: Run Migrations
-        env:
-          DB_NAME: ${{ secrets.DB_NAME }}
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_HOST: ${{ secrets.DB_HOST }}
-          DB_PORT: ${{ secrets.DB_PORT }}
-          SECRET_KEY: ${{ secrets.SECRET_KEY }}
-          GS_BUCKET_NAME: "ai-fullstack-portfolio.appspot.com"
-          DJANGO_SETTINGS_MODULE: "core.settings"
-        run: |
-          echo "DEBUG: Database Host is $DB_HOST"
-          python manage.py makemigrations
-          python manage.py migrate
-
-      - name: Generate app.yaml with secrets
-        run: |
-          cat <<EOF > app.yaml
-          runtime: python312
-          entrypoint: gunicorn -b :\$PORT core.wsgi
-          instance_class: F2
-          service: default
-
-          env_variables:
-            DB_NAME: '${{ secrets.DB_NAME }}'
-            DB_USER: '${{ secrets.DB_USER }}'
-            DB_PASSWORD: '${{ secrets.DB_PASSWORD }}'
-            DB_HOST: '${{ secrets.DB_HOST }}'
-            DB_PORT: '${{ secrets.DB_PORT }}'
-            SECRET_KEY: '${{ secrets.SECRET_KEY }}'
-            GS_BUCKET_NAME: "ai-fullstack-portfolio.appspot.com"
-            DJANGO_SETTINGS_MODULE: 'core.settings'
-            DEBUG: 'True'
-
-          automatic_scaling:
-            target_cpu_utilization: 0.65
-            min_instances: 1
-            max_instances: 5
-
-          handlers:
-            - url: /static
-              static_dir: staticfiles
-            - url: /.*
-              script: auto
-          EOF
-      
-      - name: Clean Old Static Files
-        run: rm -rf staticfiles/* 
-      - name: Debug Environment Variables
-        env:
-          DB_NAME: ${{ secrets.DB_NAME }}
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_HOST: ${{ secrets.DB_HOST }}
-          DB_PORT: ${{ secrets.DB_PORT }}
-          SECRET_KEY: ${{ secrets.SECRET_KEY }}
-          GS_BUCKET_NAME: "ai-fullstack-portfolio.appspot.com"
-        run: env | grep GS_BUCKET_NAME
-      
-      - name: Gather Static Files
-        run: |
-          python manage.py collectstatic --noinput
-  
-      - name: Deploy to App Engine
-        id: deploy
-        uses: google-github-actions/deploy-appengine@v2
+      - name: Install Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
         with:
-          deliverables: app.yaml
-          version: v1
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          version: latest
+
+      - name: Run Database Migrations
+        run: python manage.py migrate
+
+      - name: Collect Static Files
+        run: python manage.py collectstatic --noinput
+
+      - name: Deploy to Google App Engine (Production)
+        run: |
+          gcloud app deploy app.yaml \
+            --quiet \
+            --project=${{ secrets.GCP_PROJECT_ID }} \
+            --version=production \
+            --promote  # Automatically routes traffic to this version
