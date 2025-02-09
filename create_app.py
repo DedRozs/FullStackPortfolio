@@ -11,6 +11,10 @@ def create_app(app_name, parent_folder="apps"):
     # Full app path
     app_path = os.path.join(parent_path, app_name)
     
+    # Ensure the parent directory exists
+    app_path = os.path.join(os.getcwd(), f"{parent_path}/{app_name}")
+    os.makedirs(f"{parent_path}/{app_name}", exist_ok=True)  # Creates the folder if it doesn’t exist
+
     # Run the Django command to create the app
     os.system(f"python manage.py startapp {app_name} {app_path}")
 

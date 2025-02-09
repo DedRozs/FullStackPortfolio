@@ -1,0 +1,26 @@
+{
+  "name": "fullstackportfolio",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:tailwind": "tailwindcss -i ./assets/css/tailwind.css -o ./static/css/styles.css --minify"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DedRozs/FullStackPortfolio.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/DedRozs/FullStackPortfolio/issues"
+  },
+  "homepage": "https://github.com/DedRozs/FullStackPortfolio#readme",
+  "dependencies": {
+    "@tailwindcss/cli": "^4.0.5",
+    "tailwindcss": "^4.0.5"
+  }
+}

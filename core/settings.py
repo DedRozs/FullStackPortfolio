@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+NPM_BIN_PATH = "C:/Program Files/nodejs/npm.cmd"
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY", "your-default-secret-key")
@@ -14,7 +15,7 @@ SECRET_KEY = os.getenv("SECRET_KEY", "your-default-secret-key")
 DEBUG = os.getenv("DEBUG", "False") == "True"
 
 
-ALLOWED_HOSTS = ['ai-fullstack-portfolio.uc.r.appspot.com', 'localhost', 'thejosephprince.com', 'www.thejosephprince.com', 'portfolio.thejosephprince.com',]
+ALLOWED_HOSTS = ['ai-fullstack-portfolio.uc.r.appspot.com', 'localhost', 'thejosephprince.com', 'www.thejosephprince.com', 'portfolio.thejosephprince.com','127.0.0.1']
 
 
 # Application definition
@@ -126,9 +127,10 @@ if not DEBUG:  # Use GCS in production
 
 else:
     STATIC_URL = "/static/"
-    STATIC_ROOT = BASE_DIR / "static"
+    STATIC_ROOT = BASE_DIR / "staticfiles"
     MEDIA_URL = "/media/"
     MEDIA_ROOT = BASE_DIR / "media"
+    STATICFILES_DIRS = [BASE_DIR / 'static']
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
