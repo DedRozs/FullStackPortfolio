@@ -2,6 +2,8 @@ import os
 from pathlib import Path
 import pymysql
 from dotenv import load_dotenv
+from google.auth.credentials import AnonymousCredentials
+from google.oauth2 import service_account
 
 # Install MySQL Client
 pymysql.install_as_MySQLdb()
@@ -90,8 +92,17 @@ DATABASES = {
 }
 
 # Static & Media Files (Google Cloud Storage)
-
+# Google Cloud Storage settings
 GS_BUCKET_NAME = os.getenv("GS_BUCKET_NAME")
+
+if ON_GAE:
+    # ✅ Fix: Use anonymous credentials for static files to prevent signing error
+    GS_CREDENTIALS = AnonymousCredentials()
+else:
+    # Use service account credentials for local development
+    GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
+        os.path.join(BASE_DIR,  "creds.json")
+    )
 
 STATICFILES_DIRS = [
     BASE_DIR / "static",
@@ -102,11 +113,15 @@ STORAGES = {
     "default": {
         "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
         "OPTIONS": {
+            "bucket_name": GS_BUCKET_NAME,
+            "credentials": GS_CREDENTIALS,
         }
     },
     "staticfiles": {
         "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
         "OPTIONS": {
+            "bucket_name": GS_BUCKET_NAME,
+            "credentials": GS_CREDENTIALS,
         }
     }
 }
