@@ -20,7 +20,7 @@ ON_GAE = os.getenv("GAE_ENV", "").startswith("standard")
 
 # Debug mode - Only True in local development
 DEBUG = not ON_GAE  # Automatically set to False when deployed on GAE
-
+DEBUG = False
 # Allowed Hosts
 ALLOWED_HOSTS = [
     "ai-fullstack-portfolio.uc.r.appspot.com",
@@ -39,10 +39,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "storages"
 ]
 
-if ON_GAE:
-    INSTALLED_APPS.append("storages")  # Google Cloud Storage for static/media files
 
 # Middleware
 MIDDLEWARE = [
@@ -91,27 +90,37 @@ DATABASES = {
 }
 
 # Static & Media Files (Google Cloud Storage)
-if ON_GAE:
-    GS_BUCKET_NAME = os.getenv("GS_BUCKET_NAME")
 
-    STATIC_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/static/"
-    STATICFILES_STORAGE = "storages.backends.gcloud.GCSManifestStaticFilesStorage"
+GS_BUCKET_NAME = os.getenv("GS_BUCKET_NAME")
 
-    MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/media/"
-    DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
 
-    GS_CREDENTIALS = None  # App Engine auto-authenticates using service account
 
-    # ✅ Fix: Set STATIC_ROOT to prevent collectstatic errors
-    STATIC_ROOT = BASE_DIR / "staticfiles"
-else:
-    STATIC_URL = "/static/"
-    STATICFILES_DIRS = [BASE_DIR / "static"]
-    MEDIA_URL = "/media/"
-    MEDIA_ROOT = BASE_DIR / "media"
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
+        "OPTIONS": {
+        }
+    },
+    "staticfiles": {
+        "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
+        "OPTIONS": {
+        }
+    }
+}
 
-    # ✅ Fix: Ensure static files are collected locally too
-    STATIC_ROOT = BASE_DIR / "staticfiles"
+# Static files settings
+STATIC_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/static/"
+STATIC_ROOT = "staticfiles/"
+
+# Media files settings
+MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/media/"
+
+
+
+
 
 # Authentication
 AUTH_PASSWORD_VALIDATORS = [
