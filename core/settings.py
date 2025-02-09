@@ -22,11 +22,9 @@ SECRET_KEY = os.getenv("SECRET_KEY", "your-default-secret-key")
 
 # ✅ Detect if running in Google App Engine
 ON_GAE = "GOOGLE_CLOUD_PROJECT" in os.environ
-print(ON_GAE)
 
 # Debug mode - Only True in local development
 DEBUG = not ON_GAE  # Automatically set to False when deployed on GAE
-DEBUG = True
 
 # Allowed Hosts
 ALLOWED_HOSTS = [
@@ -115,8 +113,6 @@ else:
     )
 
 
-print(GS_CREDENTIALS.service_account_email)
-
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
@@ -149,6 +145,13 @@ STATIC_ROOT = "staticfiles/"
 MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/media/"
 
 
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp-relay.gmail.com"  # Use Google's SMTP relay
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "your.email@example.com")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
 

@@ -1,4 +1,6 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.core.mail import send_mail
+from django.contrib import messages
 
 def home_view(request):
     projects = [
@@ -90,3 +92,29 @@ def projects_view(request):
     ]
 
     return render(request, "portfolio/projects.html", {"projects": projects_list})
+
+def contact_view(request):
+    if request.method == "POST":
+        name = request.POST.get("name")
+        email = request.POST.get("email")
+        message = request.POST.get("message")
+
+        # Validate form data
+        if not name or not email or not message:
+            messages.error(request, "All fields are required.")
+            return redirect("contact")
+
+        # Send email notification (update with your email settings)
+        send_mail(
+            subject=f"New Contact Form Submission from {name}",
+            message=f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}",
+            from_email="your.email@example.com",  # Replace with your email
+            recipient_list=["your.email@example.com"],  # Replace with recipient email
+            fail_silently=False,
+        )
+
+        # Display success message
+        messages.success(request, "Your message has been sent successfully!")
+        return redirect("contact")
+
+    return render(request, "portfolio/contact.html")
