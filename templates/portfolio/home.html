@@ -1,6 +1,138 @@
 {% extends "global/base.html" %}
+{% load static %}
 
 {% block content %}
-    <h1>Welcome to My Portfolio</h1>
-    <p>Introduce yourself and highlight key projects here.</p>
+<!-- Hero Section (Optimized for Hiring & Tailwind v4 Best Practices) -->
+<section id="hero-section" class="relative flex flex-col items-center justify-center min-h-screen p-6">
+    <!-- Light Overlay for Readability -->
+    <div class="absolute inset-0 bg-black/50 z-0"></div>
+
+    <div class="max-w-4xl mx-auto flex flex-col items-center gap-6 relative z-10 text-white">
+        <!-- Headshot Image -->
+        <img id="hero-img"
+             src="{% static 'images/headshot.jpg' %}" 
+             alt="Joseph Prince Headshot"
+             class="w-32 md:w-48 rounded-full shadow-lg object-cover opacity-0">
+
+
+        <!-- Text Content - Polished for Hiring Professionals -->
+        <div class="text-center bg-black/80 p-6 md:p-10 rounded-lg shadow-lg">
+            <h1 id="hero-title" class="text-3xl md:text-5xl font-bold">
+                Full-Stack Developer | Joseph Prince
+            </h1>
+            <p id="hero-desc" class="mt-4 text-base md:text-lg text-gray-200 opacity-0">
+                I am a Full-Stack Developer with 3 years of experience specializing in  
+                <span class="font-semibold">Django, Python, and Google Cloud</span>.  
+                At Sports Thread, I built internal tools that streamlined customer service workflows.  
+                These tools significantly reduced processing time and improved operational efficiency.  
+                My expertise lies in <strong>designing scalable REST APIs, optimizing backend performance,  
+                and automating deployments using GitHub Actions</strong>.  
+            </p>
+            
+            <!-- 📌 NEW SENTENCE ADDED BEFORE CTA -->
+            <p class="mt-4 text-base md:text-lg text-gray-200">
+                I thrive in <strong>fast-paced SaaS environments</strong>, where I can <strong>solve complex engineering problems</strong>  
+                and collaborate with cross-functional teams to <strong>high-performance solutions</strong>.
+            </p>
+            
+            <a id="hero-btn" href="/contact" 
+            class="mt-6 inline-block bg-blue-500 hover:bg-blue-600 text-white py-3 px-6 rounded-full transition focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-700 opacity-100">
+                Contact Me
+            </a>
+        </div>
+
+
+    </div>
+</section>
+
+<!-- Dynamic Projects Section (Fully Opaque, No Transparency Issues) -->
+<section class="py-16 px-4 bg-black dark:bg-gray-900 backdrop-blur-md">
+    <h2 class="text-3xl font-semibold text-center text-white">Featured Web Development Projects</h2>
+    <div id="projects-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8 max-w-6xl mx-auto">
+        
+        {% for project in projects %}
+        <article class="project-card bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow-lg rounded-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
+            <img src="{% static project.image %}" alt="{{ project.title }}" class="w-full h-48 object-cover">
+            <div class="p-4">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white">{{ project.title }}</h3>
+                <p class="text-gray-600 dark:text-gray-300">{{ project.description }}</p>
+                <a href="{{ project.url }}" 
+                   class="text-blue-500 hover:text-blue-400 dark:text-blue-400 dark:hover:text-blue-300 mt-2 inline-block">
+                    View Project →
+                </a>
+            </div>
+        </article>
+        {% endfor %}
+
+    </div>
+</section>
+
+<!-- Smooth Animation for Hero Section -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        anime.timeline()
+            .add({
+                targets: "#hero-img",
+                translateY: [-30, 0],
+                opacity: [0, 1],
+                easing: "easeOutExpo",
+                duration: 1000
+            })
+            .add({
+                targets: "#hero-title",
+                translateY: [-30, 0],
+                opacity: [0, 1],
+                easing: "easeOutExpo",
+                duration: 1000
+            }, "-=800")
+            .add({
+                targets: "#hero-desc",
+                translateY: [-20, 0],
+                opacity: [0, 1],
+                easing: "easeOutExpo",
+                duration: 800
+            }, "-=600")
+            .add({
+                targets: "#hero-btn",
+                scale: [0.5, 1],
+                opacity: [0, 1],
+                easing: "easeOutBounce",
+                duration: 1200
+            }, "-=500");
+
+        // Fade-in Projects Section
+        anime({
+            targets: "#projects-container",
+            opacity: [0, 1],
+            translateY: [-30, 0],
+            easing: "easeOutExpo",
+            duration: 1200,
+            delay: 500
+        });
+
+        // Hover Animation for Project Cards
+        document.querySelectorAll(".project-card").forEach(card => {
+            card.addEventListener("mouseenter", function () {
+                anime({
+                    targets: card,
+                    scale: [1, 1.03],
+                    boxShadow: "0 12px 24px rgba(0, 0, 0, 0.2)",
+                    duration: 300,
+                    easing: "easeInOutQuad"
+                });
+            });
+
+            card.addEventListener("mouseleave", function () {
+                anime({
+                    targets: card,
+                    scale: [1.03, 1],
+                    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                    duration: 300,
+                    easing: "easeInOutQuad"
+                });
+            });
+        });
+    });
+</script>
+
 {% endblock content %}
