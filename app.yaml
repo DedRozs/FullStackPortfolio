@@ -26,4 +26,3 @@ handlers:
   - url: /static
     static_files: static/*
     upload: static/*
-    application_readable: true
