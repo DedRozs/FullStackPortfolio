@@ -127,6 +127,9 @@ if not DEBUG:  # Use GCS in production
     STATIC_URL = f"https://storage.googleapis.com/{os.getenv('GS_BUCKET_NAME')}/static/"
     STATIC_ROOT = BASE_DIR / "static"
 
+    MEDIA_URL = f"https://storage.googleapis.com/{os.getenv('GS_BUCKET_NAME')}/media/"
+    MEDIA_ROOT = BASE_DIR / "media"
+
     DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
     STATICFILES_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
 
@@ -136,7 +139,8 @@ if not DEBUG:  # Use GCS in production
 else:
     STATIC_URL = "/static/"
     STATIC_ROOT = BASE_DIR / "static"
-
+    MEDIA_URL = "/media/"
+    MEDIA_ROOT = BASE_DIR / "media"
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
