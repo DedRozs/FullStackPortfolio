@@ -1,4 +1,4 @@
-name: Deploy Django to Google App Engine (Production)
+name: Production Deployment
 
 on:
   workflow_run:
