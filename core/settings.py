@@ -25,7 +25,8 @@ print(ON_GAE)
 
 # Debug mode - Only True in local development
 DEBUG = not ON_GAE  # Automatically set to False when deployed on GAE
-DEBUG = True
+DEBUG = False
+
 # Allowed Hosts
 ALLOWED_HOSTS = [
     "ai-fullstack-portfolio.uc.r.appspot.com",
@@ -100,13 +101,16 @@ GS_BUCKET_NAME = os.getenv("GS_BUCKET_NAME")
 
 
 if ON_GAE:
-    # ✅ Fix: Use anonymous credentials for static files to prevent signing error
+    # ✅ Fix: Use default credentials for static files to prevent signing error
     GS_CREDENTIALS = None
 else:
     # Use service account credentials for local development
     GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
         os.path.join(BASE_DIR,  "creds.json")
     )
+
+
+print(GS_CREDENTIALS.service_account_email)
 
 STATICFILES_DIRS = [
     BASE_DIR / "static",
@@ -119,6 +123,7 @@ STORAGES = {
         "OPTIONS": {
             "bucket_name": GS_BUCKET_NAME,
             "credentials": GS_CREDENTIALS,
+            "location":"media/"
         }
     },
     "staticfiles": {
@@ -126,6 +131,7 @@ STORAGES = {
         "OPTIONS": {
             "bucket_name": GS_BUCKET_NAME,
             "credentials": GS_CREDENTIALS,
+            "location":"static/"
         }
     }
 }
@@ -149,13 +155,13 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-# Security (Production Settings)
-if ON_GAE:
-    SECURE_SSL_REDIRECT = True
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    SECURE_BROWSER_XSS_FILTER = True
-    SECURE_CONTENT_TYPE_NOSNIFF = True
+# # Security (Production Settings)
+# if ON_GAE:
+#     SECURE_SSL_REDIRECT = True
+#     SESSION_COOKIE_SECURE = True
+#     CSRF_COOKIE_SECURE = True
+#     SECURE_BROWSER_XSS_FILTER = True
+#     SECURE_CONTENT_TYPE_NOSNIFF = True
 
 # Internationalization
 LANGUAGE_CODE = "en-us"
