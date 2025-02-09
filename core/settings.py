@@ -25,7 +25,7 @@ print(ON_GAE)
 
 # Debug mode - Only True in local development
 DEBUG = not ON_GAE  # Automatically set to False when deployed on GAE
-DEBUG = False
+DEBUG = True
 
 # Allowed Hosts
 ALLOWED_HOSTS = [
