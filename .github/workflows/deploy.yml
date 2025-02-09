@@ -1,42 +1,44 @@
 name: Production Deployment
 
 on:
-  push:
-    branches:
-      - main  # Runs deployment when code is pushed to `main`
+  workflow_run:
+    workflows: ["Production Pre-Deployment Tests"]
+    types:
+      - completed
 
 jobs:
   deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 Checkout Code
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: ⚡ Set up Python Environment
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: "pip"
 
-      - name: 🏗 Set up Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v1
-        with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-
-      - name: 📦 Install Dependencies (Cached)
+      - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip setuptools wheel
           pip install -r requirements.txt
 
-          - name: Authenticate with Google Cloud
-          env:
-            GCLOUD_SERVICE_KEY:  ${{ secrets.GCP_SA_KEY }}
-          run: |
-            echo "$GCLOUD_SERVICE_KEY" > key.json
-            gcloud auth activate-service-account --key-file=key.json
-            gcloud config set project ai-fullstack-portfolio
-            export GOOGLE_APPLICATION_CREDENTIALS=$PWD/key.json  # Fixes auth issues
+      - name: Install Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          version: latest
+
+      - name: Authenticate with Google Cloud
+        env:
+          GCLOUD_SERVICE_KEY:  ${{ secrets.GCP_SA_KEY }}
+        run: |
+          echo "$GCLOUD_SERVICE_KEY" > key.json
+          gcloud auth activate-service-account --key-file=key.json
+          gcloud config set project ai-fullstack-portfolio
+          export GOOGLE_APPLICATION_CREDENTIALS=$PWD/key.json  # Fixes auth issues
 
       - name: 📄 Generate Secure `app.yaml` from GitHub Secrets
         run: |
@@ -76,13 +78,8 @@ jobs:
               script: auto
           EOF
 
-      - name: 🔑 Generate `key.json` for Google Cloud Authentication
-        run: |
-          echo "${{ secrets.GCP_SA_KEY }}" > key.json
-          gcloud auth activate-service-account --key-file=key.json
-          gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
-          export GOOGLE_APPLICATION_CREDENTIALS=$PWD/key.json
 
-      - name: 🚀 Deploy to Google App Engine (Auto-Retry)
+
+      - name: Deploy to Google App Engine (Production)
         run: |
-          gcloud app deploy app.yaml --quiet --version=production --promote || gcloud app deploy app.yaml --quiet --version=production --promote
+          gcloud app deploy app.yaml --quiet --version=production --promote
