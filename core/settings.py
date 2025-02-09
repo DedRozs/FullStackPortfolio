@@ -44,7 +44,10 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "storages"
+    "storages",
+    'apps.analytics',
+    'rest_framework',
+    'drf_yasg'
 ]
 
 
@@ -146,7 +149,7 @@ MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/media/"
 
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp-relay.gmail.com"  # Use Google's SMTP relay
+EMAIL_HOST = "smtp-pulse.com"  # Use Google's SMTP relay
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "your.email@example.com")

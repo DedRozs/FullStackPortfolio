@@ -93,6 +93,8 @@ def projects_view(request):
 
     return render(request, "portfolio/projects.html", {"projects": projects_list})
 
+from core.utils import send_contact_form
+
 def contact_view(request):
     if request.method == "POST":
         name = request.POST.get("name")
@@ -105,13 +107,7 @@ def contact_view(request):
             return redirect("contact")
 
         # Send email notification (update with your email settings)
-        send_mail(
-            subject=f"New Contact Form Submission from {name}",
-            message=f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}",
-            from_email="your.email@example.com",  # Replace with your email
-            recipient_list=["your.email@example.com"],  # Replace with recipient email
-            fail_silently=False,
-        )
+        send_contact_form(message, email, name)
 
         # Display success message
         messages.success(request, "Your message has been sent successfully!")
