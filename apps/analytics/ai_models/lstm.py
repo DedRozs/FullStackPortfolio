@@ -57,7 +57,7 @@ def get_latest_model():
     model_dir = os.path.join(settings.BASE_DIR, "models")
     model_files = [f for f in os.listdir(model_dir) if f.startswith("lstm_model")]
     if not model_files:
-        raise FileNotFoundError("No LSTM models found in models/ directory.")
+        generate_new_model()
     
     latest_model = sorted(model_files)[-1]  # Get latest version
     return os.path.join(model_dir, latest_model)

@@ -108,3 +108,5 @@ staticfiles/
 app.yaml
 creds.json
 *.pkl
+*.pth
+analytics/tests.py
