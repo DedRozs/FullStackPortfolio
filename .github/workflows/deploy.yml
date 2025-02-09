@@ -2,7 +2,7 @@ name: Production Deployment
 
 on:
   workflow_run:
-    workflows: ["Run Tests Before Deployment"]
+    workflows: ["Production Pre-Deployment Tests"]
     types:
       - completed
 
