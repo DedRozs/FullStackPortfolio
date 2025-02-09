@@ -1,10 +1,6 @@
-<head>
-    <title>Portfolio | Full-Stack Developer</title>
-    <meta content="Welcome to my professional portfolio showcasing my skills and projects." name="description" />
-    <meta content="Full-Stack Developer, Web Developer, JavaScript, Python, TailwindCSS, Portfolio" name="keywords" />
-</head>{% extends "global/base.html" %}
+{% extends "global/base.html" %}
 {% load static %}
-
+{% block title %}Home{% endblock title %}
 {% block content %}
 <!-- Hero Section (Optimized for Hiring & Tailwind v4 Best Practices) -->
 <section class="relative flex flex-col items-center justify-center min-h-screen p-6" id="hero-section">
@@ -17,7 +13,10 @@
         <!-- Text Content - Polished for Hiring Professionals -->
         <div class="text-center bg-black/80 p-6 md:p-10 rounded-lg shadow-lg">
             <h1 class="text-3xl md:text-5xl font-bold" id="hero-title">
-                Full-Stack Developer | Joseph Prince
+                Joseph Prince
+            </h1>
+            <h1 class="text-3xl md:text-5xl font-bold text-blue-500" id="hero-title">
+                Full-Stack Developer
             </h1>
             <p class="mt-4 text-base md:text-lg text-gray-200 opacity-0" id="hero-desc">
                 I am a Full-Stack Developer with 3 years of experience specializing in

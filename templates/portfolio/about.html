@@ -1,17 +1,14 @@
-<head>
-        <title>Portfolio | Full-Stack Developer</title>
-        <meta content="Welcome to my professional portfolio showcasing my skills and projects." name="description" />
-        <meta content="Full-Stack Developer, Web Developer, JavaScript, Python, TailwindCSS, Portfolio"
-                name="keywords" />
-</head>{% extends "global/base.html" %}
+{% extends "global/base.html" %}
 {% load static %}
-
+{% block title %}About Me{% endblock title %}
 {% block content %}
 <!-- About Section (Enhanced for Maximum Impact) -->
 <section class="relative flex items-center justify-center min-h-screen text-center px-6" id="about-section">
         <!-- Light Overlay for Readability -->
         <div class="absolute inset-0 bg-black/50 z-0"></div>
-        <div class="max-w-5xl mx-auto flex flex-col items-center gap-8 relative z-10 text-white">
+        <div class="max-w-5xl mx-auto flex flex-col items-center gap-8 relative z-10 text-white bg-black/80 p-6 md:p-10 rounded-lg shadow-lg">
+                <img alt="Joseph Prince Headshot" class="w-40 h-40 md:w-56 md:h-56 rounded-full shadow-lg object-cover"
+                src="{% static 'images/headshot.jpg' %}" />
                 <h1 class="text-4xl font-bold">About Me</h1>
                 <p class="max-w-3xl text-lg text-gray-200">
                         I am <strong>Joseph Prince</strong>, a results-driven Full-Stack Developer
@@ -29,8 +26,6 @@
                                 solutions</strong>
                         with <strong>Google Cloud and GitHub Actions</strong>.
                 </p>
-                <img alt="Joseph Prince Headshot" class="w-40 h-40 md:w-56 md:h-56 rounded-full shadow-lg object-cover"
-                        src="{% static 'images/headshot.jpg' %}" />
         </div>
 </section>
 <!-- Skills Section (Stronger Positioning) -->

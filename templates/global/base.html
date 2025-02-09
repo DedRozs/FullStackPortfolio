@@ -46,7 +46,7 @@
     <link href="{% static 'favicon.png' %}" rel="icon" type="image/png" />
     <!-- Tailwind CSS -->
     <link href="{% static 'css/output.css' %}" rel="stylesheet" />
-    <title>Portfolio | Joseph Prince</title>
+    <title>{% block title %}{% endblock title %} | Joseph Prince</title>
     {% block head %}{% endblock head %}
 
     <style>
