@@ -17,8 +17,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Security & Debug
 SECRET_KEY = os.getenv("SECRET_KEY", "your-default-secret-key")
 
+
+
 # ✅ Detect if running in Google App Engine
 ON_GAE = "GAE_INSTANCE" in os.environ
+print(ON_GAE)
 
 # Debug mode - Only True in local development
 DEBUG = not ON_GAE  # Automatically set to False when deployed on GAE
