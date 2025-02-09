@@ -1,26 +1,26 @@
 <!DOCTYPE html>
+
 <html lang="en">
 {% load static %}
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Welcome to Joseph Prince's portfolio. A Full-Stack Developer specializing in modern web experiences.">
-    <meta name="keywords" content="Full-Stack Developer, Web Developer, JavaScript, Python, TailwindCSS, Portfolio">
-    <meta name="author" content="Joseph Prince">
-    
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta content="Welcome to Joseph Prince's portfolio. A Full-Stack Developer specializing in modern web experiences."
+        name="description" />
+    <meta content="Full-Stack Developer, Web Developer, JavaScript, Python, TailwindCSS, Portfolio" name="keywords" />
+    <meta content="Joseph Prince" name="author" />
     <!-- Open Graph Meta Tags (for Social Media Preview) -->
-    <meta property="og:title" content="Portfolio | Joseph Prince">
-    <meta property="og:description" content="A Full-Stack Developer specializing in modern web experiences.">
-    <meta property="og:image" content="{% static 'images/preview.jpg' %}">
-    <meta property="og:url" content="https://www.thejosephprince.com">
-    <meta property="og:type" content="website">
-
+    <meta content="Portfolio | Joseph Prince" property="og:title" />
+    <meta content="A Full-Stack Developer specializing in modern web experiences." property="og:description" />
+    <meta content="{% static 'images/preview.jpg' %}" property="og:image" />
+    <meta content="https://www.thejosephprince.com" property="og:url" />
+    <meta content="website" property="og:type" />
     <!-- Twitter Meta Tags -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Portfolio | Joseph Prince">
-    <meta name="twitter:description" content="A Full-Stack Developer specializing in modern web experiences.">
-    <meta name="twitter:image" content="{% static 'images/preview.jpg' %}">
-
+    <meta content="summary_large_image" name="twitter:card" />
+    <meta content="Portfolio | Joseph Prince" name="twitter:title" />
+    <meta content="A Full-Stack Developer specializing in modern web experiences." name="twitter:description" />
+    <meta content="{% static 'images/preview.jpg' %}" name="twitter:image" />
     <!-- Structured Data (Google Rich Results) -->
     <script type="application/ld+json">
     {
@@ -40,16 +40,12 @@
       }
     }
     </script>
-
     <!-- Anime.js for Animations -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
-
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="{% static 'favicon.png' %}">
-
+    <link href="{% static 'favicon.png' %}" rel="icon" type="image/png" />
     <!-- Tailwind CSS -->
-    <link href="{% static 'css/output.css' %}" rel="stylesheet">
-
+    <link href="{% static 'css/output.css' %}" rel="stylesheet" />
     <title>Portfolio | Joseph Prince</title>
     {% block head %}{% endblock head %}
 
@@ -75,7 +71,8 @@
             width: auto;
             height: auto;
             object-fit: cover;
-            opacity: 1; /* Ensure the video is fully visible */
+            opacity: 1;
+            /* Ensure the video is fully visible */
         }
 
         /* Ensure overlay for better readability */
@@ -85,7 +82,8 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.05); /* Very light overlay */
+            background: rgba(0, 0, 0, 0.05);
+            /* Very light overlay */
             z-index: 0;
         }
     </style>
@@ -94,15 +92,13 @@
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white">
     <!-- Background Video -->
     <div id="video-container">
-        <video id="background-video" autoplay loop muted playsinline>
-            <source src="{% static 'videos/background.mp4' %}" type="video/mp4">
+        <video autoplay="" id="background-video" loop="" muted="" playsinline="">
+            <source src="{% static 'videos/background.mp4' %}" type="video/mp4" />
             Your browser does not support the video tag.
         </video>
     </div>
-
     <!-- Light Overlay for Readability -->
     <div id="video-overlay"></div>
-
     <!-- Navigation -->
     {% include "global/navigation.html" %}
 
@@ -110,7 +106,6 @@
     <main class="relative flex-grow z-10">
         {% block content %}{% endblock content %}
     </main>
-
     <!-- Footer -->
     {% include "global/footer.html" %}
 
@@ -128,4 +123,5 @@
     </script>
     {% block scripts %}{% endblock scripts %}
 </body>
+
 </html>

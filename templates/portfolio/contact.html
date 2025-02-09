@@ -1,4 +1,8 @@
-{% extends "global/base.html" %}
+<head>
+    <title>Portfolio | Full-Stack Developer</title>
+    <meta content="Welcome to my professional portfolio showcasing my skills and projects." name="description" />
+    <meta content="Full-Stack Developer, Web Developer, JavaScript, Python, TailwindCSS, Portfolio" name="keywords" />
+</head>{% extends "global/base.html" %}
 {% load static %}
 
 {% block content %}
@@ -7,18 +11,17 @@
     <div class="max-w-5xl mx-auto text-center">
         <h1 class="text-4xl font-bold text-white">Get in Touch</h1>
         <p class="text-lg text-gray-300 max-w-3xl mx-auto mt-4">
-            Whether you're a hiring professional looking for a skilled  
-            <strong>Full-Stack Developer</strong> or a client interested in a  
+            Whether you're a hiring professional looking for a skilled
+            <strong>Full-Stack Developer</strong> or a client interested in a
             <strong>custom-built web solution</strong>, I’d love to hear from you!
         </p>
     </div>
-
     <!-- Flash Messages -->
     {% if messages %}
     <div class="max-w-4xl mx-auto mb-4">
         {% for message in messages %}
-        <div class="text-white text-center py-3 px-4 rounded-lg 
-                    {% if message.tags == 'success' %} bg-green-600 {% else %} bg-red-600 {% endif %}">
+        <div
+            class="text-white text-center py-3 px-4 rounded-lg {% if message.tags == 'success' %} bg-green-600 {% else %} bg-red-600 {% endif %}">
             {{ message }}
         </div>
         {% endfor %}
@@ -31,57 +34,58 @@
         <div class="bg-gray-800 p-6 rounded-lg shadow-lg text-center flex flex-col min-h-[220px]">
             <h2 class="text-xl font-semibold text-white">Email</h2>
             <p class="text-gray-400 mt-2 flex-grow">Reach out via email for job opportunities or project inquiries.</p>
-            <a href="mailto:your.email@example.com"
-               class="mt-4 inline-block text-blue-500 hover:text-blue-400 transition-colors">
+            <a class="mt-4 inline-block text-blue-500 hover:text-blue-400 transition-colors"
+                href="mailto:your.email@example.com">
                 your.email@example.com
             </a>
         </div>
-
         <!-- LinkedIn -->
         <div class="bg-gray-800 p-6 rounded-lg shadow-lg text-center flex flex-col min-h-[220px]">
             <h2 class="text-xl font-semibold text-white">LinkedIn</h2>
             <p class="text-gray-400 mt-2 flex-grow">Connect with me for networking and professional opportunities.</p>
-            <a href="https://www.linkedin.com/in/yourprofile" target="_blank"
-               class="mt-4 inline-block text-blue-500 hover:text-blue-400 transition-colors">
+            <a class="mt-4 inline-block text-blue-500 hover:text-blue-400 transition-colors"
+                href="https://www.linkedin.com/in/yourprofile" target="_blank">
                 View Profile →
             </a>
         </div>
-
         <!-- GitHub -->
         <div class="bg-gray-800 p-6 rounded-lg shadow-lg text-center flex flex-col min-h-[220px]">
             <h2 class="text-xl font-semibold text-white">GitHub</h2>
             <p class="text-gray-400 mt-2 flex-grow">Check out my latest projects and open-source contributions.</p>
-            <a href="https://github.com/yourgithub" target="_blank"
-               class="mt-4 inline-block text-blue-500 hover:text-blue-400 transition-colors">
+            <a class="mt-4 inline-block text-blue-500 hover:text-blue-400 transition-colors"
+                href="https://github.com/yourgithub" target="_blank">
                 View Projects →
             </a>
         </div>
     </div>
-
     <!-- Contact Form -->
     <div class="mt-16 max-w-4xl mx-auto bg-gray-800 p-8 rounded-lg shadow-lg">
         <h2 class="text-2xl font-semibold text-white text-center">Send a Message</h2>
-        <form action="{% url 'contact' %}" method="POST" class="mt-6">
+        <form action="{% url 'contact' %}" class="mt-6" method="POST">
             {% csrf_token %}
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label for="name" class="block text-gray-400">Name</label>
-                    <input type="text" id="name" name="name" required
-                           class="w-full mt-2 p-3 rounded-lg bg-gray-700 text-white focus:ring-2 focus:ring-blue-500 border border-gray-600">
+                    <label class="block text-gray-400" for="name">Name</label>
+                    <input
+                        class="w-full mt-2 p-3 rounded-lg bg-gray-700 text-white focus:ring-2 focus:ring-blue-500 border border-gray-600"
+                        id="name" name="name" required="" type="text" />
                 </div>
                 <div>
-                    <label for="email" class="block text-gray-400">Email</label>
-                    <input type="email" id="email" name="email" required
-                           class="w-full mt-2 p-3 rounded-lg bg-gray-700 text-white focus:ring-2 focus:ring-blue-500 border border-gray-600">
+                    <label class="block text-gray-400" for="email">Email</label>
+                    <input
+                        class="w-full mt-2 p-3 rounded-lg bg-gray-700 text-white focus:ring-2 focus:ring-blue-500 border border-gray-600"
+                        id="email" name="email" required="" type="email" />
                 </div>
             </div>
             <div class="mt-6">
-                <label for="message" class="block text-gray-400">Message</label>
-                <textarea id="message" name="message" rows="5" required
-                          class="w-full mt-2 p-3 rounded-lg bg-gray-700 text-white focus:ring-2 focus:ring-blue-500 border border-gray-600"></textarea>
+                <label class="block text-gray-400" for="message">Message</label>
+                <textarea
+                    class="w-full mt-2 p-3 rounded-lg bg-gray-700 text-white focus:ring-2 focus:ring-blue-500 border border-gray-600"
+                    id="message" name="message" required="" rows="5"></textarea>
             </div>
-            <button type="submit"
-                    class="mt-6 w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg transition">
+            <button
+                class="mt-6 w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg transition"
+                type="submit">
                 Send Message
             </button>
         </form>
