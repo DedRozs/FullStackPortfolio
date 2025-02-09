@@ -2,8 +2,8 @@ import os
 from pathlib import Path
 import pymysql
 from dotenv import load_dotenv
-from google.auth.credentials import AnonymousCredentials
 from google.oauth2 import service_account
+from google.auth import default
 
 # Install MySQL Client
 pymysql.install_as_MySQLdb()
@@ -101,8 +101,7 @@ GS_BUCKET_NAME = os.getenv("GS_BUCKET_NAME")
 
 
 if ON_GAE:
-    # ✅ Fix: Use default credentials for static files to prevent signing error
-    GS_CREDENTIALS = None
+    GS_CREDENTIALS, _ = default()
 else:
     # Use service account credentials for local development
     GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
