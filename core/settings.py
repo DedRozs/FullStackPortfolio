@@ -26,7 +26,7 @@ SECRET_KEY = "django-insecure-me039&r27)o)8wbt(!tbqtpz%)$ehl#5+_$ai7o1&r8=yz%ok^
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['ai-fullstack-portfolio.uc.r.appspot.com', 'localhost', 'thejosephprince.com', 'www.thejosephprince.com', 'portfolio.thejosephprince.com',]
 
 
 # Application definition
