@@ -1,25 +1,37 @@
 import os
 from pathlib import Path
+import pymysql
 from dotenv import load_dotenv
 
-# Load environment variables from .env in local development
+# Install MySQL Client
+pymysql.install_as_MySQLdb()
+
+# Load environment variables
 load_dotenv()
 
+# Base directory
 BASE_DIR = Path(__file__).resolve().parent.parent
-NPM_BIN_PATH = "C:/Program Files/nodejs/npm.cmd"
 
-# SECURITY WARNING: keep the secret key used in production secret!
+# Security & Debug
 SECRET_KEY = os.getenv("SECRET_KEY", "your-default-secret-key")
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DEBUG", "False") == "True"
+# Detect if running in Google App Engine
+ON_GAE = os.getenv("GAE_ENV", "").startswith("standard")
 
+# Debug mode - Only True in local development
+DEBUG = not ON_GAE  # Automatically set to False when deployed on GAE
 
-ALLOWED_HOSTS = ['ai-fullstack-portfolio.uc.r.appspot.com', 'localhost', 'thejosephprince.com', 'www.thejosephprince.com', 'portfolio.thejosephprince.com','127.0.0.1']
+# Allowed Hosts
+ALLOWED_HOSTS = [
+    "ai-fullstack-portfolio.uc.r.appspot.com",
+    "localhost",
+    "thejosephprince.com",
+    "www.thejosephprince.com",
+    "portfolio.thejosephprince.com",
+    "127.0.0.1",
+]
 
-
-# Application definition
-
+# Installed Apps
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -29,6 +41,10 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 ]
 
+if ON_GAE:
+    INSTALLED_APPS.append("storages")  # Google Cloud Storage for static/media files
+
+# Middleware
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -39,8 +55,10 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+# Root URL Configuration
 ROOT_URLCONF = "core.urls"
 
+# Templates Configuration
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -57,81 +75,59 @@ TEMPLATES = [
     },
 ]
 
+# WSGI Application
 WSGI_APPLICATION = "core.wsgi.application"
 
-
-# Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT', '3306'),
-    }
+        "default": {
+            "ENGINE": "django.db.backends.mysql",
+            "NAME": os.getenv("DB_NAME"),
+            "USER": os.getenv("DB_USER"),
+            "PASSWORD": os.getenv("DB_PASSWORD"),
+            "HOST": os.getenv("DB_HOST"),
+            "PORT": os.getenv("DB_PORT", "3306"),
+        }
 }
 
+# Static & Media Files (Google Cloud Storage)
+if ON_GAE:
+    GS_BUCKET_NAME = os.getenv("GS_BUCKET_NAME")
 
-# Password validation
-# https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
+    STATIC_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/static/"
+    STATICFILES_STORAGE = "storages.backends.gcloud.GCSManifestStaticFilesStorage"
 
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
-]
-
-
-# Internationalization
-# https://docs.djangoproject.com/en/5.1/topics/i18n/
-
-LANGUAGE_CODE = "en-us"
-
-TIME_ZONE = "UTC"
-
-USE_I18N = True
-
-USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.1/howto/static-files/
-
-# Google Cloud Storage Settings for Static Files
-if not DEBUG:  # Use GCS in production
-    INSTALLED_APPS.append("storages")
-
-    STATIC_URL = f"https://storage.googleapis.com/{os.getenv('GS_BUCKET_NAME')}/static/"
-    STATIC_ROOT = BASE_DIR / "static"
-
-    MEDIA_URL = f"https://storage.googleapis.com/{os.getenv('GS_BUCKET_NAME')}/media/"
-    MEDIA_ROOT = BASE_DIR / "media"
-
+    MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/media/"
     DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
-    STATICFILES_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
 
-    GS_BUCKET_NAME = os.getenv("GS_BUCKET_NAME", "ai-fullstack-portfolio.appspot.com")
     GS_CREDENTIALS = None  # App Engine auto-authenticates using service account
-
 else:
     STATIC_URL = "/static/"
-    STATIC_ROOT = BASE_DIR / "staticfiles"
+    STATICFILES_DIRS = [BASE_DIR / "static"]
     MEDIA_URL = "/media/"
     MEDIA_ROOT = BASE_DIR / "media"
-    STATICFILES_DIRS = [BASE_DIR / 'static']
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
+# Authentication
+AUTH_PASSWORD_VALIDATORS = [
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
+]
+
+# Security (Production Settings)
+if ON_GAE:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+
+# Internationalization
+LANGUAGE_CODE = "en-us"
+TIME_ZONE = "America/Denver"
+USE_I18N = True
+USE_L10N = True
+USE_TZ = True
+
+# Default Primary Key Field Type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
