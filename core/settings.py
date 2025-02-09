@@ -101,7 +101,7 @@ GS_BUCKET_NAME = os.getenv("GS_BUCKET_NAME")
 
 if ON_GAE:
     # ✅ Fix: Use anonymous credentials for static files to prevent signing error
-    GS_CREDENTIALS = AnonymousCredentials()
+    GS_CREDENTIALS = None
 else:
     # Use service account credentials for local development
     GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
