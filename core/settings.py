@@ -17,8 +17,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Security & Debug
 SECRET_KEY = os.getenv("SECRET_KEY", "your-default-secret-key")
 
-# Detect if running in Google App Engine
-ON_GAE = os.getenv("GAE_ENV", "")
+# ✅ Detect if running in Google App Engine
+ON_GAE = "GAE_INSTANCE" in os.environ
 
 # Debug mode - Only True in local development
 DEBUG = not ON_GAE  # Automatically set to False when deployed on GAE
@@ -94,6 +94,7 @@ DATABASES = {
 # Static & Media Files (Google Cloud Storage)
 # Google Cloud Storage settings
 GS_BUCKET_NAME = os.getenv("GS_BUCKET_NAME")
+
 
 if ON_GAE:
     # ✅ Fix: Use anonymous credentials for static files to prevent signing error
