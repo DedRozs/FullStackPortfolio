@@ -3,8 +3,6 @@ from pathlib import Path
 import pymysql
 from dotenv import load_dotenv
 
-# Install MySQL Client
-pymysql.install_as_MySQLdb()
 
 # Load environment variables
 load_dotenv()
