@@ -3,6 +3,8 @@ from pathlib import Path
 import pymysql
 from dotenv import load_dotenv
 
+# Install MySQL Client
+pymysql.install_as_MySQLdb()
 
 # Load environment variables
 load_dotenv()
@@ -76,6 +78,7 @@ TEMPLATES = [
 # WSGI Application
 WSGI_APPLICATION = "core.wsgi.application"
 
+# Database Configuration (Google Cloud SQL - MySQL)
 DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.mysql",
@@ -98,11 +101,17 @@ if ON_GAE:
     DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
 
     GS_CREDENTIALS = None  # App Engine auto-authenticates using service account
+
+    # ✅ Fix: Set STATIC_ROOT to prevent collectstatic errors
+    STATIC_ROOT = BASE_DIR / "staticfiles"
 else:
     STATIC_URL = "/static/"
     STATICFILES_DIRS = [BASE_DIR / "static"]
     MEDIA_URL = "/media/"
     MEDIA_ROOT = BASE_DIR / "media"
+
+    # ✅ Fix: Ensure static files are collected locally too
+    STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Authentication
 AUTH_PASSWORD_VALIDATORS = [
