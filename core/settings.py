@@ -20,7 +20,7 @@ SECRET_KEY = os.getenv("SECRET_KEY", "your-default-secret-key")
 
 
 # ✅ Detect if running in Google App Engine
-ON_GAE = "GAE_INSTANCE" in os.environ
+ON_GAE = "GOOGLE_CLOUD_PROJECT" in os.environ
 print(ON_GAE)
 
 # Debug mode - Only True in local development
