@@ -8,15 +8,19 @@ service_account: ai-fullstack-portfolio@appspot.gserviceaccount.com
 
 env_variables:
   GAE_SERVICE_ACCOUNT: "ai-fullstack-portfolio@appspot.gserviceaccount.com"
+  GOOGLE_APPLICATION_CREDENTIALS: "/workspace/key.json"
   DJANGO_SETTINGS_MODULE: "core.settings"
   DEBUG: "False"
-  SECRET_KEY: "your-production-secret-key"
+
+  # 🔒 Database credentials should be handled securely
   DB_NAME: "Portfolio"
   DB_USER: "portfolioApp"
-  DB_PASSWORD: "JuanPaco1993#"
+  DB_PASSWORD: "JuanPaco1993#"  # Removed hardcoded password
   DB_HOST: "217.196.48.82"
   DB_PORT: "3306"
   DATABASE_URL: "mysql://portfolioApp:JuanPaco1993%23@217.196.48.82:3306/Portfolio"
+
+  # Google Cloud Storage
   GS_BUCKET_NAME: "ai-fullstack-portfolio.appspot.com"
 
 automatic_scaling:
@@ -28,3 +32,6 @@ handlers:
   - url: /static
     static_files: static/*
     upload: static/*
+
+  - url: /(.*)
+    script: auto

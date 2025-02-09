@@ -26,6 +26,11 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           pip install -r requirements.txt
 
+      - name: Install Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          version: latest
+
       - name: Authenticate with Google Cloud
         env:
           GCLOUD_SERVICE_KEY:  ${{ secrets.GCP_SA_KEY }}
@@ -33,11 +38,7 @@ jobs:
           echo "$GCLOUD_SERVICE_KEY" > key.json
           gcloud auth activate-service-account --key-file=key.json
           gcloud config set project ai-fullstack-portfolio
-
-      - name: Install Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v1
-        with:
-          version: latest
+          gcloud auth application-default login --quiet
 
       - name: Set Environment Variables in Deployment
         run: |
@@ -50,7 +51,6 @@ jobs:
           echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> $GITHUB_ENV
           echo "GS_BUCKET_NAME=${{ secrets.GS_BUCKET_NAME }}" >> $GITHUB_ENV
 
-
       - name: Run Database Migrations
         run: python manage.py migrate
 
@@ -59,8 +59,4 @@ jobs:
 
       - name: Deploy to Google App Engine (Production)
         run: |
-          gcloud app deploy app.yaml \
-            --quiet \
-            --project=${{ secrets.GCP_PROJECT_ID }} \
-            --version=production \
-            --promote
+          gcloud app deploy app.yaml --quiet --version=production --promote
