@@ -8,7 +8,7 @@ on:
 
 jobs:
   deploy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}  # Only deploy if tests pass
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -36,6 +36,18 @@ jobs:
         with:
           version: latest
 
+      - name: Set Environment Variables in Deployment
+        run: |
+          echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> $GITHUB_ENV
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> $GITHUB_ENV
+          echo "DB_USER=${{ secrets.DB_USER }}" >> $GITHUB_ENV
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
+          echo "DB_HOST=${{ secrets.DB_HOST }}" >> $GITHUB_ENV
+          echo "DB_PORT=${{ secrets.DB_PORT }}" >> $GITHUB_ENV
+          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> $GITHUB_ENV
+          echo "GS_BUCKET_NAME=${{ secrets.GS_BUCKET_NAME }}" >> $GITHUB_ENV
+
+
       - name: Run Database Migrations
         run: python manage.py migrate
 
@@ -48,4 +60,4 @@ jobs:
             --quiet \
             --project=${{ secrets.GCP_PROJECT_ID }} \
             --version=production \
-            --promote  # Automatically routes traffic to this version
+            --promote

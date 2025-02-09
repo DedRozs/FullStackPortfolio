@@ -1,23 +1,21 @@
-runtime: python312  # Change to your Python version (e.g., python311)
+runtime: python312  # Ensure you are using the correct Python version
 entrypoint: gunicorn -b :$PORT core.wsgi
 
-
-instance_class: F2  # Choose an instance class based on your needs
+instance_class: F2  # Adjust based on your needs
 
 service: default
 
 env_variables:
   DJANGO_SETTINGS_MODULE: "core.settings"
-  DB_NAME: ${{ secrets.DB_NAME }}
-  DB_USER: ${{ secrets.DB_USER }}
-  DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-  DB_HOST: ${{ secrets.DB_HOST }}
-  DB_PORT: ${{ secrets.DB_PORT }}
-  SECRET_KEY: ${{ secrets.SECRET_KEY }}
-  DATABASE_URL: ${{ secrets.DATABASE_URL }}
   DEBUG: "False"
-
-
+  SECRET_KEY: "your-production-secret-key"
+  DB_NAME: "Portfolio"
+  DB_USER: "portfolioApp"
+  DB_PASSWORD: "JuanPaco1993#"
+  DB_HOST: "217.196.48.82"
+  DB_PORT: "3306"
+  DATABASE_URL: "mysql://portfolioApp:JuanPaco1993%23@217.196.48.82:3306/Portfolio"
+  GS_BUCKET_NAME: "ai-fullstack-portfolio.appspot.com"
 
 automatic_scaling:
   target_cpu_utilization: 0.65
@@ -26,6 +24,6 @@ automatic_scaling:
 
 handlers:
   - url: /static
-    static_dir: staticfiles/
-  - url: /.*
-    script: auto
+    static_files: static/*
+    upload: static/*
+    application_readable: true
