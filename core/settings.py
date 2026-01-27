@@ -13,11 +13,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 import os
 from pathlib import Path
 
-import pymysql
 from dotenv import load_dotenv
-
-# Install MySQL Client
-pymysql.install_as_MySQLdb()
 
 # Load environment variables from .env file
 load_dotenv()
@@ -132,10 +128,12 @@ USE_L10N = True
 USE_TZ = True
 
 
-# Static & Media Files (Google Cloud Storage)
+# Static & Media Files Configuration
+# Use local files for development, GCS for production (GAE)
 GS_BUCKET_NAME = os.getenv('GS_BUCKET_NAME')
+GS_CREDENTIALS = None
 
-if GS_BUCKET_NAME:
+if ON_GAE and GS_BUCKET_NAME:
     from google.auth import compute_engine, impersonated_credentials
     from google.oauth2 import service_account
 

@@ -3,6 +3,11 @@
 import os
 import sys
 
+# Initialize PyMySQL as MySQLdb replacement with version patch for Django 6.0
+import pymysql
+pymysql.install_as_MySQLdb()
+pymysql.version_info = (2, 2, 1, 'final', 0)
+
 
 def main():
     """Run administrative tasks."""
