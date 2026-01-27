@@ -27,13 +27,13 @@ urlpatterns = [
     path('api/blog/', include('apps.blog.presentation.urls')),
 ]
 
-# Serve static files in development (before catch-all)
-if settings.DEBUG:
-    urlpatterns += [
-        re_path(r'^static/(?P<path>.*)$', serve, {
-            'document_root': settings.BASE_DIR / 'staticfiles' / 'frontend',
-        }),
-    ]
+# Serve static files from frontend build (both dev and production)
+# Must be before the SPA catch-all
+urlpatterns += [
+    re_path(r'^static/(?P<path>.*)$', serve, {
+        'document_root': settings.BASE_DIR / 'staticfiles' / 'frontend',
+    }),
+]
 
 # Serve React app for all other routes (SPA catch-all) - must be last
 urlpatterns += [
