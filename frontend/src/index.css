@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+@theme {
+  --color-dark-900: #0a0a0f;
+  --color-dark-800: #12121a;
+  --color-dark-700: #1a1a24;
+}
+
+@layer base {
+  body {
+    @apply bg-dark-900 text-gray-100 min-h-screen antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+}
