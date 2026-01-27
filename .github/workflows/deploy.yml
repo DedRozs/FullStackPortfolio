@@ -66,6 +66,7 @@ jobs:
             REST_API_ID: "${{ secrets.REST_API_ID }}"
             REST_API_SECRET: "${{ secrets.REST_API_SECRET }}"
             SENDGRID_API_KEY: "${{ secrets.SENDGRID_API_KEY }}"
+            SMS_NOTIFICATION_NUMBER: "${{ secrets.SMS_NOTIFICATION_NUMBER }}"
           automatic_scaling:
             target_cpu_utilization: 0.65
             min_instances: 1

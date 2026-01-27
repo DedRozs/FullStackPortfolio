@@ -117,11 +117,41 @@ class ContactApplicationService:
             sg.send(mail)
             logger.info(f"Contact form email sent for message from {message.email}")
             
+            # Send SMS notification via AT&T email gateway
+            self._send_sms_notification(message, sg, from_email)
+            
         except Exception as e:
             # Log error but don't fail the message creation
             logger.error(f"Failed to send contact form email: {e}")
-        
-        return message.id
+    
+    def _send_sms_notification(self, message: ContactMessage, sg, from_email: str) -> None:
+        """Send SMS notification via AT&T email-to-SMS gateway."""
+        try:
+            from sendgrid.helpers.mail import Mail
+            
+            sms_number = getattr(settings, 'SMS_NOTIFICATION_NUMBER', '')
+            if not sms_number:
+                logger.debug("SMS notification not configured, skipping")
+                return
+            
+            # AT&T email-to-SMS gateway format
+            sms_email = f"{sms_number}@txt.att.net"
+            
+            # Keep SMS short (160 char limit for single SMS)
+            sms_text = f"Portfolio msg from {message.name}: {str(message.message)[:80]}"
+            
+            sms_mail = Mail(
+                from_email=from_email,
+                to_emails=sms_email,
+                subject="",  # No subject for SMS
+                plain_text_content=sms_text,
+            )
+            
+            sg.send(sms_mail)
+            logger.info(f"SMS notification sent for contact from {message.email}")
+            
+        except Exception as e:
+            logger.warning(f"Failed to send SMS notification: {e}")
     
     def mark_as_read(self, command: MarkMessageAsReadCommand) -> None:
         """Handle MarkMessageAsReadCommand."""

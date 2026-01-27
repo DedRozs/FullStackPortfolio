@@ -202,3 +202,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY', '')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'no-reply@thejosephprince.com')
 CONTACT_FORM_RECIPIENT = os.getenv('CONTACT_FORM_RECIPIENT', 'jprincemarketing@gmail.com')
+
+# SMS Notification via AT&T email gateway (phonenumber@txt.att.net)
+SMS_NOTIFICATION_NUMBER = os.getenv('SMS_NOTIFICATION_NUMBER', '')
