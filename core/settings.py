@@ -205,3 +205,8 @@ CONTACT_FORM_RECIPIENT = os.getenv('CONTACT_FORM_RECIPIENT', 'jprincemarketing@g
 
 # SMS Notification via AT&T email gateway (phonenumber@txt.att.net)
 SMS_NOTIFICATION_NUMBER = os.getenv('SMS_NOTIFICATION_NUMBER', '')
+
+# Twilio SMS Configuration
+TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID', '')
+TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN', '')
+TWILIO_PHONE_NUMBER = os.getenv('TWILIO_PHONE_NUMBER', '')

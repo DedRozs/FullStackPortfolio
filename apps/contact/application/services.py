@@ -117,37 +117,37 @@ class ContactApplicationService:
             sg.send(mail)
             logger.info(f"Contact form email sent for message from {message.email}")
             
-            # Send SMS notification via AT&T email gateway
-            self._send_sms_notification(message, sg, from_email)
+            # Send SMS notification via Twilio
+            self._send_sms_notification(message)
             
         except Exception as e:
             # Log error but don't fail the message creation
             logger.error(f"Failed to send contact form email: {e}")
     
-    def _send_sms_notification(self, message: ContactMessage, sg, from_email: str) -> None:
-        """Send SMS notification via AT&T email-to-SMS gateway."""
+    def _send_sms_notification(self, message: ContactMessage) -> None:
+        """Send SMS notification via Twilio."""
         try:
-            from sendgrid.helpers.mail import Mail
+            from twilio.rest import Client
             
-            sms_number = getattr(settings, 'SMS_NOTIFICATION_NUMBER', '')
-            if not sms_number:
-                logger.debug("SMS notification not configured, skipping")
+            account_sid = getattr(settings, 'TWILIO_ACCOUNT_SID', '')
+            auth_token = getattr(settings, 'TWILIO_AUTH_TOKEN', '')
+            from_number = getattr(settings, 'TWILIO_PHONE_NUMBER', '')
+            to_number = getattr(settings, 'SMS_NOTIFICATION_NUMBER', '')
+            
+            if not all([account_sid, auth_token, from_number, to_number]):
+                logger.debug("Twilio not configured, skipping SMS notification")
                 return
             
-            # AT&T MMS gateway (more reliable than txt.att.net)
-            sms_email = f"{sms_number}@mms.att.net"
+            client = Client(account_sid, auth_token)
             
-            # Brief notification to check email
             sms_text = f"New portfolio inquiry from {message.name}. Check your email for details."
             
-            sms_mail = Mail(
-                from_email=from_email,
-                to_emails=sms_email,
-                subject="Portfolio Contact",
-                plain_text_content=sms_text,
+            client.messages.create(
+                body=sms_text,
+                from_=from_number,
+                to=f"+1{to_number}"
             )
             
-            sg.send(sms_mail)
             logger.info(f"SMS notification sent for contact from {message.email}")
             
         except Exception as e:

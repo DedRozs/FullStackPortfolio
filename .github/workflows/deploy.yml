@@ -67,6 +67,9 @@ jobs:
             REST_API_SECRET: "${{ secrets.REST_API_SECRET }}"
             SENDGRID_API_KEY: "${{ secrets.SENDGRID_API_KEY }}"
             SMS_NOTIFICATION_NUMBER: "${{ secrets.SMS_NOTIFICATION_NUMBER }}"
+            TWILIO_ACCOUNT_SID: "${{ secrets.TWILIO_ACCOUNT_SID }}"
+            TWILIO_AUTH_TOKEN: "${{ secrets.TWILIO_AUTH_TOKEN }}"
+            TWILIO_PHONE_NUMBER: "${{ secrets.TWILIO_PHONE_NUMBER }}"
           automatic_scaling:
             target_cpu_utilization: 0.65
             min_instances: 1
