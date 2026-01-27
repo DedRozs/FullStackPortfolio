@@ -6,7 +6,10 @@ import sys
 # Initialize PyMySQL as MySQLdb replacement with version patch for Django 6.0
 import pymysql
 pymysql.install_as_MySQLdb()
+# Patch version_info to satisfy Django 6.0's mysqlclient version check
 pymysql.version_info = (2, 2, 1, 'final', 0)
+# Also patch the MySQLdb module that Django actually checks
+sys.modules['MySQLdb'].version_info = (2, 2, 1, 'final', 0)
 
 
 def main():
