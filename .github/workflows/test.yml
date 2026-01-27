@@ -26,12 +26,7 @@ jobs:
           pip install pytest
 
       - name: Run Tests with pytest
-        run: |
-          if pytest --collect-only | grep "collected 0 items"; then
-            echo "No tests found. Proceeding with deployment."
-          else
-            pytest
-          fi
+        run: pytest -v
 
       - name: Upload Test Results
         if: success()  # Only upload if tests pass
