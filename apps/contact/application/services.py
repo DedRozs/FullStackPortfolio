@@ -134,8 +134,8 @@ class ContactApplicationService:
                 logger.debug("SMS notification not configured, skipping")
                 return
             
-            # AT&T email-to-SMS gateway format
-            sms_email = f"{sms_number}@txt.att.net"
+            # AT&T MMS gateway (more reliable than txt.att.net)
+            sms_email = f"{sms_number}@mms.att.net"
             
             # Brief notification to check email
             sms_text = f"New portfolio inquiry from {message.name}. Check your email for details."
