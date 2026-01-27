@@ -6,8 +6,11 @@ Application services orchestrate use cases by:
 3. Using repositories for persistence
 4. Publishing domain events
 """
+import logging
 from dataclasses import dataclass
 from uuid import UUID
+
+from django.conf import settings
 
 from apps.contact.domain.entities import ContactMessage
 from apps.contact.domain.events import ContactMessageCreated, ContactMessageRead
@@ -20,6 +23,8 @@ from apps.contact.application.commands import (
 from apps.contact.application.queries import GetMessageByIdQuery, GetAllMessagesQuery
 from apps.shared.domain.value_objects import Email, PersonName
 from apps.shared.infrastructure.event_bus import EventBus
+
+logger = logging.getLogger(__name__)
 
 
 class ContactApplicationService:
@@ -40,7 +45,7 @@ class ContactApplicationService:
     def create_message(self, command: CreateContactMessageCommand) -> UUID:
         """Handle CreateContactMessageCommand.
         
-        Creates a new contact message and publishes an event.
+        Creates a new contact message, sends email notification, and publishes an event.
         Returns the message ID.
         """
         # Create value objects (validation happens here)
@@ -57,6 +62,9 @@ class ContactApplicationService:
         # Persist through repository
         self._repository.save(message)
         
+        # Send email notification
+        self._send_email_notification(message)
+        
         # Publish domain event
         event = ContactMessageCreated(
             message_id=message.id,
@@ -64,6 +72,49 @@ class ContactApplicationService:
             sender_email=str(message.email),
         )
         self._event_bus.publish(event)
+        
+        return message.id
+    
+    def _send_email_notification(self, message: ContactMessage) -> None:
+        """Send email notification for new contact message via SendGrid."""
+        try:
+            from sendgrid import SendGridAPIClient
+            from sendgrid.helpers.mail import Mail
+            
+            api_key = getattr(settings, 'SENDGRID_API_KEY', '')
+            recipient = getattr(settings, 'CONTACT_FORM_RECIPIENT', '')
+            from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@thejosephprince.com')
+            
+            if not api_key or not recipient:
+                logger.warning("SendGrid not configured, skipping email notification")
+                return
+            
+            subject = f"Portfolio Contact: {message.name}"
+            html_content = f"""
+            <h2>New message from your portfolio website</h2>
+            <p><strong>From:</strong> {message.name}</p>
+            <p><strong>Email:</strong> <a href="mailto:{message.email}">{message.email}</a></p>
+            <hr>
+            <h3>Message:</h3>
+            <p>{message.message}</p>
+            <hr>
+            <p><small>Sent from thejosephprince.com contact form</small></p>
+            """
+            
+            mail = Mail(
+                from_email=from_email,
+                to_emails=recipient,
+                subject=subject,
+                html_content=html_content,
+            )
+            
+            sg = SendGridAPIClient(api_key)
+            sg.send(mail)
+            logger.info(f"Contact form email sent for message from {message.email}")
+            
+        except Exception as e:
+            # Log error but don't fail the message creation
+            logger.error(f"Failed to send contact form email: {e}")
         
         return message.id
     

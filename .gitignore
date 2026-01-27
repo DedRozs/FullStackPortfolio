@@ -72,3 +72,5 @@ htmlcov/
 
 # mypy
 .mypy_cache/
+
+twilio_2FA_recovery_code.txt

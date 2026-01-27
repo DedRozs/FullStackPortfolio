@@ -196,3 +196,9 @@ if ON_GAE:
 
 # Default Primary Key Field Type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# Email Configuration (SendGrid)
+SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY', '')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'no-reply@thejosephprince.com')
+CONTACT_FORM_RECIPIENT = os.getenv('CONTACT_FORM_RECIPIENT', 'jprincemarketing@gmail.com')
