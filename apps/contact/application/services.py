@@ -143,7 +143,7 @@ class ContactApplicationService:
             sms_mail = Mail(
                 from_email=from_email,
                 to_emails=sms_email,
-                subject="",  # No subject for SMS
+                subject=" ",  # Minimal subject for SMS gateway
                 plain_text_content=sms_text,
             )
             
