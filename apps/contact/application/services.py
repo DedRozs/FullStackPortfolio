@@ -137,8 +137,8 @@ class ContactApplicationService:
             # AT&T email-to-SMS gateway format
             sms_email = f"{sms_number}@txt.att.net"
             
-            # Keep SMS short (160 char limit for single SMS)
-            sms_text = f"Portfolio msg from {message.name}: {str(message.message)[:80]}"
+            # Brief notification to check email
+            sms_text = f"New portfolio inquiry from {message.name}. Check your email for details."
             
             sms_mail = Mail(
                 from_email=from_email,
