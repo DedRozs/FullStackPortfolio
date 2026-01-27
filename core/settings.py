@@ -10,22 +10,39 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
+
+import pymysql
+from dotenv import load_dotenv
+
+# Install MySQL Client
+pymysql.install_as_MySQLdb()
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Detect if running in Google App Engine
+ON_GAE = "GOOGLE_CLOUD_PROJECT" in os.environ
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
+# Security
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-s=)p(h@75af_z&!wq6k0c4kl4+=@y)s9o0!tjk80gzrbxt2jtn')
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-s=)p(h@75af_z&!wq6k0c4kl4+=@y)s9o0!tjk80gzrbxt2jtn'
+# Debug mode - Only True in local development
+DEBUG = not ON_GAE and os.getenv('DEBUG', 'True').lower() in ('true', '1', 'yes')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
+# Allowed Hosts
+ALLOWED_HOSTS = [
+    'ai-fullstack-portfolio.uc.r.appspot.com',
+    'localhost',
+    'thejosephprince.com',
+    'www.thejosephprince.com',
+    'portfolio.thejosephprince.com',
+    '127.0.0.1',
+]
 
 
 # Application definition
@@ -37,6 +54,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'storages',
     # Local apps - using Clean Architecture
     'apps.contact',
     'apps.blog',
@@ -63,6 +81,7 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
@@ -74,56 +93,108 @@ TEMPLATES = [
 WSGI_APPLICATION = 'core.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-
+# Database Configuration (Google Cloud SQL - MySQL)
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT', '3306'),
     }
 }
 
+# Fallback to SQLite if no DB credentials (local dev without .env)
+if not os.getenv('DB_NAME'):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+
 
 # Password validation
-# https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
 
 # Internationalization
-# https://docs.djangoproject.com/en/6.0/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
-
+TIME_ZONE = 'America/Denver'
 USE_I18N = True
-
+USE_L10N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.0/howto/static-files/
+# Static & Media Files (Google Cloud Storage)
+GS_BUCKET_NAME = os.getenv('GS_BUCKET_NAME')
 
-STATIC_URL = 'static/'
-STATICFILES_DIRS = [
-    BASE_DIR / 'staticfiles' / 'frontend',
-]
-STATIC_ROOT = BASE_DIR / 'static'
+if GS_BUCKET_NAME:
+    from google.auth import compute_engine, impersonated_credentials
+    from google.oauth2 import service_account
 
-# Default primary key field type
+    if ON_GAE:
+        base_credentials = compute_engine.Credentials()
+        GS_CREDENTIALS = impersonated_credentials.Credentials(
+            source_credentials=base_credentials,
+            target_principal=os.getenv('GAE_SERVICE_ACCOUNT', 'ai-fullstack-portfolio@appspot.gserviceaccount.com'),
+            target_scopes=['https://www.googleapis.com/auth/cloud-platform'],
+        )
+    else:
+        # Use service account credentials for local development
+        creds_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS', 'creds.json')
+        if os.path.exists(os.path.join(BASE_DIR, creds_path)):
+            GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
+                os.path.join(BASE_DIR, creds_path)
+            )
+        else:
+            GS_CREDENTIALS = None
+
+    if GS_CREDENTIALS:
+        STORAGES = {
+            'default': {
+                'BACKEND': 'storages.backends.gcloud.GoogleCloudStorage',
+                'OPTIONS': {
+                    'bucket_name': GS_BUCKET_NAME,
+                    'credentials': GS_CREDENTIALS,
+                    'location': 'media/',
+                },
+            },
+            'staticfiles': {
+                'BACKEND': 'storages.backends.gcloud.GoogleCloudStorage',
+                'OPTIONS': {
+                    'bucket_name': GS_BUCKET_NAME,
+                    'credentials': GS_CREDENTIALS,
+                    'location': 'static/',
+                },
+            },
+        }
+        STATIC_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/static/'
+        MEDIA_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/media/'
+
+# Local static files fallback
+if not GS_BUCKET_NAME or not globals().get('GS_CREDENTIALS'):
+    STATIC_URL = 'static/'
+    STATICFILES_DIRS = [
+        BASE_DIR / 'staticfiles' / 'frontend',
+    ]
+    STATIC_ROOT = BASE_DIR / 'static'
+
+
+# Security (Production Settings)
+if ON_GAE:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+
+
+# Default Primary Key Field Type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

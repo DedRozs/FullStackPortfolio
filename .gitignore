@@ -41,6 +41,10 @@ staticfiles/
 .env.local
 .env.*.local
 
+# GCP Credentials
+creds.json
+*.json.key
+
 # IDE
 .vscode/
 .idea/

@@ -57,6 +57,7 @@ jobs:
             DB_HOST: "${{ secrets.DB_HOST }}"
             DB_PORT: "${{ secrets.DB_PORT }}"
             DATABASE_URL: "mysql://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@${{ secrets.DB_HOST }}:${{ secrets.DB_PORT }}/${{ secrets.DB_NAME }}"
+            SECRET_KEY: "${{ secrets.SECRET_KEY }}"
             GS_BUCKET_NAME: "${{ secrets.GS_BUCKET_NAME }}"
             REST_API_ID: "${{ secrets.REST_API_ID }}"
             REST_API_SECRET: "${{ secrets.REST_API_SECRET }}"

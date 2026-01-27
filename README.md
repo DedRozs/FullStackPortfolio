@@ -7,7 +7,8 @@ A modern portfolio website built with Django and React, following Clean Architec
 ### Backend
 - Python 3.12+
 - Django 6.0
-- SQLite (development) / PostgreSQL (production)
+- SQLite (development)
+- MySQL (production, via environment variables)
 
 ### Frontend
 - React 19
