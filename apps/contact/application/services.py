@@ -79,7 +79,7 @@ class ContactApplicationService:
         """Send email notification for new contact message via SendGrid."""
         try:
             from sendgrid import SendGridAPIClient
-            from sendgrid.helpers.mail import Mail
+            from sendgrid.helpers.mail import Mail, ReplyTo
             
             api_key = getattr(settings, 'SENDGRID_API_KEY', '')
             recipient = getattr(settings, 'CONTACT_FORM_RECIPIENT', '')
@@ -89,16 +89,18 @@ class ContactApplicationService:
                 logger.warning("SendGrid not configured, skipping email notification")
                 return
             
-            subject = f"Portfolio Contact: {message.name}"
+            # Use a transactional subject to avoid Promotions tab
+            subject = f"Message from {message.name}"
+            
+            # Plain, non-promotional content
             html_content = f"""
-            <h2>New message from your portfolio website</h2>
-            <p><strong>From:</strong> {message.name}</p>
-            <p><strong>Email:</strong> <a href="mailto:{message.email}">{message.email}</a></p>
-            <hr>
-            <h3>Message:</h3>
-            <p>{message.message}</p>
-            <hr>
-            <p><small>Sent from thejosephprince.com contact form</small></p>
+<p>You have a new message from your portfolio contact form.</p>
+
+<p><strong>Name:</strong> {message.name}<br>
+<strong>Email:</strong> {message.email}</p>
+
+<p><strong>Message:</strong></p>
+<p>{message.message}</p>
             """
             
             mail = Mail(
@@ -107,6 +109,9 @@ class ContactApplicationService:
                 subject=subject,
                 html_content=html_content,
             )
+            
+            # Add reply-to so you can reply directly to the sender
+            mail.reply_to = ReplyTo(str(message.email), str(message.name))
             
             sg = SendGridAPIClient(api_key)
             sg.send(mail)
