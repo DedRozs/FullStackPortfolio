@@ -91,6 +91,17 @@ class BlogApplicationService:
         post.publish()
         self._repository.save(post)
         
+        # Generate OG image for social sharing
+        try:
+            from apps.blog.infrastructure.og_image_generator import generate_og_image_for_post
+            og_image_url = generate_og_image_for_post(post)
+            # Store OG image URL on post if we have that field
+            # For now, it's auto-discovered by slug at /static/og-images/{slug}.png
+        except Exception as e:
+            # Don't fail publish if OG image generation fails
+            import logging
+            logging.warning(f"Failed to generate OG image for post {post.id}: {e}")
+        
         event = BlogPostPublished(
             post_id=post.id,
             title=post.title,

@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import SEO, { JsonLd, generatePersonSchema, generateBreadcrumbSchema, generateFAQSchema, generateProfilePageSchema } from '../components/SEO'
 
 const experience = [
   {
@@ -115,6 +116,20 @@ const certifications = [
 export default function About() {
   return (
     <>
+      <SEO
+        title="About Joseph Prince - CTO & Software Engineer"
+        description="Joseph Prince is a CTO and Full Stack Software Engineer at Sports Thread, a sports event management platform serving 2M+ users (not the pastor). Grew from Marketing Manager to technical leader in 4 years. Expert in Python, TypeScript, React, Django, and scalable systems."
+        canonical="https://www.thejosephprince.com/about"
+        tags={['Joseph Prince CTO', 'Joseph Prince Software Engineer', 'Sports Thread CTO', 'Full Stack Developer', 'Technical Leadership', 'Python Developer', 'React Developer']}
+      />
+      <JsonLd data={generatePersonSchema()} />
+      <JsonLd data={generateProfilePageSchema()} />
+      <JsonLd data={generateFAQSchema()} />
+      <JsonLd data={generateBreadcrumbSchema([
+        { name: 'Home', url: '/' },
+        { name: 'About', url: '/about' },
+      ])} />
+
       {/* Hero Section */}
       <section className="min-h-[70vh] flex items-center relative overflow-hidden">
         {/* Background gradient orbs - animated like Home page */}

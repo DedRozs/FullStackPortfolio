@@ -15,16 +15,29 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.contrib.sitemaps.views import sitemap
 from django.urls import path, include, re_path
 from django.views.generic import TemplateView
 from django.conf import settings
 from django.views.static import serve
+
+from apps.blog.presentation.sitemaps import sitemaps
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     # API routes - Clean Architecture bounded contexts
     path('api/contact/', include('apps.contact.presentation.urls')),
     path('api/blog/', include('apps.blog.presentation.urls')),
+    # SEO - Sitemap
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
+]
+
+# Serve robots.txt from frontend build
+urlpatterns += [
+    path('robots.txt', serve, {
+        'path': 'robots.txt',
+        'document_root': settings.BASE_DIR / 'staticfiles' / 'frontend',
+    }),
 ]
 
 # Serve static files from frontend build (both dev and production)

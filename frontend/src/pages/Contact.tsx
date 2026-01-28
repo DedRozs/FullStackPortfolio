@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import SEO, { JsonLd, generateBreadcrumbSchema } from '../components/SEO'
 
 type SubmitStatus = 'idle' | 'loading' | 'success' | 'error'
 
@@ -98,6 +99,17 @@ export default function Contact() {
 
   return (
     <>
+      <SEO
+        title="Contact"
+        description="Get in touch with Joseph Prince. Available for consulting, collaboration, and new opportunities. Let's discuss your next project."
+        canonical="https://www.thejosephprince.com/contact"
+        tags={['Contact', 'Consulting', 'Collaboration', 'Hire']}
+      />
+      <JsonLd data={generateBreadcrumbSchema([
+        { name: 'Home', url: '/' },
+        { name: 'Contact', url: '/contact' },
+      ])} />
+
       {/* Hero Section */}
       <section className="min-h-[50vh] flex items-center relative overflow-hidden">
         {/* Background gradient orbs */}

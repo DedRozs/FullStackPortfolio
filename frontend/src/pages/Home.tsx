@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import SEO, { JsonLd, generateWebsiteSchema, generatePersonSchema, generateProfessionalServiceSchema } from '../components/SEO'
 
 interface BlogPost {
   id: string
@@ -118,6 +119,15 @@ export default function Home() {
 
   return (
     <>
+      <SEO
+        title="Home"
+        description="Joseph Prince - CTO at Sports Thread and Full Stack Software Engineer. Building scalable sports event management systems with Python, TypeScript, React, and Django. Not the pastor - a tech professional serving 2M+ users."
+        tags={['Joseph Prince CTO', 'Joseph Prince Software Engineer', 'Joseph Prince Developer', 'Sports Thread', 'Full Stack Engineer', 'Python Developer', 'React Developer', 'Django Developer']}
+      />
+      <JsonLd data={generateWebsiteSchema()} />
+      <JsonLd data={generatePersonSchema()} />
+      <JsonLd data={generateProfessionalServiceSchema()} />
+
       {/* Hero Section */}
       <section className="min-h-[90vh] flex items-center relative overflow-hidden">
         {/* Background gradient orbs */}

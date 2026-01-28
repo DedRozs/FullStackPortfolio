@@ -8,6 +8,7 @@ from apps.blog.presentation.views import (
     AdminBlogPostDetailView,
     AdminPublishPostView,
 )
+from apps.blog.presentation.feeds import BlogPostFeed
 
 app_name = 'blog'
 
@@ -16,6 +17,7 @@ urlpatterns = [
     path('posts/', BlogPostListView.as_view(), name='post-list'),
     path('posts/<slug:slug>/', BlogPostDetailView.as_view(), name='post-detail'),
     path('tags/', BlogTagListView.as_view(), name='tag-list'),
+    path('rss/', BlogPostFeed(), name='rss-feed'),
     
     # Admin endpoints (TODO: add authentication)
     path('admin/posts/', AdminBlogPostView.as_view(), name='admin-post-create'),

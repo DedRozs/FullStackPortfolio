@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sitemaps',  # SEO - XML Sitemap generation
     'storages',
     'django_q',  # Django-Q2 for background task scheduling
     # Local apps - using Clean Architecture

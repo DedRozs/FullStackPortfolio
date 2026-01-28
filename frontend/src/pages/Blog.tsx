@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import SEO, { JsonLd, generateBreadcrumbSchema } from '../components/SEO'
 
 interface BlogPost {
   id: string
@@ -149,6 +150,17 @@ export default function Blog() {
 
   return (
     <>
+      <SEO
+        title="Blog"
+        description="Technical articles on software engineering, leadership, Clean Architecture, Domain-Driven Design, Python, TypeScript, React, and building scalable systems."
+        canonical="https://www.thejosephprince.com/blog"
+        tags={['Software Engineering', 'Clean Architecture', 'DDD', 'Python', 'TypeScript', 'React', 'Leadership']}
+      />
+      <JsonLd data={generateBreadcrumbSchema([
+        { name: 'Home', url: '/' },
+        { name: 'Blog', url: '/blog' },
+      ])} />
+
       {/* Hero Section */}
       <section className="min-h-[50vh] flex items-center relative overflow-hidden">
         {/* Background gradient orbs */}

@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { marked } from 'marked'
+import SEO, { JsonLd, generateBlogPostSchema, generateBreadcrumbSchema } from '../components/SEO'
+import RelatedPosts from '../components/RelatedPosts'
 
 interface BlogPost {
   id: string
@@ -163,6 +165,32 @@ export default function BlogPost() {
 
   return (
     <>
+      <SEO
+        title={post.title}
+        description={post.excerpt}
+        canonical={`https://www.thejosephprince.com/blog/${post.slug}`}
+        type="article"
+        image={`https://www.thejosephprince.com/static/og-images/${post.slug}.png`}
+        imageAlt={post.title}
+        publishedTime={post.published_at || post.created_at}
+        modifiedTime={post.updated_at}
+        tags={post.tags}
+      />
+      <JsonLd data={generateBlogPostSchema({
+        title: post.title,
+        description: post.excerpt,
+        slug: post.slug,
+        publishedAt: post.published_at || post.created_at,
+        modifiedAt: post.updated_at,
+        tags: post.tags,
+        readingTime: post.reading_time,
+      })} />
+      <JsonLd data={generateBreadcrumbSchema([
+        { name: 'Home', url: '/' },
+        { name: 'Blog', url: '/blog' },
+        { name: post.title, url: `/blog/${post.slug}` },
+      ])} />
+
       {/* Hero Section */}
       <section className="min-h-[40vh] flex items-end relative overflow-hidden pb-16">
         {/* Background gradient orbs */}
@@ -245,6 +273,9 @@ export default function BlogPost() {
           />
         </div>
       </article>
+
+      {/* Related Posts - Internal linking for SEO */}
+      <RelatedPosts currentSlug={post.slug} currentTags={post.tags} />
 
       {/* Footer Section */}
       <section className="py-16 border-t border-gray-800">
