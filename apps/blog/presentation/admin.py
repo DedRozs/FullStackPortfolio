@@ -39,7 +39,7 @@ class BlogIdeaAdmin(admin.ModelAdmin):
     list_display = ['topic', 'status', 'expertise_area', 'trend_score', 'created_at', 'processed_at']
     list_filter = ['status', 'expertise_area', 'source', 'created_at']
     search_fields = ['topic', 'keywords']
-    readonly_fields = ['id', 'created_at', 'processed_at', 'blog_post_id']
+    readonly_fields = ['id', 'created_at', 'processed_at', 'blog_post']
     ordering = ['-created_at']
     
     fieldsets = (
@@ -53,7 +53,7 @@ class BlogIdeaAdmin(admin.ModelAdmin):
             'fields': ('status', 'rejection_reason', 'processed_at')
         }),
         ('Related Content', {
-            'fields': ('blog_post_id',),
+            'fields': ('blog_post',),
             'classes': ('collapse',)
         }),
         ('System', {
@@ -76,10 +76,10 @@ class BlogIdeaAdmin(admin.ModelAdmin):
 @admin.register(ContentGenerationLogModel)
 class ContentGenerationLogAdmin(admin.ModelAdmin):
     """Admin for viewing content generation logs."""
-    list_display = ['idea_id', 'stage', 'model_used', 'success', 'duration_seconds', 'created_at']
+    list_display = ['idea', 'stage', 'model_used', 'success', 'duration_seconds', 'created_at']
     list_filter = ['stage', 'success', 'model_used', 'created_at']
-    search_fields = ['idea_id', 'output_preview', 'error_message']
-    readonly_fields = ['id', 'idea_id', 'stage', 'model_used', 'input_tokens', 
+    search_fields = ['idea__topic', 'output_preview', 'error_message']
+    readonly_fields = ['id', 'idea', 'stage', 'model_used', 'input_tokens', 
                        'output_tokens', 'duration_seconds', 'success', 
                        'output_preview', 'error_message', 'created_at']
     ordering = ['-created_at']
