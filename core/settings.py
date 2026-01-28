@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     # Local apps - using Clean Architecture
     'apps.contact',
     'apps.blog',
+    'apps.trading.presentation.apps.TradingConfig',
 ]
 
 MIDDLEWARE = [
@@ -215,9 +216,17 @@ TWILIO_PHONE_NUMBER = os.getenv('TWILIO_PHONE_NUMBER', '')
 
 # OpenAI API Configuration
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
-OPENAI_MODEL_IDEA_GENERATION = os.getenv('OPENAI_MODEL_IDEA_GENERATION', 'gpt-5-nano')
-OPENAI_MODEL_CONTENT_CREATION = os.getenv('OPENAI_MODEL_CONTENT_CREATION', 'gpt-5.2')
-OPENAI_MODEL_PROOFREADING = os.getenv('OPENAI_MODEL_PROOFREADING', 'gpt-5-mini')
+OPENAI_MODEL_IDEA_GENERATION = os.getenv('OPENAI_MODEL_IDEA_GENERATION', 'gpt-4.1-mini')
+OPENAI_MODEL_CONTENT_CREATION = os.getenv('OPENAI_MODEL_CONTENT_CREATION', 'gpt-4.1')
+OPENAI_MODEL_PROOFREADING = os.getenv('OPENAI_MODEL_PROOFREADING', 'gpt-4.1-mini')
+
+# Trading Content Generation Models
+# o3 for deep reasoning with price action (200K context)
+TRADING_MODEL_POSTMARKET = os.getenv('TRADING_MODEL_POSTMARKET', 'o3')
+# o3-mini for pre-market (less data, still needs reasoning)
+TRADING_MODEL_PREMARKET = os.getenv('TRADING_MODEL_PREMARKET', 'o3-mini')
+# o3 for weekly recap (processes 5 days of data)
+TRADING_MODEL_WEEKLY = os.getenv('TRADING_MODEL_WEEKLY', 'o3')
 
 # Content Generation Pipeline Settings
 CONTENT_PIPELINE_MIN_QUALITY_SCORE = float(os.getenv('CONTENT_PIPELINE_MIN_QUALITY_SCORE', '7.0'))

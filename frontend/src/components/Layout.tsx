@@ -47,6 +47,13 @@ export default function Layout() {
                 Blog
               </Link>
               <Link
+                to="/trading-blog"
+                className="text-gray-300 hover:text-white transition"
+                aria-current={isCurrentPage('/trading-blog') ? 'page' : undefined}
+              >
+                Trading
+              </Link>
+              <Link
                 to="/about"
                 className="text-gray-300 hover:text-white transition"
                 aria-current={isCurrentPage('/about') ? 'page' : undefined}

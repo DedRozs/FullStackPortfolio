@@ -208,7 +208,7 @@ export default function About() {
                     <div className="flex items-center gap-4 p-3 rounded-lg hover:bg-dark-700/50 transition-colors">
                       <span className="text-2xl">👥</span>
                       <div>
-                        <p className="text-white font-medium">500K+ Users</p>
+                        <p className="text-white font-medium">2M+ Users</p>
                         <p className="text-gray-500 text-sm">Platform scale</p>
                       </div>
                     </div>
@@ -244,7 +244,7 @@ export default function About() {
             <p className="text-blue-400 font-medium mb-3 text-sm uppercase tracking-wider">Career Journey</p>
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Experience</h2>
             <p className="text-gray-400 max-w-2xl mx-auto">
-              From Marketing Manager to CTO in 4 years—building and scaling a platform for 500K+ users.
+              From Marketing Manager to CTO in 4 years—building and scaling a platform for 2M+ users.
             </p>
           </div>
 

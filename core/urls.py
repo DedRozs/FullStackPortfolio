@@ -21,13 +21,18 @@ from django.views.generic import TemplateView
 from django.conf import settings
 from django.views.static import serve
 
-from apps.blog.presentation.sitemaps import sitemaps
+from apps.blog.presentation.sitemaps import sitemaps as blog_sitemaps
+from apps.trading.presentation.sitemaps import trading_sitemaps
+
+# Combine all sitemaps
+sitemaps = {**blog_sitemaps, **trading_sitemaps}
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     # API routes - Clean Architecture bounded contexts
     path('api/contact/', include('apps.contact.presentation.urls')),
     path('api/blog/', include('apps.blog.presentation.urls')),
+    path('api/trading/', include('apps.trading.presentation.urls')),
     # SEO - Sitemap
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
 ]

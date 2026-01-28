@@ -37,7 +37,7 @@ const highlights = [
     title: 'Sports Thread',
     role: 'CTO',
     description: 'Leading engineering for a sports apparel platform serving over half a million users. Built the entire tech stack from zero to production.',
-    metrics: ['500K+ Users', 'REST API', 'React Native'],
+    metrics: ['2M+ Users', 'REST API', 'React Native'],
     gradient: 'from-blue-500 to-cyan-500',
   },
   {
@@ -215,7 +215,7 @@ export default function Home() {
                 <p className="text-gray-500 text-sm">Projects Shipped</p>
               </div>
               <div>
-                <p className="text-3xl font-bold text-white">500K+</p>
+                <p className="text-3xl font-bold text-white">2M+</p>
                 <p className="text-gray-500 text-sm">Users Impacted</p>
               </div>
             </div>

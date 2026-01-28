@@ -8,6 +8,8 @@ const About = lazy(() => import('./pages/About'))
 const Contact = lazy(() => import('./pages/Contact'))
 const Blog = lazy(() => import('./pages/Blog'))
 const BlogPost = lazy(() => import('./pages/BlogPost'))
+const TradingBlog = lazy(() => import('./pages/TradingBlog'))
+const TradingBlogPost = lazy(() => import('./pages/TradingBlogPost'))
 
 // Loading fallback component
 function PageLoader() {
@@ -32,6 +34,8 @@ function App() {
             <Route path="contact" element={<Contact />} />
             <Route path="blog" element={<Blog />} />
             <Route path="blog/:slug" element={<BlogPost />} />
+            <Route path="trading-blog" element={<TradingBlog />} />
+            <Route path="trading-blog/:slug" element={<TradingBlogPost />} />
           </Route>
         </Routes>
       </Suspense>
