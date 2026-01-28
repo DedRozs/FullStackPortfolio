@@ -144,7 +144,11 @@ export default function Home() {
             
             {/* Typing effect */}
             <div className="h-12 mb-8">
-              <p className="text-2xl md:text-3xl text-gray-300">
+              {/* Screen reader accessible version */}
+              <span className="sr-only" aria-live="polite">
+                {roles[currentRoleIndex]}
+              </span>
+              <p className="text-2xl md:text-3xl text-gray-300" aria-hidden="true">
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
                   {displayedText}
                 </span>
