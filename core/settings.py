@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'storages',
+    'django_q',  # Django-Q2 for background task scheduling
     # Local apps - using Clean Architecture
     'apps.contact',
     'apps.blog',
@@ -210,3 +211,31 @@ SMS_NOTIFICATION_NUMBER = os.getenv('SMS_NOTIFICATION_NUMBER', '')
 TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID', '')
 TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN', '')
 TWILIO_PHONE_NUMBER = os.getenv('TWILIO_PHONE_NUMBER', '')
+
+# OpenAI API Configuration
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
+OPENAI_MODEL_IDEA_GENERATION = os.getenv('OPENAI_MODEL_IDEA_GENERATION', 'gpt-5-nano')
+OPENAI_MODEL_CONTENT_CREATION = os.getenv('OPENAI_MODEL_CONTENT_CREATION', 'gpt-5.2')
+OPENAI_MODEL_PROOFREADING = os.getenv('OPENAI_MODEL_PROOFREADING', 'gpt-5-mini')
+
+# Content Generation Pipeline Settings
+CONTENT_PIPELINE_MIN_QUALITY_SCORE = float(os.getenv('CONTENT_PIPELINE_MIN_QUALITY_SCORE', '7.0'))
+CONTENT_PIPELINE_AUTHOR_NAME = os.getenv('CONTENT_PIPELINE_AUTHOR_NAME', 'Joseph Prince')
+
+# Django-Q2 Configuration (Background Task Processing)
+# Uses Django ORM as broker - no Redis needed
+Q_CLUSTER = {
+    'name': 'portfolio-content-pipeline',
+    'workers': 1,  # Single worker for GAE basic scaling
+    'recycle': 100,  # Recycle workers after N tasks (prevent memory leaks)
+    'timeout': 600,  # Task timeout in seconds (10 minutes for AI content generation)
+    'retry': 900,  # Retry failed tasks after 15 minutes
+    'queue_limit': 20,  # Max tasks in queue
+    'bulk': 5,  # Bulk task processing
+    'orm': 'default',  # Use Django ORM as broker (stores in database)
+    'ack_failures': True,  # Acknowledge failed tasks
+    'max_attempts': 3,  # Max retry attempts
+    'catch_up': True,  # Process missed scheduled tasks on startup
+    'save_limit': 100,  # Keep last 100 task results
+    'sync': False,  # Run tasks asynchronously (not blocking)
+}

@@ -21,6 +21,7 @@ from apps.blog.application.queries import (
     GetPostsByTagQuery,
     GetAllPostsQuery,
     GetAllTagsQuery,
+    SearchPostsQuery,
 )
 from apps.shared.infrastructure.event_bus import EventBus
 
@@ -157,6 +158,31 @@ class BlogApplicationService:
     def get_total_published_count(self) -> int:
         """Get count of published posts."""
         return self._repository.count_published()
+    
+    def search_posts(self, query: SearchPostsQuery) -> List[BlogPost]:
+        """Search posts by title and content."""
+        tag = None
+        if query.tag:
+            try:
+                tag = Tag(query.tag)
+            except ValueError:
+                pass
+        return self._repository.search(
+            search_term=query.search_term,
+            tag=tag,
+            limit=query.limit,
+            offset=query.offset,
+        )
+    
+    def count_search_results(self, search_term: str, tag: str | None = None) -> int:
+        """Count search results."""
+        tag_obj = None
+        if tag:
+            try:
+                tag_obj = Tag(tag)
+            except ValueError:
+                pass
+        return self._repository.count_search_results(search_term, tag_obj)
 
 
 @dataclass

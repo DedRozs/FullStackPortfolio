@@ -17,6 +17,7 @@ from apps.blog.application.queries import (
     GetPublishedPostsQuery,
     GetPostsByTagQuery,
     GetAllTagsQuery,
+    SearchPostsQuery,
 )
 from apps.blog.application.services import (
     BlogApplicationService,
@@ -39,24 +40,43 @@ class BlogPostListView(View):
     """API endpoint for listing blog posts."""
     
     def get(self, request) -> JsonResponse:
-        """Get published posts with pagination."""
+        """Get published posts with pagination and optional search."""
         service = get_blog_service()
         
         # Parse query params
-        limit = int(request.GET.get('limit', 10))
-        offset = int(request.GET.get('offset', 0))
+        page = int(request.GET.get('page', 1))
+        page_size = int(request.GET.get('limit', 10))
+        offset = (page - 1) * page_size
         tag = request.GET.get('tag')
+        search = request.GET.get('search', '').strip()
         
-        if tag:
-            query = GetPostsByTagQuery(tag=tag, limit=limit, offset=offset)
+        # Handle search
+        if search:
+            query = SearchPostsQuery(
+                search_term=search,
+                tag=tag,
+                limit=page_size,
+                offset=offset,
+            )
+            posts = service.search_posts(query)
+            total = service.count_search_results(search, tag)
+        elif tag:
+            query = GetPostsByTagQuery(tag=tag, limit=page_size, offset=offset)
             posts = service.get_posts_by_tag(query)
+            total = service.get_total_published_count()  # TODO: count by tag
         else:
-            query = GetPublishedPostsQuery(limit=limit, offset=offset)
+            query = GetPublishedPostsQuery(limit=page_size, offset=offset)
             posts = service.get_published_posts(query)
+            total = service.get_total_published_count()
+        
+        total_pages = max(1, (total + page_size - 1) // page_size)
         
         return JsonResponse({
             'posts': [BlogPostSummaryDTO.from_entity(p).__dict__ for p in posts],
-            'total': service.get_total_published_count(),
+            'total': total,
+            'page': page,
+            'page_size': page_size,
+            'total_pages': total_pages,
         })
 
 
@@ -88,8 +108,9 @@ class BlogTagListView(View):
         query = GetAllTagsQuery()
         tags = service.get_all_tags(query)
         
+        # Return simple string array for frontend compatibility
         return JsonResponse({
-            'tags': [{'name': str(t), 'slug': t.slug} for t in tags],
+            'tags': [str(t) for t in tags],
         })
 
 

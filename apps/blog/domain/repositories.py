@@ -57,3 +57,19 @@ class BlogPostRepository(ABC):
     def get_all_tags(self) -> List[Tag]:
         """Get all unique tags from published posts."""
         pass
+    
+    @abstractmethod
+    def search(
+        self, 
+        search_term: str, 
+        tag: Tag | None = None,
+        limit: int = 10, 
+        offset: int = 0
+    ) -> List[BlogPost]:
+        """Search published posts by title and content."""
+        pass
+    
+    @abstractmethod
+    def count_search_results(self, search_term: str, tag: Tag | None = None) -> int:
+        """Count total search results."""
+        pass

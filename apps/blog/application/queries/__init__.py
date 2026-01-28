@@ -40,3 +40,12 @@ class GetAllPostsQuery:
 class GetAllTagsQuery:
     """Query to get all unique tags."""
     pass
+
+
+@dataclass(frozen=True)
+class SearchPostsQuery:
+    """Query to search posts by title and content."""
+    search_term: str
+    tag: str | None = None
+    limit: int = 10
+    offset: int = 0
