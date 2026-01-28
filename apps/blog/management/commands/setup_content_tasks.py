@@ -87,6 +87,7 @@ class Command(BaseCommand):
                     # Update existing schedule
                     existing.func = task['func']
                     existing.schedule_type = task['schedule_type']
+                    existing.cron = task.get('cron')
                     existing.minutes = task.get('minutes', 0)
                     existing.repeats = task.get('repeats', -1)
                     existing.save()
@@ -96,30 +97,14 @@ class Command(BaseCommand):
                 if dry_run:
                     self.stdout.write(f'Would create: {name}')
                 else:
-                    # Create new schedule
-                    from django.utils import timezone
-                    from datetime import timedelta
-                    
-                    # Calculate next run time
-                    next_run = timezone.now()
-                    if 'next_run_hour' in task:
-                        next_run = next_run.replace(
-                            hour=task['next_run_hour'],
-                            minute=task.get('next_run_minute', 0),
-                            second=0,
-                            microsecond=0
-                        )
-                        # If the time has passed today, schedule for tomorrow
-                        if next_run <= timezone.now():
-                            next_run += timedelta(days=1)
-                    
+                    # Create new schedule with cron expression
                     Schedule.objects.create(
                         name=name,
                         func=task['func'],
                         schedule_type=task['schedule_type'],
+                        cron=task.get('cron'),
                         minutes=task.get('minutes', 0),
                         repeats=task.get('repeats', -1),
-                        next_run=next_run,
                     )
                     self.stdout.write(self.style.SUCCESS(f'Created: {name}'))
                 created += 1
