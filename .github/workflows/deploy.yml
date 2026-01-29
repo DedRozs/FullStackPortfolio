@@ -98,15 +98,10 @@ jobs:
         run: |
           python manage.py migrate --noinput
 
-
-
       - name: Deploy Main App to Google App Engine
         run: |
           gcloud app deploy app.yaml --quiet --version=production --promote
 
-      - name: Deploy Worker Service to Google App Engine
-        run: |
-          gcloud app deploy worker.yaml --quiet --version=production --promote
-Cron Jobs to Google App Engine
+      - name: Deploy Cron Jobs to Google App Engine
         run: |
           gcloud app deploy cron.yaml --quiet
