@@ -1,0 +1,21 @@
+# Cloud Run Worker - Django Q Cluster
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY . .
+
+# Cloud Run sets PORT env var, but we don't need it for qcluster
+# We'll run qcluster in "run once" mode triggered by HTTP
+ENV PYTHONUNBUFFERED=1
+
+# Expose port for Cloud Run health checks
+EXPOSE 8080
+
+# Entrypoint script that runs qcluster once and exits
+CMD ["python", "manage.py", "qcluster"]

@@ -13,7 +13,7 @@ The full plan is documented in `TRADING_BLOG_PLAN.md` in the project root. Read 
 
 ## Your Task
 
-Implement **Phase [4]** of the trading blog.
+Implement **Phase [6]** of the trading blog.
 
 Phase reference:
 | Phase | Name | Key Deliverables |
