@@ -39,7 +39,7 @@ jobs:
         with:
           project_id: ai-fullstack-portfolio
 
-      - name: 📄 Generate Secure `app.yaml` from GitHub Secrets
+      - name: Generate Secure app.yaml from GitHub Secrets
         run: |
           cat <<EOF > app.yaml
           runtime: python312
@@ -85,9 +85,7 @@ jobs:
               script: auto
           EOF
 
-
-
-      - name: 🗄️ Run Database Migrations
+      - name: Run Database Migrations
         env:
           DB_NAME: ${{ secrets.DB_NAME }}
           DB_USER: ${{ secrets.DB_USER }}
