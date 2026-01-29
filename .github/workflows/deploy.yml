@@ -39,6 +39,10 @@ jobs:
         with:
           project_id: ai-fullstack-portfolio
 
+      - name: Enable Cloud Scheduler API
+        run: |
+          gcloud services enable cloudscheduler.googleapis.com --project=ai-fullstack-portfolio
+
       - name: Generate Secure app.yaml from GitHub Secrets
         run: |
           cat <<EOF > app.yaml
