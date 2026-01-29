@@ -1,28 +1,28 @@
 cron:
   # Generate blog post ideas daily at 6 AM MST (1 PM UTC)
   - description: "Generate daily blog ideas"
-    url: /api/tasks/generate-ideas/
-    schedule: 0 13 * * *
+    url: /api/blog/tasks/generate-ideas/
+    schedule: every day 13:00
     timezone: UTC
     target: default
 
   # Publish blog post daily at 10 AM MST (5 PM UTC)
   - description: "Publish daily blog post"
-    url: /api/tasks/publish-blog/
-    schedule: 0 17 * * *
+    url: /api/blog/tasks/publish-blog/
+    schedule: every day 17:00
     timezone: UTC
     target: default
 
   # Cleanup old ideas weekly on Sunday at 3 AM MST (10 AM UTC)
   - description: "Cleanup old blog ideas"
-    url: /api/tasks/cleanup-ideas/
-    schedule: 0 10 * * 0
+    url: /api/blog/tasks/cleanup-ideas/
+    schedule: every sunday 10:00
     timezone: UTC
     target: default
 
   # Health check daily at midnight MST (7 AM UTC)
   - description: "Content pipeline health check"
-    url: /api/tasks/health-check/
-    schedule: 0 7 * * *
+    url: /api/blog/tasks/health-check/
+    schedule: every day 07:00
     timezone: UTC
     target: default
