@@ -1,5 +1,22 @@
 # Trading Blog Implementation Plan
 
+## ⚠️ STATUS: PAUSED - Data Cost Decision
+
+**Updated: January 28, 2026**
+
+The automated trading blog schedule has been **disabled** pending a decision on data source funding:
+
+- **Databento Standard tier** (~$179/month) provides real-time CME futures data but is too expensive to justify for blog content alone
+- **Databento Usage-Based tier** (current) only provides next-day historical data, making timely pre-market/post-market posts impossible
+- **No free alternative** exists for delayed minute-bar futures data (Polygon.io doesn't have futures, yfinance only has daily bars)
+
+**To Re-enable:**
+1. Sign up for Databento Standard tier when trading income justifies the expense
+2. Run `python manage.py setup_trading_tasks` to recreate the schedules
+3. The infrastructure (models, views, templates) remains intact and ready
+
+---
+
 ## Overview
 
 A futures-focused technical analysis blog providing daily pre-market levels and post-market recaps for index futures instruments. Content is AI-generated from market data stored locally (fetched from Databento).
@@ -11,7 +28,7 @@ A futures-focused technical analysis blog providing daily pre-market levels and 
 | Data Storage | `IntradayBarModel` - all 1m bars stored in DB |
 | Instruments | NQ, ES, RTY |
 | Post Structure | One post per instrument |
-| Content Cadence | Pre-market + Post-market daily, Weekly recap Saturday |
+| Content Cadence | ~~Pre-market + Post-market daily, Weekly recap Saturday~~ **PAUSED** |
 | Frontend Route | `/trading-blog/` |
 | Content Generation | Separate AI prompts, shared pipeline architecture with tech blog |
 

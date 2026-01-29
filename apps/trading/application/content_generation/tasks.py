@@ -2,15 +2,20 @@
 Django-Q2 scheduled tasks for automated trading content generation.
 
 These tasks run on a schedule to:
-1. Fetch daily intraday bar data after market close
+1. Fetch daily intraday bar data after market close (PREVIOUS DAY due to data delay)
 2. Generate pre-market briefings before RTH opens
-3. Generate post-market recaps after settlement
+3. Generate post-market recaps after settlement (PREVIOUS DAY due to data delay)
 4. Generate weekly recaps on Saturdays
 
+IMPORTANT: Databento subscription has ~24-hour data delay for CME data.
+- Data for Monday becomes available Tuesday evening
+- Post-market recaps are generated for YESTERDAY (the day we just got data for)
+- Pre-market briefings use prior day data (always available)
+
 Schedule (all times Eastern):
-- 5:30 PM ET: Fetch intraday bars (after 5:00 PM settlement)
-- 6:00 PM ET: Generate post-market recaps
-- 6:30 AM ET: Generate pre-market briefings
+- 5:30 PM ET: Fetch intraday bars for YESTERDAY
+- 6:00 PM ET: Generate post-market recaps for YESTERDAY
+- 6:30 AM ET: Generate pre-market briefings for TODAY
 - 9:00 AM ET Saturday: Generate weekly recaps
 """
 from __future__ import annotations
@@ -55,21 +60,33 @@ def _get_pipeline(skip_review: bool = False) -> TradingContentPipeline:
 
 def fetch_daily_intraday_bars() -> dict:
     """
-    Fetch intraday bar data for all instruments for today's session.
+    Fetch intraday bar data for all instruments for YESTERDAY's session.
     
     This task should run after market settlement (5:30 PM ET).
+    Due to ~24-hour Databento data delay, we fetch YESTERDAY's data.
     It fetches 1-minute bars from Databento for ES, NQ, RTY, and YM.
     
     Returns:
         dict: Summary of fetched data
     """
-    from apps.trading.infrastructure.databento_client import DatabentoClient
+    from apps.trading.infrastructure.market_data.databento_client import DatabentoClient
     
     logger.info("Starting daily intraday bar fetch task")
     
     try:
         client = DatabentoClient()
-        today = date.today()
+        # Fetch YESTERDAY's data due to ~24-hour delay
+        yesterday = date.today() - timedelta(days=1)
+        
+        # Skip weekends
+        if yesterday.weekday() >= 5:
+            logger.info(f"Skipping {yesterday} - weekend")
+            return {
+                'success': True,
+                'date': str(yesterday),
+                'skipped': True,
+                'reason': 'weekend',
+            }
         
         results = {}
         total_bars = 0
@@ -78,7 +95,7 @@ def fetch_daily_intraday_bars() -> dict:
             try:
                 bars_stored = client.fetch_and_store_bars(
                     instrument=instrument.value,
-                    session_date=today,
+                    session_date=yesterday,
                     include_overnight=True,
                 )
                 results[instrument.short_name] = {
@@ -96,7 +113,7 @@ def fetch_daily_intraday_bars() -> dict:
         
         return {
             'success': all(r['success'] for r in results.values()),
-            'date': str(today),
+            'date': str(yesterday),
             'total_bars': total_bars,
             'instruments': results,
         }
@@ -111,9 +128,10 @@ def fetch_daily_intraday_bars() -> dict:
 
 def generate_premarket_posts() -> dict:
     """
-    Generate pre-market briefings for all instruments.
+    Generate pre-market briefings for all instruments for TODAY.
     
     This task should run before RTH opens (6:30 AM ET).
+    Pre-market uses prior day data (which is available due to 24-hour delay).
     It generates and auto-publishes pre-market analysis for ES, NQ, RTY, YM.
     
     Returns:
@@ -124,6 +142,16 @@ def generate_premarket_posts() -> dict:
     try:
         pipeline = _get_pipeline()
         today = date.today()
+        
+        # Skip weekends
+        if today.weekday() >= 5:
+            logger.info(f"Skipping {today} - weekend")
+            return {
+                'success': True,
+                'date': str(today),
+                'skipped': True,
+                'reason': 'weekend',
+            }
         
         results: List[PipelineResult] = pipeline.generate_premarket_posts(
             session_date=today,
@@ -166,9 +194,10 @@ def generate_premarket_posts() -> dict:
 
 def generate_postmarket_posts() -> dict:
     """
-    Generate post-market recaps for all instruments.
+    Generate post-market recaps for all instruments for YESTERDAY's session.
     
     This task should run after settlement (6:00 PM ET).
+    Due to ~24-hour Databento data delay, we generate recaps for YESTERDAY.
     It generates and auto-publishes post-market recaps for ES, NQ, RTY, YM.
     
     Returns:
@@ -178,10 +207,21 @@ def generate_postmarket_posts() -> dict:
     
     try:
         pipeline = _get_pipeline()
-        today = date.today()
+        # Generate for YESTERDAY due to data delay
+        yesterday = date.today() - timedelta(days=1)
+        
+        # Skip weekends
+        if yesterday.weekday() >= 5:
+            logger.info(f"Skipping {yesterday} - weekend")
+            return {
+                'success': True,
+                'date': str(yesterday),
+                'skipped': True,
+                'reason': 'weekend',
+            }
         
         results: List[PipelineResult] = pipeline.generate_postmarket_posts(
-            session_date=today,
+            session_date=yesterday,
             instruments=ALL_INSTRUMENTS,
             auto_publish=True,
         )
@@ -191,7 +231,7 @@ def generate_postmarket_posts() -> dict:
         
         result = {
             'success': len(failed) == 0,
-            'date': str(today),
+            'date': str(yesterday),
             'post_type': 'post_market',
             'generated': len(successful),
             'failed': len(failed),
