@@ -1,0 +1,22 @@
+# Pull in all .gitignore rules (covers .venv/, frontend/node_modules/, etc.)
+#!include:.gitignore
+
+# Frontend source files - already built and collected into staticfiles/ by collectstatic
+frontend/
+
+# CI/CD pipelines and tooling - not needed at runtime
+.github/
+
+# Documentation, planning, and JSON contracts - not needed at runtime
+knowledge-base/
+contracts/
+
+# Git internals
+.git/
+
+# Misc dev files not needed at runtime
+Agent.md
+Dockerfile.worker
+Profile.pdf
+twilio_2FA_recovery_code.txt
+.env.example
