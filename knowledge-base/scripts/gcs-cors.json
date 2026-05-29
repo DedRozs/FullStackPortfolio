@@ -1,0 +1,13 @@
+[
+  {
+    "origin": ["*"],
+    "method": ["GET"],
+    "responseHeader": [
+      "Content-Type",
+      "Cache-Control",
+      "Content-Length",
+      "ETag"
+    ],
+    "maxAgeSeconds": 3600
+  }
+]
