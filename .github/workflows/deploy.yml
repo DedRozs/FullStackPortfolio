@@ -56,7 +56,6 @@ jobs:
 
           env_variables:
             GAE_SERVICE_ACCOUNT: "ai-fullstack-portfolio@appspot.gserviceaccount.com"
-            GOOGLE_APPLICATION_CREDENTIALS: "/workspace/key.json"
             DJANGO_SETTINGS_MODULE: "core.settings"
             DEBUG: "False"
             ALLOWED_HOSTS: "ai-fullstack-portfolio.uc.r.appspot.com,www.thejosephprince.com"

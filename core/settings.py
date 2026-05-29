@@ -127,7 +127,10 @@ if GS_BUCKET_NAME:
         },
         'staticfiles': {
             'BACKEND': 'storages.backends.gcloud.GoogleCloudStorage',
-            'OPTIONS': {'location': 'static'},
+            # querystring_auth=False generates plain public URLs instead of
+            # signed URLs, so no credentials are needed at request time.
+            # Static assets in this bucket are intentionally public-read.
+            'OPTIONS': {'location': 'static', 'querystring_auth': False},
         },
     }
     STATIC_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/static/'
