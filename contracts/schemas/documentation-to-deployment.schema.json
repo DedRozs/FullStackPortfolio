@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "documentation-to-deployment.schema.json",
+  "title": "Documentation to Deployment Handoff Artifact",
+  "description": "Structured artifact produced by the Documentation Orchestrator and consumed by the Deployment Orchestrator. Contains the knowledge base manifest, README reference, runbook list, ADR index, and decision log reference.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "projectName",
+    "knowledgeBaseManifest",
+    "readmePath",
+    "runbooks",
+    "adrIndex",
+    "decisionLog"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "description": "Version of this schema used to produce the artifact."
+    },
+    "projectName": {
+      "type": "string",
+      "description": "Human-readable name of the target project as configured in This Project."
+    },
+    "knowledgeBaseManifest": {
+      "type": "array",
+      "description": "List of all documentation files produced during the Documentation phase, organized by type.",
+      "items": {
+        "type": "object",
+        "required": ["filePath", "type", "description"],
+        "properties": {
+          "filePath": {
+            "type": "string",
+            "description": "Relative path to the documentation file within the project repository."
+          },
+          "type": {
+            "type": "string",
+            "description": "Category of documentation.",
+            "enum": ["architecture", "api", "readme", "onboarding", "runbook", "adr", "decision-log"]
+          },
+          "description": {
+            "type": "string",
+            "description": "What this document covers."
+          }
+        },
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "readmePath": {
+      "type": "string",
+      "description": "Relative path to the project README file (e.g., 'README.md'). This file must exist at the path stated."
+    },
+    "runbooks": {
+      "type": "array",
+      "description": "List of operational runbook files with their scope and intended audience.",
+      "items": {
+        "type": "object",
+        "required": ["filePath", "scope", "audience"],
+        "properties": {
+          "filePath": {
+            "type": "string",
+            "description": "Relative path to the runbook file."
+          },
+          "scope": {
+            "type": "string",
+            "description": "What operational scenario this runbook covers (e.g., 'Deployment', 'Incident Response', 'Database Backup')."
+          },
+          "audience": {
+            "type": "string",
+            "description": "Who this runbook is written for (e.g., 'Operations team', 'On-call engineer')."
+          }
+        },
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "adrIndex": {
+      "type": "object",
+      "description": "Index of all ADRs produced across the Architecture and Development phases.",
+      "required": ["totalCount", "indexFilePath", "entries"],
+      "properties": {
+        "totalCount": {
+          "type": "integer",
+          "description": "Total number of ADRs in the index.",
+          "minimum": 1
+        },
+        "indexFilePath": {
+          "type": "string",
+          "description": "Relative path to the ADR index file."
+        },
+        "entries": {
+          "type": "array",
+          "description": "Summary entries for each ADR.",
+          "items": {
+            "type": "object",
+            "required": ["adrId", "title", "status", "filePath"],
+            "properties": {
+              "adrId": { "type": "string", "description": "Unique ADR identifier." },
+              "title": { "type": "string", "description": "ADR title." },
+              "status": {
+                "type": "string",
+                "enum": ["proposed", "accepted", "deprecated", "superseded"],
+                "description": "Current status of this ADR."
+              },
+              "filePath": { "type": "string", "description": "Relative path to the ADR file." }
+            },
+            "additionalProperties": false
+          },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "decisionLog": {
+      "type": "object",
+      "description": "Reference to the compiled decision history covering all SDLC phases.",
+      "required": ["filePath", "totalDecisions", "phasesCovered"],
+      "properties": {
+        "filePath": {
+          "type": "string",
+          "description": "Relative path to the decision log file."
+        },
+        "totalDecisions": {
+          "type": "integer",
+          "description": "Total number of decisions documented in the log.",
+          "minimum": 1
+        },
+        "phasesCovered": {
+          "type": "array",
+          "description": "SDLC phases whose decisions are included in the log.",
+          "items": {
+            "type": "string",
+            "enum": ["discovery", "architecture", "domain-modeling", "development", "qa", "documentation"]
+          },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "ticketKey": {
+      "type": "string",
+      "description": "Optional validated TICKET_KEY scoping this run to knowledge-base/plans/active/<TICKET_KEY>/. Must match the pattern ^[A-Z][A-Z0-9]+-[1-9][0-9]*$. Absent for offline runs.",
+      "pattern": "^[A-Z][A-Z0-9]+-[1-9][0-9]*$"
+    },
+    "sessionPath": {
+      "type": "string",
+      "description": "Optional active artifact directory derived from ticketKey. Defaults to knowledge-base/plans/active/ when absent."
+    }
+  },
+  "additionalProperties": false
+}

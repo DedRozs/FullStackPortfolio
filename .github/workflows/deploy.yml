@@ -22,7 +22,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.14"
           cache: "pip"
 
       - name: Install Dependencies
@@ -46,7 +46,7 @@ jobs:
       - name: Generate Secure app.yaml from GitHub Secrets
         run: |
           cat <<EOF > app.yaml
-          runtime: python312
+          runtime: python314
           entrypoint: gunicorn -b :\$PORT core.wsgi
 
           instance_class: F2
@@ -69,12 +69,15 @@ jobs:
             GS_BUCKET_NAME: "${{ secrets.GS_BUCKET_NAME }}"
             REST_API_ID: "${{ secrets.REST_API_ID }}"
             REST_API_SECRET: "${{ secrets.REST_API_SECRET }}"
-            SENDGRID_API_KEY: "${{ secrets.SENDGRID_API_KEY }}"
+            EMAIL_HOST_USER: "${{ secrets.EMAIL_HOST_USER }}"
+            EMAIL_HOST_PASSWORD: "${{ secrets.EMAIL_HOST_PASSWORD }}"
             SMS_NOTIFICATION_NUMBER: "${{ secrets.SMS_NOTIFICATION_NUMBER }}"
             TWILIO_ACCOUNT_SID: "${{ secrets.TWILIO_ACCOUNT_SID }}"
             TWILIO_AUTH_TOKEN: "${{ secrets.TWILIO_AUTH_TOKEN }}"
             TWILIO_PHONE_NUMBER: "${{ secrets.TWILIO_PHONE_NUMBER }}"
             OPENAI_API_KEY: "${{ secrets.OPENAI_API_KEY }}"
+            ANTHROPIC_API_KEY: "${{ secrets.ANTHROPIC_API_KEY }}"
+            CONTACT_RECIPIENT_EMAIL: "${{ secrets.CONTACT_RECIPIENT_EMAIL }}"
           automatic_scaling:
             target_cpu_utilization: 0.65
             min_instances: 1

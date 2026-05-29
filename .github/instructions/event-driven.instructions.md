@@ -1,899 +1,493 @@
+﻿---
+applyTo: "**/*.{py,ts,cs,java,kt}"
+description: "Use when implementing event-driven systems, publishing or consuming domain events, designing message-based or async communication, or applying the Transactional Outbox Pattern. Covers event naming, idempotency, publisher-consumer decoupling, and event chain depth limits."
 ---
-applyTo: "**/*"
+<!-- v2.0 | Updated: 2026-05-01 | Pattern: Event-Driven Architecture -->
+
+# Event-Driven Architecture Instructions
+
+Apply these rules to all event-driven systems in this project.
+
 ---
 
-# Event-Driven Architecture Pattern
+## Core Rules
 
-## Overview
+1. Events represent **facts that already occurred** - they are immutable, past-tense, and cannot change after publication.
+2. Publishers are **fully decoupled** from consumers. A publisher never imports, calls, or references a consumer.
+3. All handlers **must be idempotent** - processing the same event twice produces the same result.
+4. Publish events **only after** successful state persistence, or use the Transactional Outbox Pattern.
+5. Event chains must not exceed **2 levels deep**. Use a saga for deeper workflows.
+6. Events carry **sufficient data** for consumers to act without re-querying the originating service.
 
-- **Intent:** Design systems where components communicate through the production, detection, and consumption of events, enabling loose coupling, scalability, and real-time responsiveness.
+---
 
-- **When to Use:**
-  - Systems need to react to state changes in real-time
-  - Multiple services need to respond to the same occurrence without tight coupling
-  - You need asynchronous processing and decoupled workflows
-  - Building microservices that must remain independent
-  - Implementing audit trails, analytics, or activity streams
-  - Handling high-throughput data streams (IoT, financial transactions, logs)
-  - Need for temporal decoupling (producers and consumers operate independently)
+## Event Envelope - CloudEvents Standard
 
-## Core Principles
+All events must follow the [CloudEvents v1.0](https://cloudevents.io) envelope specification.
 
-1. **Event as First-Class Citizen**: Events represent facts about things that happened in the past (immutable)
-2. **Publisher-Subscriber Decoupling**: Event producers don't know about consumers
-3. **Asynchronous Communication**: Non-blocking message passing between components
-4. **Event Immutability**: Once published, events cannot be changed
-5. **Event Schema**: Well-defined structure for event data
-6. **Eventual Consistency**: Accept that data may not be immediately consistent across all services
+### Required Fields
 
-## Named Instruction Outline
+| Field | Type | Rule |
+|-------|------|------|
+| `id` | UUID | Unique per event; used for deduplication |
+| `type` | string | Namespaced event type - e.g., `order.placed` |
+| `source` | URI | Originating service - e.g., `/order-service` |
+| `specversion` | string | Always `"1.0"` |
+| `time` | ISO 8601 | UTC timestamp of when the fact occurred |
+| `datacontenttype` | string | Always `"application/json"` |
+| `data` | object | Domain payload; schema registered in schema registry |
 
-### Phase 1: Define Event Schema and Types
+### Recommended Extensions
 
-**Objective:** Establish a consistent event structure and taxonomy.
+| Field | Rule |
+|-------|------|
+| `correlationid` | UUID tracing a business transaction across services; propagate from trigger |
+| `causationid` | `id` of the event or command that caused this event |
+| `dataschema` | Schema registry URI for the `data` payload |
+| `subject` | Entity subject - e.g., `order-123` |
+| `version` | Semver schema version of `data` - e.g., `"2.0"` |
 
-**Steps:**
+### Data Payload Rules
 
-1. **Create Base Event Class:**
+- Include all fields a consumer needs to act without a secondary lookup to the source service.
+- Exclude credentials, raw PII (tokenize or encrypt instead), and internal identifiers irrelevant to consumers.
+- For large payloads (> 64 KB), use the **Claim Check Pattern**: store payload in object storage, include the URI in the event.
+
+### Canonical Envelope Example
+
 ```python
+# domain/events/order_placed.py
 from dataclasses import dataclass, field
-from datetime import datetime
-from typing import Dict, Any
-import uuid
+from datetime import datetime, timezone
+from uuid import UUID, uuid4
 
-@dataclass
-class Event:
-    """Base class for all domain events."""
-    event_id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    event_type: str = ""
-    timestamp: datetime = field(default_factory=datetime.utcnow)
-    source: str = ""
-    version: str = "1.0"
-    data: Dict[str, Any] = field(default_factory=dict)
-    metadata: Dict[str, Any] = field(default_factory=dict)
-    
-    def to_dict(self) -> Dict[str, Any]:
-        return {
-            'event_id': self.event_id,
-            'event_type': self.event_type,
-            'timestamp': self.timestamp.isoformat(),
-            'source': self.source,
-            'version': self.version,
-            'data': self.data,
-            'metadata': self.metadata
-        }
+@dataclass(frozen=True)
+class OrderPlaced:
+    id: UUID = field(default_factory=uuid4)
+    type: str = "order.placed"
+    source: str = "/order-service"
+    specversion: str = "1.0"
+    time: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    datacontenttype: str = "application/json"
+    correlationid: UUID = None
+    causationid: UUID = None
+    data: dict = field(default_factory=dict)  # order_id, customer_id, items, total
 ```
 
-2. **Define Domain-Specific Events:**
-```python
-@dataclass
-class OrderPlacedEvent(Event):
-    """Event emitted when a customer places an order."""
-    
-    def __init__(self, order_id: str, customer_id: str, total: float, items: list):
-        super().__init__(
-            event_type="order.placed",
-            source="order-service",
-            data={
-                'order_id': order_id,
-                'customer_id': customer_id,
-                'total': total,
-                'items': items
-            }
-        )
+---
 
-@dataclass
-class PaymentProcessedEvent(Event):
-    """Event emitted when payment is successfully processed."""
-    
-    def __init__(self, payment_id: str, order_id: str, amount: float):
-        super().__init__(
-            event_type="payment.processed",
-            source="payment-service",
-            data={
-                'payment_id': payment_id,
-                'order_id': order_id,
-                'amount': amount,
-                'status': 'completed'
-            }
-        )
+## Naming Conventions
+
+### Event Types
+
+- Format: `{domain}.{entity}.{past-tense-verb}` - e.g., `order.placed`, `payment.failed`
+- Multi-word segments use kebab-case: `inventory.item.stock-depleted`
+- CloudEvents reverse-DNS prefix: `com.company.order.placed`
+- **Never** use imperative names: `order.place` is wrong; `order.placed` is correct.
+
+### Topics, Exchanges, and Queues
+
+- Topic name mirrors event type: `{domain}.{entity}.{past-tense-verb}`
+- Dead letter queue: append `.dlq` - e.g., `order.placed.dlq`
+- Consumer group: `{consuming-service}.{event-type}` - e.g., `inventory-service.order.placed`
+- Namespace per environment: `{env}.{topic-name}` - e.g., `prod.order.placed`
+
+### Handler and Publisher Classes
+
+- Handler format: `{Action}{Entity}On{Event}Handler` - e.g., `ReserveInventoryOnOrderPlacedHandler`
+- One handler class per event type - no multi-event handler classes.
+- Publisher format: `{Entity}EventPublisher` - e.g., `OrderEventPublisher`
+
+---
+
+## Delivery Semantics
+
+Select one guarantee per consumer use case and design the handler accordingly.
+
+| Guarantee | Broker Support | Handler Requirement | Use When |
+|-----------|---------------|---------------------|----------|
+| At-most-once | Fire and forget | No dedup needed | Metrics, telemetry |
+| At-least-once | Ack-based | Handler MUST be idempotent | Business events (default) |
+| Exactly-once | Transactional (Kafka EOS, etc.) | Idempotent + distributed tx | Financial, inventory |
+
+**Default for all business events: at-least-once with idempotent handlers.**
+
+---
+
+## Reliable Publishing - Transactional Outbox
+
+Never publish to the broker in the same code path as a database transaction without a durability guarantee. Use the **Transactional Outbox Pattern**:
+
+1. In the same DB transaction as the state change, insert the event into an `outbox` table.
+2. A relay process reads unpublished outbox rows and publishes to the broker.
+3. Mark rows published only after broker acknowledgement.
+4. Guarantees zero event loss if the service crashes between write and publish.
+
+```python
+# Inside a database transaction - no phantom events on rollback
+with db.transaction():
+    order = Order.create(order_data)
+    db.outbox.insert(event=OrderPlaced(order).to_envelope())
+# Relay publishes asynchronously; publisher does not wait
 ```
 
-3. **Use Past Tense Naming**: Events represent facts that already occurred (`OrderPlaced`, not `PlaceOrder`)
+The **Transactional Inbox Pattern** is the consumer-side complement: persist the event to an inbox table before processing to prevent duplicate side effects on broker redelivery.
 
-### Phase 2: Implement Event Bus/Broker
+---
 
-**Objective:** Create the infrastructure for publishing and subscribing to events.
+## DDD Integration - Domain Events vs Integration Events
 
-**Steps:**
+- **Domain event**: raised inside the domain model; lives in `domain/events/`. Consumed only within the same bounded context.
+- **Integration event**: published to the broker for cross-service consumption; lives in `infrastructure/messaging/`. Translated from domain events at the application layer.
+- Never publish domain events directly to an external broker. Translate to integration events at the application layer boundary.
+- The translation step is the anti-corruption layer - it shields the domain model from broker envelope concerns.
+- Domain events are not frozen to the CloudEvents envelope format; integration events always are.
 
-1. **Create Event Bus Interface:**
+---
+
+## Publisher Rules
+
+- Fire and forget: publishers do not await handler results or acknowledgements.
+- Always set `correlationid` and `causationid` on every published event.
+- Log `event.id`, `event.type`, and `correlationid` at INFO level on every publish.
+- Publish only after state is committed, or via the Transactional Outbox Pattern.
+- Never embed consumer-specific routing logic in a publisher.
+
+---
+
+## Handler / Consumer Rules
+
+- Each handler class handles **exactly one** event type. One class, one responsibility.
+- Check `event.id` against a processed-events store before executing (idempotency gate).
+- Acknowledge the message **only after** successful processing.
+- Handler errors must not propagate to or cancel sibling handlers.
+- Never call back to the publisher service synchronously from a handler.
+- Log `correlationid`, `causationid`, and `event.id` at INFO at handler entry and exit.
+
+### Canonical Idempotent Handler
+
 ```python
-from abc import ABC, abstractmethod
-from typing import Callable, List
-from collections import defaultdict
-
-class EventBus(ABC):
-    """Abstract base class for event bus implementations."""
-    
-    @abstractmethod
-    def publish(self, event: Event) -> None:
-        """Publish an event to the bus."""
-        pass
-    
-    @abstractmethod
-    def subscribe(self, event_type: str, handler: Callable[[Event], None]) -> None:
-        """Subscribe a handler to an event type."""
-        pass
+# infrastructure/messaging/handlers/reserve_inventory_on_order_placed.py
+class ReserveInventoryOnOrderPlacedHandler:
+    def handle(self, event: OrderPlaced) -> None:
+        if self._store.already_processed(event.id):
+            return  # Idempotency gate - safe to skip
+        self._reserve_items(event.data["items"])
+        self._store.mark_processed(event.id)  # Commit atomically with work
 ```
 
-2. **Implement In-Memory Event Bus (for development/testing):**
-```python
-class InMemoryEventBus(EventBus):
-    """Simple in-memory event bus for local development."""
-    
-    def __init__(self):
-        self._subscribers: Dict[str, List[Callable]] = defaultdict(list)
-    
-    def publish(self, event: Event) -> None:
-        """Publish event to all registered handlers."""
-        event_type = event.event_type
-        
-        # Notify exact match subscribers
-        for handler in self._subscribers.get(event_type, []):
-            try:
-                handler(event)
-            except Exception as e:
-                print(f"Error in handler for {event_type}: {e}")
-        
-        # Notify wildcard subscribers (e.g., "order.*")
-        base_type = event_type.split('.')[0]
-        wildcard = f"{base_type}.*"
-        for handler in self._subscribers.get(wildcard, []):
-            try:
-                handler(event)
-            except Exception as e:
-                print(f"Error in handler for {wildcard}: {e}")
-    
-    def subscribe(self, event_type: str, handler: Callable[[Event], None]) -> None:
-        """Register a handler for an event type."""
-        self._subscribers[event_type].append(handler)
-```
+---
 
-3. **Implement Production Event Bus (using message broker):**
-```python
-import json
-from typing import Optional
+## Error Handling and Resilience
 
-class RabbitMQEventBus(EventBus):
-    """Production event bus using RabbitMQ."""
-    
-    def __init__(self, connection_url: str):
-        # In real implementation: import pika and establish connection
-        self.connection_url = connection_url
-        self._subscribers: Dict[str, List[Callable]] = defaultdict(list)
-        # self.connection = pika.BlockingConnection(...)
-        # self.channel = self.connection.channel()
-    
-    def publish(self, event: Event) -> None:
-        """Publish event to RabbitMQ exchange."""
-        exchange = 'events'
-        routing_key = event.event_type
-        message = json.dumps(event.to_dict())
-        
-        # self.channel.basic_publish(
-        #     exchange=exchange,
-        #     routing_key=routing_key,
-        #     body=message
-        # )
-        print(f"Published {event.event_type} to {exchange}")
-    
-    def subscribe(self, event_type: str, handler: Callable[[Event], None]) -> None:
-        """Subscribe to events from RabbitMQ queue."""
-        self._subscribers[event_type].append(handler)
-        
-        # In real implementation:
-        # queue_name = f"{event_type}_queue"
-        # self.channel.queue_declare(queue=queue_name)
-        # self.channel.queue_bind(exchange='events', queue=queue_name, routing_key=event_type)
-        # self.channel.basic_consume(queue=queue_name, on_message_callback=self._on_message)
+### Retry Policy
 
-### Phase 3: Implement Event Publishers
+- Retry transient failures with exponential backoff: 1 s, 2 s, 4 s, 8 s, ...
+- Maximum 3-5 attempts (configure per handler based on SLA sensitivity).
+- Validation failures and schema mismatches: route directly to DLQ, do not retry.
 
-**Objective:** Enable services to emit events when state changes occur.
+### Dead Letter Queue
 
-**Steps:**
+- Every subscription **must** have a configured DLQ. Absence is a production incident.
+- DLQ message must include: original payload, failure reason, handler name, timestamp, attempt count.
+- DLQ depth > 0 triggers an alert. Treat stale DLQ items as a P2 incident.
+- Provide an operational runbook for DLQ inspection and selective reprocessing.
 
-1. **Create Event Publisher Mixin:**
-```python
-class EventPublisher:
-    """Mixin to add event publishing capability to any class."""
-    
-    def __init__(self, event_bus: EventBus):
-        self._event_bus = event_bus
-    
-    def publish_event(self, event: Event) -> None:
-        """Publish an event to the bus."""
-        self._event_bus.publish(event)
-```
+### Circuit Breaker
 
-2. **Integrate with Domain Services:**
-```python
-class OrderService(EventPublisher):
-    """Service for managing orders."""
-    
-    def __init__(self, event_bus: EventBus):
-        super().__init__(event_bus)
-        self.orders = {}
-    
-    def place_order(self, customer_id: str, items: list) -> str:
-        """Place a new order and emit event."""
-        order_id = str(uuid.uuid4())
-        total = sum(item['price'] * item['quantity'] for item in items)
-        
-        # Update state
-        self.orders[order_id] = {
-            'order_id': order_id,
-            'customer_id': customer_id,
-            'items': items,
-            'total': total,
-            'status': 'pending'
-        }
-        
-        # Emit event
-        event = OrderPlacedEvent(
-            order_id=order_id,
-            customer_id=customer_id,
-            total=total,
-            items=items
-        )
-        self.publish_event(event)
-        
-        return order_id
+- Wrap all downstream service calls inside handlers with a circuit breaker.
+- Open circuit after 5 consecutive failures; half-open probe after 30 s.
+- Log all circuit state transitions at WARN with the downstream target name.
 
-class PaymentService(EventPublisher):
-    """Service for processing payments."""
-    
-    def __init__(self, event_bus: EventBus):
-        super().__init__(event_bus)
-    
-    def process_payment(self, order_id: str, amount: float) -> str:
-        """Process payment and emit event."""
-        payment_id = str(uuid.uuid4())
-        
-        # Process payment logic here
-        # ...
-        
-        # Emit event
-        event = PaymentProcessedEvent(
-            payment_id=payment_id,
-            order_id=order_id,
-            amount=amount
-        )
-        self.publish_event(event)
-        
-        return payment_id
-```
+### Poison Message Detection
 
-3. **Ensure Events Are Published After State Changes:** Publish events only after successfully persisting state changes to prevent inconsistencies.
+- After N DLQ re-enqueue attempts, quarantine the message and page on-call.
+- A single poison message must never halt queue processing for other messages.
+- Quarantined messages must be inspectable and replayable after the root cause is fixed.
 
-### Phase 4: Implement Event Handlers/Consumers
+---
 
-**Objective:** Create components that react to events.
+## Schema Evolution and Versioning
 
-**Steps:**
+### Backward-Compatible Changes (safe to deploy independently)
 
-1. **Define Event Handler Interface:**
-```python
-class EventHandler(ABC):
-    """Base class for event handlers."""
-    
-    @abstractmethod
-    def handle(self, event: Event) -> None:
-        """Process the event."""
-        pass
-    
-    @abstractmethod
-    def can_handle(self, event_type: str) -> bool:
-        """Check if this handler can process the event type."""
-        pass
-```
+- Adding optional fields with safe defaults.
+- Adding new event types or new optional envelope extensions.
 
-2. **Implement Specific Event Handlers:**
-```python
-class InventoryEventHandler(EventHandler):
-    """Handler that updates inventory when orders are placed."""
-    
-    def __init__(self):
-        self.inventory = {}
-    
-    def can_handle(self, event_type: str) -> bool:
-        return event_type == "order.placed"
-    
-    def handle(self, event: Event) -> None:
-        """Reduce inventory for ordered items."""
-        if not self.can_handle(event.event_type):
-            return
-        
-        items = event.data.get('items', [])
-        for item in items:
-            product_id = item['product_id']
-            quantity = item['quantity']
-            
-            if product_id in self.inventory:
-                self.inventory[product_id] -= quantity
-                print(f"Reduced inventory for {product_id} by {quantity}")
+### Breaking Changes (require coordinated deployment)
 
-class NotificationEventHandler(EventHandler):
-    """Handler that sends notifications based on events."""
-    
-    def can_handle(self, event_type: str) -> bool:
-        return event_type in ["order.placed", "payment.processed"]
-    
-    def handle(self, event: Event) -> None:
-        """Send appropriate notification."""
-        if event.event_type == "order.placed":
-            customer_id = event.data.get('customer_id')
-            order_id = event.data.get('order_id')
-            print(f"Sending order confirmation to customer {customer_id} for order {order_id}")
-        
-        elif event.event_type == "payment.processed":
-            order_id = event.data.get('order_id')
-            amount = event.data.get('amount')
-            print(f"Sending payment receipt for order {order_id}, amount ${amount}")
+- Removing or renaming fields.
+- Changing field types or semantics.
+- Changing event type strings or topic names.
 
-class OrderFulfillmentHandler(EventHandler):
-    """Handler that triggers order fulfillment after payment."""
-    
-    def can_handle(self, event_type: str) -> bool:
-        return event_type == "payment.processed"
-    
-    def handle(self, event: Event) -> None:
-        """Start fulfillment process."""
-        order_id = event.data.get('order_id')
-        print(f"Starting fulfillment for order {order_id}")
-        # Trigger warehouse systems, shipping, etc.
-```
+### Breaking Change Process
 
-3. **Register Handlers with Event Bus:**
-```python
-def setup_event_handlers(event_bus: EventBus):
-    """Register all event handlers with the event bus."""
-    
-    # Create handler instances
-    inventory_handler = InventoryEventHandler()
-    notification_handler = NotificationEventHandler()
-    fulfillment_handler = OrderFulfillmentHandler()
-    
-    # Register handlers
-    event_bus.subscribe("order.placed", inventory_handler.handle)
-    event_bus.subscribe("order.placed", notification_handler.handle)
-    event_bus.subscribe("payment.processed", notification_handler.handle)
-    event_bus.subscribe("payment.processed", fulfillment_handler.handle)
+1. Register the new schema version in the schema registry before any deployment.
+2. Deploy producers publishing both old and new schema versions in parallel.
+3. Migrate all consumers to the new schema during the parallel run (minimum one sprint).
+4. Publish a sunset date for the old schema; remove only after all consumers are migrated and confirmed.
 
-### Phase 5: Implement Error Handling and Resilience
+### Schema Compatibility Matrix
 
-**Objective:** Ensure the system handles failures gracefully.
+| Change Type | Safe to Deploy | Registry Policy Required |
+|-------------|---------------|--------------------------|
+| Add optional field | Yes | BACKWARD compatible |
+| Remove field | No | Follow breaking change process |
+| Rename field | No | Follow breaking change process |
+| Add new event type | Yes | New subject entry |
+| Change field type | No | Follow breaking change process |
 
-**Steps:**
+### Schema Registry
 
-1. **Add Dead Letter Queue for Failed Events:**
-```python
-class ResilientEventBus(EventBus):
-    """Event bus with error handling and retry logic."""
-    
-    def __init__(self, base_bus: EventBus, max_retries: int = 3):
-        self._base_bus = base_bus
-        self._max_retries = max_retries
-        self._dead_letter_queue: List[Dict[str, Any]] = []
-        self._subscribers: Dict[str, List[Callable]] = defaultdict(list)
-    
-    def publish(self, event: Event) -> None:
-        """Publish event with retry logic."""
-        self._base_bus.publish(event)
-    
-    def subscribe(self, event_type: str, handler: Callable[[Event], None]) -> None:
-        """Subscribe with automatic retry wrapper."""
-        wrapped_handler = self._create_retry_handler(handler)
-        self._subscribers[event_type].append(wrapped_handler)
-        self._base_bus.subscribe(event_type, wrapped_handler)
-    
-    def _create_retry_handler(self, handler: Callable[[Event], None]) -> Callable[[Event], None]:
-        """Wrap handler with retry logic."""
-        def retry_wrapper(event: Event) -> None:
-            attempts = 0
-            last_error = None
-            
-            while attempts < self._max_retries:
-                try:
-                    handler(event)
-                    return  # Success
-                except Exception as e:
-                    attempts += 1
-                    last_error = e
-                    print(f"Handler failed (attempt {attempts}/{self._max_retries}): {e}")
-            
-            # All retries exhausted
-            self._dead_letter_queue.append({
-                'event': event.to_dict(),
-                'error': str(last_error),
-                'failed_at': datetime.utcnow().isoformat()
-            })
-            print(f"Event {event.event_id} moved to dead letter queue")
-        
-        return retry_wrapper
-    
-    def get_dead_letters(self) -> List[Dict[str, Any]]:
-        """Retrieve failed events for manual inspection."""
-        return self._dead_letter_queue.copy()
-```
+- **All event schemas must be registered** in a schema registry (Confluent Schema Registry, AWS Glue, Apicurio, etc.).
+- Producers validate events against the registry before publishing.
+- Consumers validate incoming events against the registry before processing.
+- Default compatibility policy: **BACKWARD** (additive-only unless the breaking change process is followed).
 
-2. **Implement Idempotent Handlers:**
-```python
-class IdempotentEventHandler(EventHandler):
-    """Handler that tracks processed events to avoid duplicate processing."""
-    
-    def __init__(self):
-        self._processed_events: set = set()
-    
-    def handle(self, event: Event) -> None:
-        """Process event only once."""
-        if event.event_id in self._processed_events:
-            print(f"Event {event.event_id} already processed, skipping")
-            return
-        
-        try:
-            self._process_event(event)
-            self._processed_events.add(event.event_id)
-        except Exception as e:
-            print(f"Failed to process event {event.event_id}: {e}")
-            raise
-    
-    @abstractmethod
-    def _process_event(self, event: Event) -> None:
-        """Actual event processing logic."""
-        pass
-```
+---
 
-3. **Add Event Versioning Support:**
-```python
-class VersionedEventHandler(EventHandler):
-    """Handler that supports multiple event schema versions."""
-    
-    def __init__(self):
-        self._version_handlers = {}
-    
-    def register_version(self, version: str, handler: Callable[[Event], None]) -> None:
-        """Register handler for specific event version."""
-        self._version_handlers[version] = handler
-    
-    def handle(self, event: Event) -> None:
-        """Route to appropriate version handler."""
-        version = event.version
-        
-        if version not in self._version_handlers:
-            # Try to upgrade event to latest version
-            event = self._upgrade_event(event)
-            version = event.version
-        
-        handler = self._version_handlers.get(version)
-        if handler:
-            handler(event)
-        else:
-            raise ValueError(f"No handler for event version {version}")
-    
-    def _upgrade_event(self, event: Event) -> Event:
-        """Upgrade event to latest schema version."""
-        # Implement schema migration logic
-        return event
-```
+## Security Rules
 
-### Complete Usage Example
+- All broker connections use **TLS**. Plaintext broker connections are prohibited.
+- Producers and consumers authenticate with **per-service credentials**. Shared keys are prohibited.
+- Apply **least-privilege topic-level authorization**: producers write-only, consumers read-only on their topics.
+- Events must **never contain** secrets, passwords, API keys, or session tokens.
+- PII fields must be tokenized or field-level encrypted before inclusion in any event payload.
+- Authentication context (acting user ID) belongs in `metadata`, never raw in `data`.
+- Rate-limit event ingestion endpoints to prevent broker flooding (DoS mitigation).
+- Validate event schema at the consumer boundary before processing - reject malformed envelopes.
+- Audit log all schema registry access (schema registration, deletion, compatibility overrides).
 
-```python
-# Initialize the system
-event_bus = InMemoryEventBus()
-resilient_bus = ResilientEventBus(event_bus)
+---
 
-# Set up services
-order_service = OrderService(resilient_bus)
-payment_service = PaymentService(resilient_bus)
+## Observability Standards
 
-# Set up event handlers
-setup_event_handlers(resilient_bus)
+Every event-driven feature must implement all four observability signals.
 
-# Simulate a complete order flow
-def process_customer_order():
-    """Demonstrates end-to-end event-driven flow."""
-    
-    # Customer places an order
-    items = [
-        {'product_id': 'PROD-001', 'name': 'Widget', 'price': 29.99, 'quantity': 2},
-        {'product_id': 'PROD-002', 'name': 'Gadget', 'price': 49.99, 'quantity': 1}
-    ]
-    
-    print("=== Placing Order ===")
-    order_id = order_service.place_order(
-        customer_id="CUST-123",
-        items=items
-    )
-    print(f"Order placed: {order_id}\n")
-    
-    # Events propagate:
-    # 1. InventoryEventHandler reduces stock
-    # 2. NotificationEventHandler sends confirmation
-    
-    # Process payment
-    print("=== Processing Payment ===")
-    total = sum(item['price'] * item['quantity'] for item in items)
-    payment_id = payment_service.process_payment(order_id, total)
-    print(f"Payment processed: {payment_id}\n")
-    
-    # Events propagate:
-    # 1. NotificationEventHandler sends receipt
-    # 2. OrderFulfillmentHandler starts shipping
+| Signal | Required Items |
+|--------|----------------|
+| **Logs** | INFO on publish: `event.id`, `event.type`, `correlationid`. INFO on handler start/complete. ERROR on failure with full stack trace and `event.id`. |
+| **Metrics** | Published count (counter, per type), consumed count (counter, per type), handler processing time (histogram, p50/p95/p99), DLQ depth (gauge), handler error rate (counter), consumer lag (gauge). |
+| **Traces** | Propagate W3C Trace Context in event `metadata`. Create a child span per handler execution tagged with `event.type` and `event.id`. |
+| **Alerts** | DLQ depth > 0, handler error rate > threshold, consumer lag > SLA window, circuit breaker open. |
 
-# Run the example
-if __name__ == "__main__":
-    process_customer_order()
-    
-    # Check for any failed events
-    dead_letters = resilient_bus.get_dead_letters()
-    if dead_letters:
-        print(f"\n=== Dead Letter Queue ({len(dead_letters)} events) ===")
-        for dl in dead_letters:
-            print(f"Failed: {dl['event']['event_type']} - {dl['error']}")
+Alert thresholds must be defined before a feature ships to production. "TBD" thresholds are not acceptable for production launch.
+
+---
+
+## Performance and Scalability
+
+- **N+1 prohibition**: handlers must not issue one query per event in a batch. Load referenced entities in bulk before processing the batch.
+- **Fanout scope**: target events at the narrowest applicable consumer group. Unbounded broadcast requires explicit justification.
+- **High-frequency events** (> 100/s): document expected rate, acceptable consumer lag, and throttling strategy before implementation.
+- **Backpressure**: consumers falling behind must reduce prefetch count / maxConcurrency, not drop messages.
+- **No blocking I/O in async handlers**: async handlers use async I/O exclusively. Blocking calls starve the event loop.
+- **Consumer lag monitoring**: alert when lag exceeds the processing window defined for the event type.
+- **Batching**: prefer batched delivery over single-message polling for high-throughput consumers where the broker supports it.
+
+---
+
+## Event Ordering
+
+- By default, assume **no ordering guarantee**. Design handlers to be order-independent.
+- When strict ordering is required (e.g., state machine progression): use a single partition key per entity and process that partition serially.
+- Never assume global ordering across partitions or queue instances.
+- Document ordering requirements explicitly per event type in the schema registry or ADR.
+
+---
+
+## Consumer Groups and Competing Consumers
+
+- Each logical consumer registers its own **consumer group** so it receives all events independently.
+- Within a consumer group, multiple instances **compete** for messages to scale throughput horizontally.
+- Competing consumers require idempotent handlers - the same message may reach different instances on retry.
+- Do not share a consumer group between services with different business purposes.
+- Scale consumer instances by monitoring consumer lag, not CPU or memory alone.
+
+---
+
+## Saga Pattern
+
+Use sagas for workflows spanning multiple services where a distributed transaction is needed.
+
+### Choreography (use for simple workflows, <= 3 steps)
+
+- Each service reacts to domain events and publishes its own outcome events.
+- No central coordinator - flow is implicit in the chain of events.
+- Pros: simple, no single point of failure. Cons: flow is hard to visualize beyond 3 steps.
+
+### Orchestration (use for complex workflows, > 3 steps)
+
+- A **Saga Orchestrator** sends commands to services and awaits their reply events.
+- The orchestrator state machine is a first-class domain object with its own persistence.
+- Pros: explicit flow, observable, easy to add steps. Cons: orchestrator is a coordination point.
+
+### Compensation Rules
+
+- Every saga step that can fail must have a defined compensating transaction documented alongside it.
+- Compensating transactions are appended to the event log as new events - never mutate past events.
+- Compensation is **not rollback** - it is a forward-correcting action that undoes the business effect.
+- The saga must handle partial compensation failures; document the manual recovery path.
+
+---
+
+## CQRS Integration
+
+When EDA is combined with CQRS:
+
+- The write model publishes domain events; read model projections consume them via the broker.
+- Projections are rebuilt from the event log on demand - never via direct DB queries to the write model.
+- Projections never call back to the write model - data flows one way only.
+- Read model staleness is expected and acceptable; communicate staleness to the UI via cache-control headers or explicit "as-of" timestamps in responses.
+
+---
+
+## Event Sourcing vs Event-Driven Architecture
+
+These are distinct patterns often confused:
+
+| Concern | Event-Driven Architecture | Event Sourcing |
+|---------|--------------------------|----------------|
+| Primary goal | Decoupled service communication | State derivation from an immutable log |
+| State storage | Current state in DB; events are notifications | Events ARE the state; DB is a materialized view |
+| Event log | Optional; broker retention policy applies | Required; the log is permanent and authoritative |
+| Replayability | Optional | Mandatory |
+| Complexity | Low-medium | High |
+
+EDA does not require event sourcing. Event sourcing implies EDA. Adopt event sourcing only when audit completeness and full temporal query capability justify the complexity.
+
+---
+
+## Event Replay and Recovery
+
+- The event log (Kafka topic, EventStore stream, etc.) is the system of record for all published events.
+- Consumers must be able to **replay events from a known offset** without side effects. Design and test for replay safety.
+- Test replay explicitly: process the same batch twice and assert idempotent results.
+- Document the retention period for every topic. Default: retain long enough to rebuild any downstream projection from scratch.
+- Provide an operational procedure for selective replay (reprocess a specific time window or entity partition).
+
+---
+
+## Broker Selection Reference
+
+| Broker | Best For | Ordering | Replay | Exactly-Once |
+|--------|----------|----------|--------|--------------|
+| **Kafka** | High-throughput, durable log, event sourcing | Per partition | Yes (log retention) | Yes (EOS transactions) |
+| **RabbitMQ** | Low-latency, complex routing, work queues | Per queue | No (after ack) | No |
+| **AWS SNS/SQS** | Managed, multi-subscriber fanout, serverless | SQS FIFO only | No | No |
+| **Azure Service Bus** | Managed, enterprise messaging, sessions | Sessions only | No | No |
+| **Google Pub/Sub** | Managed, global scale, at-least-once | No | Via snapshots | No |
+
+---
+
+## Testing Standards
+
+| Test Type | What to Cover | Required |
+|-----------|-------------|----------|
+| Unit | Handler logic in isolation. Mock event bus. Inject pre-built event objects. | Yes |
+| Contract | Schema compliance against schema registry or committed schema snapshots. | Yes |
+| Integration | Handler + real broker (containerized). Verify full publish-consume cycle. | Yes |
+| Idempotency | Submit same event twice; assert side effect occurs exactly once. | Yes |
+| Failure | DLQ routing, retry exhaustion, circuit breaker open behavior. | Yes |
+| Schema migration | Old-schema events consumed correctly by new-schema handler. | On schema change |
+| Load | Consumer processes events within SLA under expected peak event rate. | High-frequency events |
+
+Test naming pattern: `test_{handler}_given_{context}_when_{event}_then_{outcome}`.
+
+---
 
 ## Anti-Patterns
 
-### 1. Event Dependency Chains
-**Problem:** Creating long chains where Event A triggers Event B triggers Event C, making the flow hard to debug and reason about.
+| Anti-Pattern | Why It Is Wrong | Correct Approach |
+|---|---|---|
+| Event as command | Couples producer to consumer intent | Events are facts; use commands for intent |
+| Logic inside event class | Turns data into an active object | Events are pure data; logic lives in handlers |
+| Synchronous publish-wait | Blocks publisher until all handlers finish | Publish is fire-and-forget |
+| Deep event chains (> 2 levels) | Unpredictable cascades, impossible to debug | Use saga orchestration for complex flows |
+| Circular event dependencies | A triggers B which triggers A | Redesign with an explicit saga coordinator |
+| Missing DLQ | Failed events silently lost | Every subscription requires a configured DLQ |
+| Non-idempotent handler | Double-charge, double-deduction on retry | Check `event.id` before processing |
+| Micro-event storm | Excessive traffic, exposes implementation internals | Right-size events to business facts |
+| PII in event payload | Data governance and compliance risk | Tokenize or field-encrypt before publishing |
+| Shared mutable consumer state | Race conditions across parallel consumer instances | Handlers are stateless; state lives in persistence |
+| Version-less events | Breaking schema changes crash consumers | Include `version` in every event envelope |
+| No schema registry | Schema drift across teams and deployments | Register and validate all schemas centrally |
+| Publishing before commit | Phantom events on transaction rollback | Use Transactional Outbox Pattern |
+| Domain event on broker | Couples domain model to broker envelope format | Translate to integration event at app layer boundary |
 
-**Solution:** Keep event chains shallow. If you need complex orchestration, consider using a saga pattern or workflow engine.
+---
 
-```python
-# ❌ BAD: Deep event chain
-class OrderHandler:
-    def handle(self, event):
-        # ... process order ...
-        self.publish(OrderValidatedEvent(...))  # Triggers another handler
-        
-class OrderValidatedHandler:
-    def handle(self, event):
-        # ... validate ...
-        self.publish(InventoryReservedEvent(...))  # Triggers another handler
-        
-class InventoryReservedHandler:
-    def handle(self, event):
-        # ... reserve inventory ...
-        self.publish(PaymentInitiatedEvent(...))  # And so on...
+## When to Use Event-Driven Architecture
 
-# ✅ GOOD: Direct coordination when needed
-class OrderCoordinator:
-    def process_order(self, order_id):
-        # Explicit orchestration
-        self.validate_order(order_id)
-        self.reserve_inventory(order_id)
-        self.initiate_payment(order_id)
-        
-        # Publish single event for interested parties
-        self.publish(OrderProcessedEvent(order_id))
-```
+### Use EDA When
 
-### 2. Synchronous Event Handling
-**Problem:** Blocking the publisher until all handlers complete defeats the purpose of asynchronous architecture.
+- Multiple services react to the same business fact without knowing about each other.
+- Temporal decoupling is acceptable - producers and consumers need not be online simultaneously.
+- Audit trail, event replay, or historical query capability is required.
+- Services are owned by different teams and must be independently deployable.
+- The workflow naturally spans multiple bounded contexts.
 
-**Solution:** Always handle events asynchronously, return immediately from publish operations.
+### Avoid EDA When
 
-```python
-# ❌ BAD: Synchronous processing blocks publisher
-class EventBus:
-    def publish(self, event):
-        for handler in self._subscribers[event.event_type]:
-            handler(event)  # Blocks until handler completes
-        return  # Publisher waits for all handlers
+- Strong consistency is non-negotiable and eventual consistency is unacceptable.
+- The entire operation must succeed or fail atomically with no saga compensation path.
+- The team lacks distributed tracing tooling to debug async flows in production.
+- The domain is simple CRUD with a single consumer - direct API calls are simpler and more observable.
 
-# ✅ GOOD: Asynchronous processing
-import asyncio
-from concurrent.futures import ThreadPoolExecutor
+### Hybrid Approach
 
-class AsyncEventBus:
-    def __init__(self):
-        self._executor = ThreadPoolExecutor(max_workers=10)
-    
-    def publish(self, event):
-        """Non-blocking publish."""
-        for handler in self._subscribers[event.event_type]:
-            self._executor.submit(handler, event)  # Fire and forget
-        return  # Publisher continues immediately
-```
+For most systems, combine EDA with synchronous request/response: use synchronous calls for the critical path that requires immediate feedback, and publish events for side effects that can be processed asynchronously. This avoids eventual-consistency complexity on the happy path while still decoupling non-critical consumers.
 
-### 3. Events With Business Logic
-**Problem:** Putting behavior/logic inside event objects turns them into active objects rather than passive data containers.
-
-**Solution:** Events should be pure data structures. Put logic in handlers, not events.
-
-```python
-# ❌ BAD: Event contains logic
-class OrderPlacedEvent(Event):
-    def notify_customer(self):
-        send_email(...)  # Logic doesn't belong here
-    
-    def update_inventory(self):
-        inventory_service.reduce(...)  # Logic doesn't belong here
-
-# ✅ GOOD: Event is pure data
-@dataclass
-class OrderPlacedEvent(Event):
-    order_id: str
-    customer_id: str
-    items: List[Dict]
-    # Just data, no methods
-
-# Logic lives in handlers
-class CustomerNotificationHandler:
-    def handle(self, event: OrderPlacedEvent):
-        send_email(event.customer_id, event.order_id)
-```
-
-### 4. Missing Event Schema Versioning
-**Problem:** Changing event structure breaks existing consumers, causing production failures.
-
-**Solution:** Always include version field in events, maintain backward compatibility.
-
-```python
-# ❌ BAD: No versioning, breaking change
-# Version 1
-class OrderEvent(Event):
-    order_id: str
-    total: float
-
-# Version 2 - breaks consumers expecting 'total'
-class OrderEvent(Event):
-    order_id: str
-    subtotal: float  # Renamed field!
-    tax: float
-
-# ✅ GOOD: Versioned events with compatibility
-class OrderEventV1(Event):
-    version = "1.0"
-    order_id: str
-    total: float
-
-class OrderEventV2(Event):
-    version = "2.0"
-    order_id: str
-    subtotal: float
-    tax: float
-    
-    @property
-    def total(self):
-        """Backward compatibility for v1 consumers."""
-        return self.subtotal + self.tax
-```
-
-### 5. Lack of Idempotency
-**Problem:** Processing the same event multiple times (due to retries/network issues) causes duplicate actions (double charges, double inventory deduction).
-
-**Solution:** Make all handlers idempotent using event IDs or database constraints.
-
-```python
-# ❌ BAD: Non-idempotent handler
-class PaymentHandler:
-    def handle(self, event):
-        # If this runs twice, customer is charged twice!
-        charge_credit_card(event.amount)
-
-# ✅ GOOD: Idempotent handler
-class PaymentHandler:
-    def __init__(self):
-        self.processed_events = set()  # In production: use database
-    
-    def handle(self, event):
-        if event.event_id in self.processed_events:
-            return  # Already processed, skip
-        
-        charge_credit_card(event.amount)
-        self.processed_events.add(event.event_id)
-```
-
-### 6. Event Storm
-**Problem:** Too many fine-grained events create excessive network traffic and complexity.
-
-**Solution:** Find the right granularity - not too coarse, not too fine.
-
-```python
-# ❌ BAD: Too many events
-class OrderService:
-    def place_order(self, order):
-        self.publish(OrderCreatedEvent(...))
-        self.publish(OrderItemAddedEvent(...))
-        self.publish(OrderItemAddedEvent(...))
-        self.publish(OrderTotalCalculatedEvent(...))
-        self.publish(OrderValidatedEvent(...))
-        # 5+ events for one operation!
-
-# ✅ GOOD: Right-sized events
-class OrderService:
-    def place_order(self, order):
-        # Single event with all necessary data
-        self.publish(OrderPlacedEvent(
-            order_id=order.id,
-            items=order.items,
-            total=order.total,
-            customer_id=order.customer_id
-        ))
-
-## Decision Aids
-
-### When Event-Driven Architecture is a Good Fit
-
-✅ **Use Event-Driven Architecture when:**
-
-1. **Multiple Systems Need to React to Same Occurrence**
-   - Example: When an order is placed, inventory, shipping, notification, and analytics systems all need to know
-   - Traditional approach would require the order service to call 4+ services directly
-   - With events: Order service publishes once, all interested parties subscribe
-
-2. **You Need Temporal Decoupling**
-   - Producers and consumers don't need to be online simultaneously
-   - Events can be persisted and consumed later
-   - Example: Processing financial transactions that must be audited even if audit system is down
-
-3. **Real-Time Responsiveness Required**
-   - Users expect immediate feedback but backend processing can be async
-   - Example: Social media "like" - update UI immediately, propagate to followers asynchronously
-
-4. **Building Audit Trails/Event Logs**
-   - Every state change must be recorded
-   - Need to replay history or debug "how did we get here?"
-   - Example: Financial systems, medical records, compliance-heavy industries
-
-5. **Implementing Complex Business Processes**
-   - Workflows span multiple services
-   - Different teams own different steps
-   - Example: E-commerce checkout (inventory → payment → shipping → notification)
-
-### When to Avoid Event-Driven Architecture
-
-❌ **Avoid Event-Driven Architecture when:**
-
-1. **Simple CRUD Applications**
-   - If you just need to read/write data without complex reactions
-   - Example: Basic content management system - direct API calls are simpler
-
-2. **Strong Consistency Required**
-   - If you can't tolerate eventual consistency
-   - Example: Real-time inventory that must be exact (though this can be solved with patterns like CQRS)
-
-3. **Tight Transaction Boundaries**
-   - When multiple operations must succeed/fail as atomic unit
-   - Example: Banking transfer (debit + credit) - use distributed transactions instead
-
-4. **Small Team/Simple Domain**
-   - Overhead of event infrastructure not justified
-   - Example: Internal tool used by 5 people - keep it simple
-
-5. **Debugging/Observability is Critical Constraint**
-   - Event-driven systems are harder to debug than request/response
-   - If your team lacks tooling/expertise for distributed tracing
-
-### Hybrid Approach: When to Mix Patterns
-
-Often the best solution combines event-driven with request/response:
-
-```python
-class OrderService:
-    """Hybrid: Synchronous for critical path, async for side effects."""
-    
-    def place_order(self, order_data):
-        # Synchronous operations for immediate feedback
-        order = self._validate_order(order_data)
-        payment_result = self._payment_service.authorize(order.total)  # Sync call
-        
-        if not payment_result.success:
-            return {'error': 'Payment failed'}
-        
-        # Save order (critical path)
-        self._repository.save(order)
-        
-        # Asynchronous events for non-critical notifications
-        self._event_bus.publish(OrderPlacedEvent(order))  # Fire and forget
-        
-        return {'order_id': order.id, 'status': 'confirmed'}
-```
-
-**Decision Matrix:**
-
-| Requirement | Request/Response | Event-Driven | Hybrid |
-|------------|------------------|--------------|--------|
-| Need immediate response | ✅ | ❌ | ✅ |
-| Multiple consumers | ❌ | ✅ | ✅ |
-| Loose coupling | ❌ | ✅ | ⚠️ |
-| Debugging simplicity | ✅ | ❌ | ⚠️ |
-| Audit trail | ❌ | ✅ | ✅ |
-| Transaction guarantees | ✅ | ❌ | ⚠️ |
+---
 
 ## Implementation Checklist
 
-### Phase 1: Event Schema ✓
-- [ ] Base `Event` class created with: event_id, event_type, timestamp, source, version, data, metadata
-- [ ] Domain events defined using past tense naming (e.g., `OrderPlaced`, not `PlaceOrder`)
-- [ ] Events are immutable (use `@dataclass(frozen=True)` or similar)
-- [ ] Event types use namespaced naming (e.g., "order.placed", "payment.processed")
-- [ ] Events include version field for future schema evolution
+### Event Schema
 
-### Phase 2: Event Bus ✓
-- [ ] `EventBus` interface defined with `publish()` and `subscribe()` methods
-- [ ] In-memory implementation exists for local development/testing
-- [ ] Production implementation chosen (RabbitMQ, Kafka, AWS SNS/SQS, Azure Service Bus, etc.)
-- [ ] Event bus supports wildcard subscriptions (e.g., "order.*")
-- [ ] Connection management and error handling implemented
+- [ ] All required CloudEvents envelope fields present (`id`, `type`, `source`, `specversion`, `time`, `datacontenttype`, `data`)
+- [ ] `correlationid` and `causationid` extensions included on every event
+- [ ] Event type follows `{domain}.{entity}.{past-tense-verb}` naming convention
+- [ ] Schema registered in schema registry with version before first deployment
+- [ ] Events are immutable (frozen dataclass, record type, or equivalent)
+- [ ] Events carry sufficient data; no secondary lookup required to act on the event
+- [ ] PII tokenized or field-encrypted before inclusion
 
-### Phase 3: Event Publishers ✓
-- [ ] `EventPublisher` mixin or base class created
-- [ ] Domain services emit events after state changes (not before)
-- [ ] Events published only after successful persistence (no phantom events)
-- [ ] Published events include all necessary context (avoid requiring lookups)
-- [ ] Publisher doesn't know about subscribers (true decoupling)
+### Reliability
 
-### Phase 4: Event Handlers ✓
-- [ ] `EventHandler` interface defined with `handle()` and `can_handle()` methods
-- [ ] Handlers implemented for each domain reaction
-- [ ] Handlers registered with event bus using clear subscription rules
-- [ ] Handlers are focused (single responsibility - don't do too much)
-- [ ] Handler errors don't crash other handlers
+- [ ] Transactional Outbox Pattern or equivalent durability guarantee in place
+- [ ] Every subscription has a configured DLQ with alerting
+- [ ] Retry policy with exponential backoff configured per handler
+- [ ] Circuit breaker wraps all downstream calls inside handlers
+- [ ] All handlers are idempotent and check `event.id` before processing
+- [ ] Poison message quarantine policy and operational runbook defined
 
-### Phase 5: Error Handling & Resilience ✓
-- [ ] Dead letter queue implemented for failed events
-- [ ] Retry logic with exponential backoff
-- [ ] Handlers are idempotent (can safely process same event multiple times)
-- [ ] Event deduplication strategy in place (using event_id)
-- [ ] Poison message detection (events that always fail)
-- [ ] Monitoring and alerting for event processing failures
-- [ ] Circuit breaker pattern for downstream service failures
+### Schema Evolution
 
-### Operational Readiness ✓
-- [ ] Event schema documented (what events exist, what data they carry)
-- [ ] Event flow diagrams created (which events trigger which handlers)
-- [ ] Distributed tracing implemented (correlation IDs across event chains)
-- [ ] Metrics tracked: events published, events consumed, handler latency, failures
-- [ ] Log aggregation captures event processing across all services
-- [ ] Tools available to replay events (for testing/recovery)
-- [ ] Dead letter queue inspection/reprocessing procedures documented
+- [ ] Schema version field present in every event envelope
+- [ ] Breaking change process followed for any non-additive schema change
+- [ ] Old and new schema versions run in parallel during migration sprint
 
-### Testing Strategy ✓
-- [ ] Unit tests for event handlers (isolated from event bus)
-- [ ] Integration tests for event flow (end-to-end scenarios)
-- [ ] Contract tests for event schemas (prevent breaking changes)
-- [ ] Chaos testing for failure scenarios (lost messages, duplicate delivery)
-- [ ] Performance tests for event throughput and latency
+### Observability
 
-### Common Gotchas Addressed ✓
-- [ ] ⚠️ Event chains don't exceed 2-3 levels deep (or saga pattern used)
-- [ ] ⚠️ Events don't contain behavior (pure data only)
-- [ ] ⚠️ No circular event dependencies (A triggers B which triggers A)
-- [ ] ⚠️ Event granularity is right-sized (not too fine, not too coarse)
-- [ ] ⚠️ Handlers don't call back to event publishers (breaks decoupling)
-- [ ] ⚠️ Schema versioning strategy prevents breaking changes
-- [ ] ⚠️ Team understands eventual consistency tradeoffs
+- [ ] Structured logs on publish and consume include `correlationid` and `event.id`
+- [ ] Metrics instrumented: published count, consumed count, handler latency, DLQ depth, error rate, consumer lag
+- [ ] W3C Trace Context propagated through event `metadata`; child span created per handler
+- [ ] Alerts defined and thresholds set before production launch: DLQ depth, error rate, consumer lag, circuit breaker
 
-## Related Patterns
+### Security
 
-- **CQRS (Command Query Responsibility Segregation)**: Often used with event-driven architecture to separate read and write models
-- **Event Sourcing**: Store all state changes as sequence of events (more extreme than event-driven)
-- **Saga Pattern**: Coordinate distributed transactions using events
-- **Circuit Breaker**: Protect event handlers from cascading failures
-- **Message Queue Pattern**: Infrastructure for reliable event delivery
-- **Outbox Pattern**: Ensure events are published reliably with database transactions
+- [ ] Broker connections use TLS
+- [ ] Per-service credentials for broker authentication (no shared keys)
+- [ ] Topic-level least-privilege authorization applied
+- [ ] No secrets or raw PII in event payloads
+- [ ] Schema registry access is audited
 
-## Further Reading
+### Testing
 
-- Martin Fowler's "Event-Driven" article: https://martinfowler.com/articles/201701-event-driven.html
-- "Building Event-Driven Microservices" by Adam Bellemare (O'Reilly)
-- AWS Well-Architected Framework: Event-Driven Architecture
-- Microsoft Azure Architecture Center: Event-Driven Architecture style
-```
-```
-```
-```
+- [ ] Unit tests for all handler logic
+- [ ] Contract tests for all event schemas
+- [ ] Integration test covers full publish-consume round-trip
+- [ ] Idempotency tested with duplicate event submission
+- [ ] Failure paths tested: DLQ routing, retry exhaustion, circuit breaker
+- [ ] Replay safety tested: same event batch processed twice, idempotent result asserted
+

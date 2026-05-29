@@ -1,0 +1,138 @@
+name: Pipeline Validation
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate-pipeline:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        run: pip install pyyaml pytest
+
+      # -----------------------------------------------------------------------
+      # 1. JSON schema well-formedness
+      # -----------------------------------------------------------------------
+      - name: Validate JSON schema files
+        run: bash knowledge-base/scripts/validate-schemas.sh
+
+      # -----------------------------------------------------------------------
+      # 2. Unresolved placeholder tokens in agent files
+      #    Excluded files carry intentional placeholder syntax:
+      #      _agent-template.agent.md        - structural example
+      #      project-ticket-creator.agent.md - references {{JIRA_PROJECT_KEY}}, {{JIRA_CLOUD_ID}}
+      #      git-workflow-manager.agent.md   - references {{GITHUB_REPO}}, {{GITHUB_BASE_BRANCH}}, {{JIRA_CLOUD_ID}}
+      # -----------------------------------------------------------------------
+      - name: Check for unresolved placeholder tokens in agent files
+        run: |
+          UNRESOLVED=$(grep -r "{{" .github/agents/ \
+            --include="*.agent.md" \
+            --exclude="_agent-template.agent.md" \
+            --exclude="project-ticket-creator.agent.md" \
+            --exclude="git-workflow-manager.agent.md" \
+            -l 2>/dev/null || true)
+          if [ -n "$UNRESOLVED" ]; then
+            echo "ERROR: the following agent files contain unresolved placeholder tokens:"
+            echo "$UNRESOLVED"
+            exit 1
+          fi
+          echo "PASS: No unresolved placeholder tokens found in agent files."
+
+      # -----------------------------------------------------------------------
+      # 3. Required sections present in every .agent.md file
+      # -----------------------------------------------------------------------
+      - name: Check agent file required sections
+        run: |
+          FAILED=0
+          REQUIRED_SECTIONS=("## Role" "## Input Contract" "## Output Contract" "## Process" "## Constraints")
+          for agent_file in .github/agents/*.agent.md; do
+            for section in "${REQUIRED_SECTIONS[@]}"; do
+              if ! grep -qF "$section" "$agent_file"; then
+                echo "FAIL  $agent_file  missing section: $section"
+                FAILED=1
+              fi
+            done
+          done
+          if [ "$FAILED" -eq 1 ]; then
+            echo "One or more agent files are missing required sections."
+            exit 1
+          fi
+          echo "PASS: All agent files contain required sections."
+
+      # -----------------------------------------------------------------------
+      # 4. Instruction file path references in agent Constraints sections resolve
+      # -----------------------------------------------------------------------
+      - name: Check instruction file path references
+        run: |
+          FAILED=0
+          while IFS= read -r agent_file; do
+            while IFS= read -r ref_path; do
+              clean_path=$(echo "$ref_path" | grep -oP '[^\s\`\[\]()]+\.instructions\.md' | head -1)
+              if [ -z "$clean_path" ]; then continue; fi
+              if [ ! -f "$clean_path" ]; then
+                echo "FAIL  $agent_file references missing file: $clean_path"
+                FAILED=1
+              fi
+            done < <(grep -i "\.instructions\.md" "$agent_file" || true)
+          done < <(find .github/agents -name "*.agent.md")
+          if [ "$FAILED" -eq 1 ]; then
+            echo "One or more instruction file path references are broken."
+            exit 1
+          fi
+          echo "PASS: All instruction file references resolve."
+
+      # -----------------------------------------------------------------------
+      # 5. Prompt conformance (frontmatter field order, name/filename match, mode)
+      # -----------------------------------------------------------------------
+      - name: Run prompt conformance checks
+        run: python knowledge-base/scripts/qa-prompt-conformance.py
+
+      # -----------------------------------------------------------------------
+      # 6. Cross-file integration checks (unique names, resolvable paths)
+      # -----------------------------------------------------------------------
+      - name: Run prompt integration checks
+        run: python knowledge-base/scripts/qa-integration-tests.py
+
+      # -----------------------------------------------------------------------
+      # 7. Health check (frontmatter parse + no unresolved config placeholders)
+      # -----------------------------------------------------------------------
+      - name: Run prompt health check
+        run: python knowledge-base/scripts/health-check-prompts.py
+
+      # -----------------------------------------------------------------------
+      # 8. E2E simulation: start-sdlc-session.prompt.md content check
+      # -----------------------------------------------------------------------
+      - name: Run E2E prompt check
+        run: python knowledge-base/scripts/qa-e2e-test.py
+
+      # -----------------------------------------------------------------------
+      # 9. ticket-cli.py unit, integration, and E2E test suite
+      # -----------------------------------------------------------------------
+      - name: Run ticket-cli tests
+        run: python -m pytest knowledge-base/scripts/tests/ -v --tb=short
+
+      # -----------------------------------------------------------------------
+      # 10. Field parity manifest check (skipped if manifest not yet created)
+      # -----------------------------------------------------------------------
+      - name: Run field parity check
+        run: |
+          if [ -f "knowledge-base/plans/tickets/field-parity.json" ]; then
+            python knowledge-base/scripts/qa-field-parity-check.py
+          else
+            echo "SKIP: knowledge-base/plans/tickets/field-parity.json not found. Create the manifest to enable this check."
+          fi
+

@@ -1,0 +1,301 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "architecture-to-domain-modeling.schema.json",
+  "title": "Architecture to Domain Modeling Handoff Artifact",
+  "description": "Structured artifact produced by the Architecture Orchestrator and consumed by the Domain Modeling Orchestrator. Contains ADRs, bounded context map, interface contracts, data model, security controls, and technology stack selection.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "projectName",
+    "architectureDecisions",
+    "boundedContextMap",
+    "interfaceContracts",
+    "dataModel",
+    "securityControls",
+    "technologyStack"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "description": "Version of this schema used to produce the artifact."
+    },
+    "projectName": {
+      "type": "string",
+      "description": "Human-readable name of the target project as configured in This Project."
+    },
+    "architectureDecisions": {
+      "type": "array",
+      "description": "All architectural decisions recorded as ADRs during the Architecture phase.",
+      "items": {
+        "type": "object",
+        "required": ["adrId", "title", "status", "context", "decision", "consequences"],
+        "properties": {
+          "adrId": {
+            "type": "string",
+            "description": "Unique ADR identifier (e.g., 'ADR-001')."
+          },
+          "title": {
+            "type": "string",
+            "description": "Short, searchable title describing the decision."
+          },
+          "status": {
+            "type": "string",
+            "description": "Lifecycle status of this ADR.",
+            "enum": ["proposed", "accepted", "deprecated", "superseded"]
+          },
+          "context": {
+            "type": "string",
+            "description": "Forces and constraints that made this decision necessary."
+          },
+          "decision": {
+            "type": "string",
+            "description": "The specific choice made and the rationale for it."
+          },
+          "consequences": {
+            "type": "string",
+            "description": "Expected positive and negative consequences of this decision."
+          }
+        },
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "boundedContextMap": {
+      "type": "object",
+      "description": "Map of all bounded contexts, their responsibilities, and their integration relationships.",
+      "required": ["contexts", "integrationPatterns"],
+      "properties": {
+        "contexts": {
+          "type": "array",
+          "description": "Each bounded context in the system.",
+          "items": {
+            "type": "object",
+            "required": ["name", "responsibility", "owner"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Bounded context name using ubiquitous language."
+              },
+              "responsibility": {
+                "type": "string",
+                "description": "The single business capability this context owns."
+              },
+              "owner": {
+                "type": "string",
+                "description": "Team or role responsible for this bounded context."
+              }
+            },
+            "additionalProperties": false
+          },
+          "minItems": 1
+        },
+        "integrationPatterns": {
+          "type": "array",
+          "description": "How bounded contexts communicate with each other.",
+          "items": {
+            "type": "object",
+            "required": ["upstream", "downstream", "pattern"],
+            "properties": {
+              "upstream": {
+                "type": "string",
+                "description": "The bounded context that produces or owns the data."
+              },
+              "downstream": {
+                "type": "string",
+                "description": "The bounded context that consumes the data."
+              },
+              "pattern": {
+                "type": "string",
+                "description": "Integration pattern (e.g., 'shared-kernel', 'anti-corruption-layer', 'open-host-service', 'conformist')."
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "interfaceContracts": {
+      "type": "array",
+      "description": "All external and internal API and service interface contracts.",
+      "items": {
+        "type": "object",
+        "required": ["contractId", "name", "type", "description", "endpoints"],
+        "properties": {
+          "contractId": {
+            "type": "string",
+            "description": "Unique contract identifier (e.g., 'API-001')."
+          },
+          "name": {
+            "type": "string",
+            "description": "Human-readable name for this interface."
+          },
+          "type": {
+            "type": "string",
+            "description": "Interface type (e.g., 'REST', 'gRPC', 'message-queue', 'event-stream')."
+          },
+          "description": {
+            "type": "string",
+            "description": "What this interface exposes and who consumes it."
+          },
+          "endpoints": {
+            "type": "array",
+            "description": "Summary of operations this interface exposes.",
+            "items": { "type": "string" }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "dataModel": {
+      "type": "object",
+      "description": "Canonical entity-relationship model and data ownership boundaries.",
+      "required": ["entities", "relationships", "dataOwnership"],
+      "properties": {
+        "entities": {
+          "type": "array",
+          "description": "Core data entities identified during architecture.",
+          "items": {
+            "type": "object",
+            "required": ["name", "description", "keyAttributes"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Entity name using ubiquitous language."
+              },
+              "description": {
+                "type": "string",
+                "description": "What this entity represents in the domain."
+              },
+              "keyAttributes": {
+                "type": "array",
+                "description": "Essential attributes of this entity.",
+                "items": { "type": "string" }
+              }
+            },
+            "additionalProperties": false
+          },
+          "minItems": 1
+        },
+        "relationships": {
+          "type": "array",
+          "description": "Associations between entities.",
+          "items": {
+            "type": "object",
+            "required": ["from", "to", "cardinality", "description"],
+            "properties": {
+              "from": { "type": "string", "description": "Source entity name." },
+              "to": { "type": "string", "description": "Target entity name." },
+              "cardinality": {
+                "type": "string",
+                "description": "Relationship cardinality (e.g., 'one-to-many', 'many-to-many')."
+              },
+              "description": { "type": "string", "description": "Nature of this relationship." }
+            },
+            "additionalProperties": false
+          }
+        },
+        "dataOwnership": {
+          "type": "array",
+          "description": "Which bounded context is the authoritative owner of each entity.",
+          "items": {
+            "type": "object",
+            "required": ["entity", "ownerContext"],
+            "properties": {
+              "entity": { "type": "string", "description": "Entity name." },
+              "ownerContext": { "type": "string", "description": "Bounded context that owns this entity." }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "securityControls": {
+      "type": "object",
+      "description": "Threat model summary and OWASP Top 10 mitigation plan.",
+      "required": ["threatSummary", "owaspMitigations", "authenticationStrategy", "authorizationStrategy"],
+      "properties": {
+        "threatSummary": {
+          "type": "array",
+          "description": "Identified threats and their risk ratings.",
+          "items": {
+            "type": "object",
+            "required": ["threat", "riskRating", "mitigation"],
+            "properties": {
+              "threat": { "type": "string", "description": "Description of the threat." },
+              "riskRating": {
+                "type": "string",
+                "description": "Risk rating for this threat.",
+                "enum": ["critical", "high", "medium", "low"]
+              },
+              "mitigation": { "type": "string", "description": "Planned control or mitigation measure." }
+            },
+            "additionalProperties": false
+          }
+        },
+        "owaspMitigations": {
+          "type": "array",
+          "description": "OWASP Top 10 items with planned mitigations.",
+          "items": {
+            "type": "object",
+            "required": ["owaspItem", "mitigation"],
+            "properties": {
+              "owaspItem": { "type": "string", "description": "OWASP Top 10 item identifier (e.g., 'A01:2021 Broken Access Control')." },
+              "mitigation": { "type": "string", "description": "Specific control planned to address this risk." }
+            },
+            "additionalProperties": false
+          },
+          "minItems": 10
+        },
+        "authenticationStrategy": {
+          "type": "string",
+          "description": "Selected authentication approach (e.g., 'OAuth 2.0 + PKCE', 'mTLS', 'API key')."
+        },
+        "authorizationStrategy": {
+          "type": "string",
+          "description": "Selected authorization model (e.g., 'RBAC', 'ABAC', 'policy-based')."
+        }
+      },
+      "additionalProperties": false
+    },
+    "technologyStack": {
+      "type": "object",
+      "description": "Selected technology choices for language, framework, database, and infrastructure.",
+      "required": ["language", "framework", "database", "messagingPlatform", "deploymentTarget"],
+      "properties": {
+        "language": {
+          "type": "string",
+          "description": "Primary programming language (references {{TARGET_LANGUAGE}})."
+        },
+        "framework": {
+          "type": "string",
+          "description": "Web or application framework (references {{FRAMEWORK_NAME}})."
+        },
+        "database": {
+          "type": "string",
+          "description": "Primary database engine (references {{DATABASE_ENGINE}})."
+        },
+        "messagingPlatform": {
+          "type": "string",
+          "description": "Event or message broker used for domain event publishing, or 'none' if not applicable."
+        },
+        "deploymentTarget": {
+          "type": "string",
+          "description": "Target hosting or cloud platform (references {{DEPLOYMENT_TARGET}})."
+        }
+      },
+      "additionalProperties": false
+    },
+    "ticketKey": {
+      "type": "string",
+      "description": "Optional validated TICKET_KEY scoping this run to knowledge-base/plans/active/<TICKET_KEY>/. Must match the pattern ^[A-Z][A-Z0-9]+-[1-9][0-9]*$. Absent for offline runs.",
+      "pattern": "^[A-Z][A-Z0-9]+-[1-9][0-9]*$"
+    },
+    "sessionPath": {
+      "type": "string",
+      "description": "Optional active artifact directory derived from ticketKey. Defaults to knowledge-base/plans/active/ when absent."
+    }
+  },
+  "additionalProperties": false
+}

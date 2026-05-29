@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "mini-discovery.schema.json",
+  "title": "Mini-Discovery Artifact",
+  "description": "Entry artifact produced by ticket-intake-agent (Stage 0) and enriched by codebase-context-agent. Consumed by the first routed phase orchestrator in implement-ticket.prompt.md. Contains the ticket identity, size classification, routed phases, and codebase context snapshot.",
+  "type": "object",
+  "required": [
+    "ticketIdentity",
+    "summary",
+    "description",
+    "acceptanceCriteria",
+    "ticketSize",
+    "routedPhases"
+  ],
+  "properties": {
+    "ticketIdentity": {
+      "type": "object",
+      "description": "Identity fields from the source ticket.",
+      "required": ["issueKey", "issueType", "projectKey"],
+      "properties": {
+        "issueKey": {
+          "type": "string",
+          "description": "Validated issue key (e.g., TT-42). Must match ^[A-Z][A-Z0-9]+-[1-9][0-9]*$.",
+          "pattern": "^[A-Z][A-Z0-9]+-[1-9][0-9]*$"
+        },
+        "issueType": {
+          "type": "string",
+          "description": "Issue type name as returned by the ticketing backend (e.g., Bug, Story, Epic, Chore, Spike)."
+        },
+        "projectKey": {
+          "type": "string",
+          "description": "Project key prefix (e.g., TT). Must match ^[A-Z][A-Z0-9]+$.",
+          "pattern": "^[A-Z][A-Z0-9]+$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "summary": {
+      "type": "string",
+      "description": "Ticket summary field verbatim from the ticketing backend.",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string",
+      "description": "Ticket description field verbatim from the ticketing backend. Empty string if absent."
+    },
+    "acceptanceCriteria": {
+      "type": "array",
+      "description": "Given/When/Then clauses extracted from the ticket description. Empty array if none found.",
+      "items": { "type": "string" }
+    },
+    "ticketSize": {
+      "type": "string",
+      "description": "Derived ticket size classification used to determine RoutedPhases.",
+      "enum": ["spike", "chore", "story", "epic"]
+    },
+    "routedPhases": {
+      "type": "array",
+      "description": "Ordered list of phase orchestrator names to invoke, derived from ticketSize.",
+      "items": {
+        "type": "string",
+        "enum": [
+          "discovery-orchestrator",
+          "architecture-orchestrator",
+          "domain-modeling-orchestrator",
+          "development-orchestrator",
+          "qa-orchestrator",
+          "documentation-orchestrator",
+          "deployment-orchestrator"
+        ]
+      },
+      "minItems": 1
+    },
+    "codebaseContext": {
+      "type": "object",
+      "description": "Bounded-context snapshot appended by codebase-context-agent. Present only after Stage 0 enrichment. Absent if no prior pipeline archive exists.",
+      "required": ["boundedContexts", "keyAdrDecisions", "establishedPatterns", "technologyStack"],
+      "properties": {
+        "boundedContexts": {
+          "type": "array",
+          "description": "Deduplicated bounded context names from the most recent pipeline archive and architecture overview.",
+          "items": { "type": "string" }
+        },
+        "keyAdrDecisions": {
+          "type": "array",
+          "description": "Titles of the five most recently added ADR entries from the decision log.",
+          "items": { "type": "string" },
+          "maxItems": 5
+        },
+        "establishedPatterns": {
+          "type": "array",
+          "description": "Recurring architectural pattern names identified in the most recent archive artifacts.",
+          "items": { "type": "string" }
+        },
+        "technologyStack": {
+          "type": "array",
+          "description": "Technology choices recorded in the most recent architecture-to-domain-modeling artifact.",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

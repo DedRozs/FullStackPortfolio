@@ -1,0 +1,224 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "development-to-qa.schema.json",
+  "title": "Development to QA Handoff Artifact",
+  "description": "Structured artifact produced by the Development Orchestrator and consumed by the QA Orchestrator. Contains the source code manifest, test coverage summary, dependency list, layer compliance summary, and any known issues.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "projectName",
+    "sourceCodeManifest",
+    "testCoverageSummary",
+    "dependencyList",
+    "layerComplianceSummary",
+    "knownIssues"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "description": "Version of this schema used to produce the artifact."
+    },
+    "projectName": {
+      "type": "string",
+      "description": "Human-readable name of the target project as configured in This Project."
+    },
+    "sourceCodeManifest": {
+      "type": "array",
+      "description": "List of all source files created during development with their layer classification and description.",
+      "items": {
+        "type": "object",
+        "required": ["filePath", "layer", "description"],
+        "properties": {
+          "filePath": {
+            "type": "string",
+            "description": "Relative file path within the project repository."
+          },
+          "layer": {
+            "type": "string",
+            "description": "Clean Architecture layer this file belongs to.",
+            "enum": ["domain", "application", "adapters", "infrastructure", "presentation"]
+          },
+          "description": {
+            "type": "string",
+            "description": "What this file contains and its role in the system."
+          }
+        },
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "testCoverageSummary": {
+      "type": "object",
+      "description": "Summary of test coverage metrics across all test types.",
+      "required": ["unitTests", "integrationTests", "e2eTests", "overallCoveragePercent"],
+      "properties": {
+        "unitTests": {
+          "type": "object",
+          "description": "Unit test coverage statistics.",
+          "required": ["fileCount", "passCount", "failCount", "coveragePercent"],
+          "properties": {
+            "fileCount": { "type": "integer", "description": "Number of unit test files.", "minimum": 0 },
+            "passCount": { "type": "integer", "description": "Number of passing unit tests.", "minimum": 0 },
+            "failCount": { "type": "integer", "description": "Number of failing unit tests.", "minimum": 0 },
+            "coveragePercent": { "type": "number", "description": "Statement coverage percentage for domain and application layers.", "minimum": 0, "maximum": 100 }
+          },
+          "additionalProperties": false
+        },
+        "integrationTests": {
+          "type": "object",
+          "description": "Integration test coverage statistics.",
+          "required": ["fileCount", "passCount", "failCount"],
+          "properties": {
+            "fileCount": { "type": "integer", "description": "Number of integration test files.", "minimum": 0 },
+            "passCount": { "type": "integer", "description": "Number of passing integration tests.", "minimum": 0 },
+            "failCount": { "type": "integer", "description": "Number of failing integration tests.", "minimum": 0 }
+          },
+          "additionalProperties": false
+        },
+        "e2eTests": {
+          "type": "object",
+          "description": "End-to-end test coverage statistics.",
+          "required": ["fileCount", "passCount", "failCount"],
+          "properties": {
+            "fileCount": { "type": "integer", "description": "Number of end-to-end test files.", "minimum": 0 },
+            "passCount": { "type": "integer", "description": "Number of passing e2e tests.", "minimum": 0 },
+            "failCount": { "type": "integer", "description": "Number of failing e2e tests.", "minimum": 0 }
+          },
+          "additionalProperties": false
+        },
+        "overallCoveragePercent": {
+          "type": "number",
+          "description": "Aggregate statement coverage percentage across all test types.",
+          "minimum": 0,
+          "maximum": 100
+        }
+      },
+      "additionalProperties": false
+    },
+    "dependencyList": {
+      "type": "array",
+      "description": "All external runtime dependencies with their versions and license information.",
+      "items": {
+        "type": "object",
+        "required": ["name", "version", "license", "purpose"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Package or library name."
+          },
+          "version": {
+            "type": "string",
+            "description": "Pinned version string."
+          },
+          "license": {
+            "type": "string",
+            "description": "SPDX license identifier for this dependency."
+          },
+          "purpose": {
+            "type": "string",
+            "description": "Why this dependency is required."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "layerComplianceSummary": {
+      "type": "object",
+      "description": "Clean Architecture layer compliance status for each layer.",
+      "required": ["domain", "application", "adapters", "infrastructure"],
+      "properties": {
+        "domain": {
+          "type": "object",
+          "description": "Compliance status for the domain layer.",
+          "required": ["compliant", "violations"],
+          "properties": {
+            "compliant": { "type": "boolean", "description": "True if no dependency rule violations were found in this layer." },
+            "violations": {
+              "type": "array",
+              "description": "List of any dependency rule violations found. Empty if compliant.",
+              "items": { "type": "string" }
+            }
+          },
+          "additionalProperties": false
+        },
+        "application": {
+          "type": "object",
+          "description": "Compliance status for the application layer.",
+          "required": ["compliant", "violations"],
+          "properties": {
+            "compliant": { "type": "boolean", "description": "True if no dependency rule violations were found in this layer." },
+            "violations": {
+              "type": "array",
+              "description": "List of any dependency rule violations found.",
+              "items": { "type": "string" }
+            }
+          },
+          "additionalProperties": false
+        },
+        "adapters": {
+          "type": "object",
+          "description": "Compliance status for the adapters layer.",
+          "required": ["compliant", "violations"],
+          "properties": {
+            "compliant": { "type": "boolean", "description": "True if no dependency rule violations were found in this layer." },
+            "violations": {
+              "type": "array",
+              "description": "List of any dependency rule violations found.",
+              "items": { "type": "string" }
+            }
+          },
+          "additionalProperties": false
+        },
+        "infrastructure": {
+          "type": "object",
+          "description": "Compliance status for the infrastructure layer.",
+          "required": ["compliant", "violations"],
+          "properties": {
+            "compliant": { "type": "boolean", "description": "True if no dependency rule violations were found in this layer." },
+            "violations": {
+              "type": "array",
+              "description": "List of any dependency rule violations found.",
+              "items": { "type": "string" }
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "knownIssues": {
+      "type": "array",
+      "description": "Any known limitations, deferred items, or technical debt carried forward from Development. Empty array if none.",
+      "items": {
+        "type": "object",
+        "required": ["description", "severity", "deferralReason"],
+        "properties": {
+          "description": {
+            "type": "string",
+            "description": "What the issue is and where it manifests."
+          },
+          "severity": {
+            "type": "string",
+            "description": "Impact level of this issue.",
+            "enum": ["critical", "high", "medium", "low"]
+          },
+          "deferralReason": {
+            "type": "string",
+            "description": "Why this issue was not resolved during Development."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "ticketKey": {
+      "type": "string",
+      "description": "Optional validated TICKET_KEY scoping this run to knowledge-base/plans/active/<TICKET_KEY>/. Must match the pattern ^[A-Z][A-Z0-9]+-[1-9][0-9]*$. Absent for offline runs.",
+      "pattern": "^[A-Z][A-Z0-9]+-[1-9][0-9]*$"
+    },
+    "sessionPath": {
+      "type": "string",
+      "description": "Optional active artifact directory derived from ticketKey. Defaults to knowledge-base/plans/active/ when absent."
+    }
+  },
+  "additionalProperties": false
+}

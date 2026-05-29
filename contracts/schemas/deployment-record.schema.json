@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "deployment-record.schema.json",
+  "title": "Deployment Record",
+  "description": "Terminal artifact produced by the Deployment Orchestrator (Stage 7) at the close of a pipeline run. Records the paths of all deployment deliverables, the deployment status, and the gate-7 sign-off. Consumed by git-workflow-manager in completionMode and by the archive-manager.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "projectName",
+    "deploymentDate",
+    "pipelineConfigPath",
+    "environmentsConfigPath",
+    "releasePlanPath",
+    "monitoringConfigPath",
+    "healthCheckPath",
+    "rollbackPlanPath",
+    "deploymentStatus"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "description": "Version of this schema used to produce the artifact (e.g., '1.0')."
+    },
+    "projectName": {
+      "type": "string",
+      "description": "Human-readable name of the target project as configured in This Project.",
+      "minLength": 1
+    },
+    "deploymentDate": {
+      "type": "string",
+      "description": "ISO 8601 date on which the deployment record was produced (e.g., 2026-05-11).",
+      "format": "date"
+    },
+    "pipelineConfigPath": {
+      "type": "string",
+      "description": "Relative path to the CI/CD pipeline configuration document produced by ci-cd-engineer.",
+      "minLength": 1
+    },
+    "environmentsConfigPath": {
+      "type": "string",
+      "description": "Relative path to the environment configuration document produced by environment-configurator.",
+      "minLength": 1
+    },
+    "releasePlanPath": {
+      "type": "string",
+      "description": "Relative path to the release plan document produced by release-coordinator.",
+      "minLength": 1
+    },
+    "monitoringConfigPath": {
+      "type": "string",
+      "description": "Relative path to the monitoring configuration document produced by monitoring-configurator.",
+      "minLength": 1
+    },
+    "healthCheckPath": {
+      "type": "string",
+      "description": "Relative path to the health check validation document produced by health-check-validator.",
+      "minLength": 1
+    },
+    "rollbackPlanPath": {
+      "type": "string",
+      "description": "Relative path to the rollback procedures document produced by rollback-planner.",
+      "minLength": 1
+    },
+    "deploymentStatus": {
+      "type": "string",
+      "description": "Gate-7 readiness status. Must be 'ready-for-deployment' for Gate 7 to pass.",
+      "enum": ["ready-for-deployment", "blocked"]
+    },
+    "blockingReason": {
+      "type": "string",
+      "description": "Required when deploymentStatus is 'blocked'. Describes why deployment is blocked and which specialist must resolve it."
+    },
+    "ticketKey": {
+      "type": "string",
+      "description": "Optional TicketKey of the pipeline run that produced this record (e.g., TT-42). Present only in namespaced-run mode.",
+      "pattern": "^[A-Z][A-Z0-9]+-[1-9][0-9]*$"
+    }
+  },
+  "if": {
+    "properties": { "deploymentStatus": { "const": "blocked" } },
+    "required": ["deploymentStatus"]
+  },
+  "then": {
+    "required": ["blockingReason"]
+  },
+  "additionalProperties": false
+}

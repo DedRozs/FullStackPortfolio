@@ -1,6 +1,8 @@
 ---
-applyTo: "**/*"
+applyTo: "**/*.{py,ts,cs,java,kt}"
+description: "Use when designing system structure, organizing layers, reviewing dependency direction, or implementing Clean Architecture (Entities, Use Cases, Interface Adapters, Frameworks and Drivers). Covers the dependency rule, layer responsibilities, anti-patterns, and implementation checklist."
 ---
+<!-- v1.0 | Created: 2026-05-01 | Pattern: Clean Architecture -->
 
 # Clean Architecture Pattern
 
@@ -203,6 +205,7 @@ applyTo: "**/*"
 ### Entities Layer
 ```python
 # entities/order.py
+from dataclasses import dataclass
 from enum import Enum
 from typing import List
 
@@ -210,21 +213,31 @@ class OrderStatus(Enum):
     DRAFT = "draft"
     CONFIRMED = "confirmed"
 
+@dataclass(frozen=True)
 class OrderItem:
-    def __init__(self, product_id: str, quantity: int, price: float):
-        self.product_id = product_id
-        self.quantity = quantity
-        self.price = price
+    product_id: str
+    quantity: int
+    price: float
+
+    def __post_init__(self) -> None:
+        if self.quantity <= 0:
+            raise ValueError("quantity must be positive")
+        if self.price < 0:
+            raise ValueError("price must be non-negative")
 
 class Order:
     def __init__(self, id: str, items: List[OrderItem], status: OrderStatus):
         self._id = id
-        self._items = items
+        self._items = list(items)  # defensive copy - prevents external mutation of the list
         self._status = status
 
     @property
     def id(self) -> str:
         return self._id
+
+    @property
+    def items(self) -> tuple:
+        return tuple(self._items)  # immutable snapshot - use add_item() to modify
 
     @property
     def status(self) -> OrderStatus:
@@ -270,6 +283,8 @@ class CreateOrderResponse:
     total: float
     status: OrderStatus
 
+# In practice, define OrderRepository in its own file: entities/repositories/order_repository.py
+# One public type per file - the interface belongs to the domain layer, not the use case module.
 class OrderRepository(ABC):
     @abstractmethod
     async def save(self, order: Order) -> None:
@@ -312,9 +327,17 @@ class OrderController:
         self._create_order_use_case = create_order_use_case
 
     async def handle_create_order(self, request_data: Dict[str, Any]) -> Dict[str, Any]:
-        # Convert from HTTP to use case format
+        # Validate input at the boundary before invoking the use case.
+        if not isinstance(request_data.get("items"), list) or not request_data["items"]:
+            return {"status": 400, "body": {"error": "items must be a non-empty list"}}
+        required_fields = {"product_id", "quantity", "price"}
+        for item in request_data["items"]:
+            if not isinstance(item, dict) or not required_fields.issubset(item):
+                return {"status": 400, "body": {"error": "each item requires product_id, quantity, and price"}}
+        # Authentication is enforced by middleware in the Frameworks layer (e.g., JWT validation).
+        # Convert from HTTP to use case format.
         request = CreateOrderRequest(
-            items=[OrderItemRequest(**item) for item in request_data["items"]]
+            items=[OrderItemRequest(**{k: item[k] for k in required_fields}) for item in request_data["items"]]
         )
 
         response = await self._create_order_use_case.execute(request)
@@ -347,13 +370,16 @@ class PostgresOrderRepository(OrderRepository):
             )
 
     async def find_by_id(self, order_id: str) -> Optional[Order]:
-        # Mapping logic here
-        pass
+        # Query the database and reconstruct the domain Order from the returned row.
+        # Return None if no row is found.
+        raise NotImplementedError("find_by_id: query and domain object reconstruction not yet implemented")
 ```
 
 ### Frameworks & Drivers Layer
 ```python
 # infrastructure/fastapi/server.py
+import os
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 import asyncpg
 
@@ -361,24 +387,30 @@ from adapters.controllers.order_controller import OrderController
 from adapters.repositories.postgres_order_repository import PostgresOrderRepository
 from usecases.create_order import CreateOrderUseCase
 
-app = FastAPI()
+# asyncpg.create_pool() is a coroutine and must be awaited inside an async context.
+# Use FastAPI's lifespan handler to manage async resources correctly.
+# Credentials are loaded from environment variables - never hardcode secrets in source.
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    db_pool = await asyncpg.create_pool(
+        host=os.getenv("DB_HOST", "localhost"),
+        database=os.getenv("DB_NAME"),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD"),
+    )
+    order_repo = PostgresOrderRepository(db_pool)
+    create_order_use_case = CreateOrderUseCase(order_repo)
+    app.state.order_controller = OrderController(create_order_use_case)
+    yield
+    await db_pool.close()
 
-# Initialize dependencies
-db_pool = asyncpg.create_pool(
-    host="localhost",
-    database="orders_db",
-    user="user",
-    password="password"
-)
 
-order_repo = PostgresOrderRepository(db_pool)
-create_order_use_case = CreateOrderUseCase(order_repo)
-order_controller = OrderController(create_order_use_case)
+app = FastAPI(lifespan=lifespan)
 
 @app.post("/orders")
 async def create_order(request: Request):
     request_data = await request.json()
-    response = await order_controller.handle_create_order(request_data)
+    response = await request.app.state.order_controller.handle_create_order(request_data)
     return response["body"]
 ```
 
@@ -387,19 +419,19 @@ async def create_order(request: Request):
 ### When to Choose Clean Architecture
 
 **Choose Clean Architecture when:**
-- ✅ Complex business logic that must remain stable
-- ✅ Multiple delivery mechanisms (web, mobile, API, CLI)
-- ✅ Need to defer infrastructure decisions
-- ✅ Long-term project with evolving requirements
-- ✅ High testability requirements
-- ✅ Team size supports maintaining multiple layers
+- Complex business logic that must remain stable
+- Multiple delivery mechanisms (web, mobile, API, CLI)
+- Need to defer infrastructure decisions
+- Long-term project with evolving requirements
+- High testability requirements
+- Team size supports maintaining multiple layers
 
 **Consider alternatives when:**
-- ❌ Simple CRUD application with minimal business logic
-- ❌ Proof of concept or short-lived project
-- ❌ Small team that might struggle with architectural overhead
-- ❌ Tight deadlines where speed trumps long-term maintainability
-- ❌ Domain logic is inherently simple and unlikely to change
+- Simple CRUD application with minimal business logic
+- Proof of concept or short-lived project
+- Small team that might struggle with architectural overhead
+- Tight deadlines where speed trumps long-term maintainability
+- Domain logic is inherently simple and unlikely to change
 
 ### Where Does Logic Belong?
 
@@ -413,6 +445,8 @@ async def create_order(request: Request):
 | Domain validation | Entities | Ensure order total is positive, email format is valid |
 
 ## Implementation Checklist
+
+> These checkboxes mirror the phases in the Named Instruction Outline above. Refer to that section for detailed guidance, role assignments, and checkpoints.
 
 ### Initial Setup
 - [ ] Define folder structure reflecting layers (entities, usecases, adapters, infrastructure)
@@ -470,7 +504,8 @@ async def create_order(request: Request):
 
 - **Hexagonal Architecture (Ports & Adapters)**: Similar philosophy; Clean Architecture is more prescriptive about layers
 - **Onion Architecture**: Nearly identical; Clean Architecture adds explicit use case layer
-- **Domain-Driven Design**: Provides tactical patterns for the domain layer
+- **Domain-Driven Design**: Provides tactical patterns for the domain layer - see `domain-driven-design.instructions.md` in this workspace for companion guidance
+- **Event-Driven Architecture**: Can be combined with Clean Architecture for domain events and cross-use-case communication - see `event-driven.instructions.md` in this workspace
 - **CQRS**: Can be combined with Clean Architecture to separate read and write models
 - **Dependency Injection**: Essential technique for implementing dependency inversion
 
@@ -479,4 +514,4 @@ async def create_order(request: Request):
 - "Clean Architecture" by Robert C. Martin (Uncle Bob)
 - "Implementing Domain-Driven Design" by Vaughn Vernon
 - "Architecture Patterns with Python" by Harry Percival & Bob Gregory
-- Blog series: Clean Architecture on the Martin Fowler website
+- "Clean Architecture (blog)" by Martin Fowler - https://martinfowler.com/bliki/CleanArchitecture.html

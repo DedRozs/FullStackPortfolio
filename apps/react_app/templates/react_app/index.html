@@ -1,0 +1,45 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Joseph Prince - Full Stack Developer &amp; Consultant specializing in Django, React, and AI integration." />
+    <title>Joseph Prince | Full Stack Developer</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{% static 'react_app/assets/JPrince.png' %}" />
+
+    <!-- Font preloads - fetch Latin subset woff2 files before CSS/JS is parsed
+         so the browser has the fonts ready before text layout begins, preventing FOUT.
+         crossorigin="anonymous" is required by the font preload spec even for same-origin. -->
+    <link rel="preload" href="{% static 'react_app/assets/inter-latin-400-normal.woff2' %}" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="{% static 'react_app/assets/inter-latin-500-normal.woff2' %}" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="{% static 'react_app/assets/inter-latin-600-normal.woff2' %}" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="{% static 'react_app/assets/orbitron-latin-400-normal.woff2' %}" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="{% static 'react_app/assets/orbitron-latin-500-normal.woff2' %}" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="{% static 'react_app/assets/orbitron-latin-700-normal.woff2' %}" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="{% static 'react_app/assets/orbitron-latin-900-normal.woff2' %}" as="font" type="font/woff2" crossorigin="anonymous">
+
+    <!-- Structured data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Joseph Prince",
+      "jobTitle": "Full Stack Developer & Consultant",
+      "description": "Full Stack Developer and Consultant specializing in Django, React, and AI integration.",
+      "sameAs": [
+        "https://linkedin.com/in/thejprince",
+        "https://github.com/dedrozs"
+      ]
+    }
+    </script>
+
+    <link rel="stylesheet" href="{% static 'react_app/index.css' %}">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="{% static 'react_app/index.js' %}"></script>
+  </body>
+</html>

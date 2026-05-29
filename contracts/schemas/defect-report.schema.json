@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "defect-report.schema.json",
+  "title": "Defect Report",
+  "description": "Artifact produced by the defect-repair-coordinator in the QA phase and routed to the appropriate Development sub-team orchestrator. Describes a single defect, its reproduction steps, severity, affected component, and routing target.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "defectId",
+    "defectDescription",
+    "reproductionSteps",
+    "severity",
+    "affectedComponent",
+    "affectedLayer",
+    "originatingPhase",
+    "routingTarget",
+    "reportedBy"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "description": "Version of this schema used to produce the artifact."
+    },
+    "defectId": {
+      "type": "string",
+      "description": "Unique identifier for this defect (e.g., 'DEF-001'). Assigned by the defect-repair-coordinator."
+    },
+    "defectDescription": {
+      "type": "string",
+      "description": "Clear, specific description of the defect including observed behavior and expected behavior."
+    },
+    "reproductionSteps": {
+      "type": "array",
+      "description": "Ordered steps that reliably reproduce the defect.",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "severity": {
+      "type": "string",
+      "description": "Impact level of this defect on the system.",
+      "enum": ["critical", "high", "medium", "low"]
+    },
+    "affectedComponent": {
+      "type": "string",
+      "description": "Specific file, class, module, or system component where the defect originates."
+    },
+    "affectedLayer": {
+      "type": "string",
+      "description": "Clean Architecture layer containing the defect.",
+      "enum": ["domain", "application", "adapters", "infrastructure", "presentation"]
+    },
+    "originatingPhase": {
+      "type": "string",
+      "description": "The QA activity that discovered this defect.",
+      "enum": ["code-review", "unit-testing", "integration-testing", "e2e-testing", "security-review", "performance-analysis"]
+    },
+    "routingTarget": {
+      "type": "string",
+      "description": "The Development sub-team orchestrator that must receive and repair this defect.",
+      "enum": [
+        ".github/agents/domain-implementation-orchestrator.agent.md",
+        ".github/agents/use-case-orchestrator.agent.md",
+        ".github/agents/adapter-orchestrator.agent.md",
+        ".github/agents/infrastructure-orchestrator.agent.md"
+      ]
+    },
+    "reportedBy": {
+      "type": "string",
+      "description": "The QA specialist agent that identified this defect.",
+      "enum": [
+        "code-reviewer",
+        "unit-test-engineer",
+        "integration-test-engineer",
+        "e2e-test-engineer",
+        "security-reviewer",
+        "performance-analyst"
+      ]
+    },
+    "verificationStepsRequired": {
+      "type": "array",
+      "description": "QA verification steps that must be re-run after the defect is repaired. Populated by defect-repair-coordinator.",
+      "items": { "type": "string" }
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,345 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "domain-modeling-to-development.schema.json",
+  "title": "Domain Modeling to Development Handoff Artifact",
+  "description": "Structured artifact produced by the Domain Modeling Orchestrator and consumed by the Development Orchestrator. Contains the complete domain model specification and ubiquitous language document.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "projectName",
+    "ubiquitousLanguage",
+    "entities",
+    "valueObjects",
+    "aggregates",
+    "domainEvents",
+    "repositoryInterfaces",
+    "domainServices"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "description": "Version of this schema used to produce the artifact."
+    },
+    "projectName": {
+      "type": "string",
+      "description": "Human-readable name of the target project as configured in This Project."
+    },
+    "ubiquitousLanguage": {
+      "type": "array",
+      "description": "Finalized domain vocabulary. All development agents use these terms verbatim in code.",
+      "items": {
+        "type": "object",
+        "required": ["term", "definition", "context", "usageExamples"],
+        "properties": {
+          "term": {
+            "type": "string",
+            "description": "The exact term as it will appear in code identifiers."
+          },
+          "definition": {
+            "type": "string",
+            "description": "Precise domain definition agreed upon with domain experts."
+          },
+          "context": {
+            "type": "string",
+            "description": "Bounded context in which this term is used."
+          },
+          "usageExamples": {
+            "type": "array",
+            "description": "Example sentences or code identifiers showing correct usage.",
+            "items": { "type": "string" },
+            "minItems": 1
+          }
+        },
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "entities": {
+      "type": "array",
+      "description": "Domain entities with identities, invariants, and state transitions.",
+      "items": {
+        "type": "object",
+        "required": ["name", "boundedContext", "identity", "invariants", "stateTransitions", "attributes"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Entity class name using ubiquitous language."
+          },
+          "boundedContext": {
+            "type": "string",
+            "description": "The bounded context this entity belongs to."
+          },
+          "identity": {
+            "type": "string",
+            "description": "Identity type used for this entity (e.g., 'UUID', 'composite key')."
+          },
+          "invariants": {
+            "type": "array",
+            "description": "Business rules that must always hold true for this entity.",
+            "items": { "type": "string" },
+            "minItems": 1
+          },
+          "stateTransitions": {
+            "type": "array",
+            "description": "Named state changes this entity can undergo and the guards that protect them.",
+            "items": {
+              "type": "object",
+              "required": ["from", "to", "trigger", "guard"],
+              "properties": {
+                "from": { "type": "string", "description": "State before transition." },
+                "to": { "type": "string", "description": "State after transition." },
+                "trigger": { "type": "string", "description": "Method or event that triggers this transition." },
+                "guard": { "type": "string", "description": "Condition that must be true for the transition to be allowed." }
+              },
+              "additionalProperties": false
+            }
+          },
+          "attributes": {
+            "type": "array",
+            "description": "Key attributes of this entity.",
+            "items": {
+              "type": "object",
+              "required": ["name", "type", "description"],
+              "properties": {
+                "name": { "type": "string", "description": "Attribute name." },
+                "type": { "type": "string", "description": "Attribute type using domain or primitive type names." },
+                "description": { "type": "string", "description": "What this attribute represents." }
+              },
+              "additionalProperties": false
+            },
+            "minItems": 1
+          }
+        },
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "valueObjects": {
+      "type": "array",
+      "description": "Value objects with validation rules and equality semantics.",
+      "items": {
+        "type": "object",
+        "required": ["name", "boundedContext", "properties", "validationRules", "equalityBasis"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Value object class name using ubiquitous language."
+          },
+          "boundedContext": {
+            "type": "string",
+            "description": "The bounded context this value object belongs to."
+          },
+          "properties": {
+            "type": "array",
+            "description": "Immutable properties of this value object.",
+            "items": {
+              "type": "object",
+              "required": ["name", "type"],
+              "properties": {
+                "name": { "type": "string", "description": "Property name." },
+                "type": { "type": "string", "description": "Property type." }
+              },
+              "additionalProperties": false
+            },
+            "minItems": 1
+          },
+          "validationRules": {
+            "type": "array",
+            "description": "Rules enforced at construction time.",
+            "items": { "type": "string" },
+            "minItems": 1
+          },
+          "equalityBasis": {
+            "type": "string",
+            "description": "Description of how equality is determined for this value object (typically 'all properties')."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "aggregates": {
+      "type": "array",
+      "description": "Aggregate definitions with boundaries, roots, and cross-aggregate reference rules.",
+      "items": {
+        "type": "object",
+        "required": ["name", "root", "members", "invariants", "crossAggregateReferences"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Aggregate name using ubiquitous language."
+          },
+          "root": {
+            "type": "string",
+            "description": "The entity that is the aggregate root (must be in entities array)."
+          },
+          "members": {
+            "type": "array",
+            "description": "Entities and value objects enclosed within this aggregate boundary.",
+            "items": { "type": "string" }
+          },
+          "invariants": {
+            "type": "array",
+            "description": "Business rules that span multiple members of this aggregate.",
+            "items": { "type": "string" }
+          },
+          "crossAggregateReferences": {
+            "type": "array",
+            "description": "References to other aggregates, stored by identity only.",
+            "items": {
+              "type": "object",
+              "required": ["targetAggregate", "referenceType"],
+              "properties": {
+                "targetAggregate": { "type": "string", "description": "Name of the referenced aggregate." },
+                "referenceType": { "type": "string", "description": "How the reference is stored (always 'by-id')." }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "domainEvents": {
+      "type": "array",
+      "description": "Domain events with triggers, payloads, and consumer relationships.",
+      "items": {
+        "type": "object",
+        "required": ["name", "trigger", "payload", "producers", "consumers"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Event name in past tense using ubiquitous language (e.g., 'OrderConfirmed')."
+          },
+          "trigger": {
+            "type": "string",
+            "description": "The action or state transition that raises this event."
+          },
+          "payload": {
+            "type": "array",
+            "description": "Fields included in the event data payload.",
+            "items": {
+              "type": "object",
+              "required": ["field", "type", "description"],
+              "properties": {
+                "field": { "type": "string", "description": "Field name." },
+                "type": { "type": "string", "description": "Field type." },
+                "description": { "type": "string", "description": "What this field represents." }
+              },
+              "additionalProperties": false
+            },
+            "minItems": 1
+          },
+          "producers": {
+            "type": "array",
+            "description": "Aggregates or application services that publish this event.",
+            "items": { "type": "string" },
+            "minItems": 1
+          },
+          "consumers": {
+            "type": "array",
+            "description": "Aggregates, services, or external systems that subscribe to this event.",
+            "items": { "type": "string" }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "repositoryInterfaces": {
+      "type": "array",
+      "description": "Repository interface contracts per aggregate root, defined in domain language.",
+      "items": {
+        "type": "object",
+        "required": ["name", "aggregateRoot", "methods"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Interface name (e.g., 'OrderRepository')."
+          },
+          "aggregateRoot": {
+            "type": "string",
+            "description": "The aggregate root entity this repository manages."
+          },
+          "methods": {
+            "type": "array",
+            "description": "Methods declared on this interface using domain language.",
+            "items": {
+              "type": "object",
+              "required": ["name", "parameters", "returnType", "description"],
+              "properties": {
+                "name": { "type": "string", "description": "Method name in domain language." },
+                "parameters": {
+                  "type": "array",
+                  "description": "Method parameters.",
+                  "items": {
+                    "type": "object",
+                    "required": ["name", "type"],
+                    "properties": {
+                      "name": { "type": "string", "description": "Parameter name." },
+                      "type": { "type": "string", "description": "Parameter type." }
+                    },
+                    "additionalProperties": false
+                  }
+                },
+                "returnType": { "type": "string", "description": "Return type of this method." },
+                "description": { "type": "string", "description": "What this method does in domain terms." }
+              },
+              "additionalProperties": false
+            },
+            "minItems": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "domainServices": {
+      "type": "array",
+      "description": "Domain services for business logic that spans multiple aggregates.",
+      "items": {
+        "type": "object",
+        "required": ["name", "responsibility", "operatesOn", "methods"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Domain service name using ubiquitous language."
+          },
+          "responsibility": {
+            "type": "string",
+            "description": "The cross-aggregate business logic this service encapsulates."
+          },
+          "operatesOn": {
+            "type": "array",
+            "description": "Aggregates this service reads from or writes to.",
+            "items": { "type": "string" },
+            "minItems": 2
+          },
+          "methods": {
+            "type": "array",
+            "description": "Operations this service exposes.",
+            "items": {
+              "type": "object",
+              "required": ["name", "description"],
+              "properties": {
+                "name": { "type": "string", "description": "Method name." },
+                "description": { "type": "string", "description": "What this operation does." }
+              },
+              "additionalProperties": false
+            },
+            "minItems": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "ticketKey": {
+      "type": "string",
+      "description": "Optional validated TICKET_KEY scoping this run to knowledge-base/plans/active/<TICKET_KEY>/. Must match the pattern ^[A-Z][A-Z0-9]+-[1-9][0-9]*$. Absent for offline runs.",
+      "pattern": "^[A-Z][A-Z0-9]+-[1-9][0-9]*$"
+    },
+    "sessionPath": {
+      "type": "string",
+      "description": "Optional active artifact directory derived from ticketKey. Defaults to knowledge-base/plans/active/ when absent."
+    }
+  },
+  "additionalProperties": false
+}

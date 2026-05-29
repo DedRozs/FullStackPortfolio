@@ -1,0 +1,221 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "discovery-to-architecture.schema.json",
+  "title": "Discovery to Architecture Handoff Artifact",
+  "description": "Structured artifact produced by the Discovery Orchestrator and consumed by the Architecture Orchestrator. Contains the requirements specification, domain glossary, and prioritized backlog.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "projectName",
+    "productVision",
+    "stakeholders",
+    "domainGlossary",
+    "requirements",
+    "prioritizedBacklog",
+    "processValidation"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "description": "Version of this schema used to produce the artifact. Must match the schema file version (e.g., '1.0')."
+    },
+    "projectName": {
+      "type": "string",
+      "description": "Human-readable name of the target project as configured in This Project."
+    },
+    "productVision": {
+      "type": "object",
+      "description": "Structured product vision statement capturing the core problem and desired outcomes.",
+      "required": ["problemStatement", "targetUsers", "successMetrics"],
+      "properties": {
+        "problemStatement": {
+          "type": "string",
+          "description": "One to three sentences describing the core problem this system solves."
+        },
+        "targetUsers": {
+          "type": "array",
+          "description": "The primary user groups who will benefit from this system.",
+          "items": { "type": "string" },
+          "minItems": 1
+        },
+        "successMetrics": {
+          "type": "array",
+          "description": "Measurable outcomes that define success for this project.",
+          "items": { "type": "string" },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "stakeholders": {
+      "type": "array",
+      "description": "All identified parties who have an interest in or are affected by the system.",
+      "items": {
+        "type": "object",
+        "required": ["name", "role", "interest"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Stakeholder name or role title (e.g., 'Operations Manager')."
+          },
+          "role": {
+            "type": "string",
+            "description": "Category of stakeholder (e.g., 'end-user', 'sponsor', 'regulator', 'integrator')."
+          },
+          "interest": {
+            "type": "string",
+            "description": "What this stakeholder needs from the system and why."
+          }
+        },
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "domainGlossary": {
+      "type": "array",
+      "description": "Preliminary ubiquitous language terms established during Discovery. All subsequent phases use these terms verbatim.",
+      "items": {
+        "type": "object",
+        "required": ["term", "definition", "context"],
+        "properties": {
+          "term": {
+            "type": "string",
+            "description": "The domain term exactly as it should appear in code and documentation."
+          },
+          "definition": {
+            "type": "string",
+            "description": "Clear, unambiguous definition of this term within the project domain."
+          },
+          "context": {
+            "type": "string",
+            "description": "The bounded context or subdomain in which this term is used."
+          }
+        },
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "requirements": {
+      "type": "object",
+      "description": "Structured requirements elicited from stakeholders, separated by type.",
+      "required": ["functional", "nonFunctional", "constraints"],
+      "properties": {
+        "functional": {
+          "type": "array",
+          "description": "What the system must do - behaviors and capabilities.",
+          "items": {
+            "type": "object",
+            "required": ["id", "title", "description"],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Unique requirement identifier (e.g., 'FR-001')."
+              },
+              "title": {
+                "type": "string",
+                "description": "Short label for this requirement."
+              },
+              "description": {
+                "type": "string",
+                "description": "Full description of the required behavior."
+              }
+            },
+            "additionalProperties": false
+          },
+          "minItems": 1
+        },
+        "nonFunctional": {
+          "type": "array",
+          "description": "Quality attributes the system must satisfy - performance, security, scalability, etc.",
+          "items": {
+            "type": "object",
+            "required": ["id", "category", "description"],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Unique requirement identifier (e.g., 'NFR-001')."
+              },
+              "category": {
+                "type": "string",
+                "description": "Quality attribute category (e.g., 'performance', 'security', 'availability')."
+              },
+              "description": {
+                "type": "string",
+                "description": "Specific, measurable statement of the non-functional requirement."
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "constraints": {
+          "type": "array",
+          "description": "Fixed limitations the system must operate within - regulatory, technical, budget, or timeline.",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "prioritizedBacklog": {
+      "type": "array",
+      "description": "Ranked list of requirements from highest to lowest priority, with acceptance criteria.",
+      "items": {
+        "type": "object",
+        "required": ["rank", "requirementId", "title", "acceptanceCriteria"],
+        "properties": {
+          "rank": {
+            "type": "integer",
+            "description": "Priority rank where 1 is highest priority.",
+            "minimum": 1
+          },
+          "requirementId": {
+            "type": "string",
+            "description": "Reference to a requirement id in the requirements.functional array."
+          },
+          "title": {
+            "type": "string",
+            "description": "Short label copied from the referenced requirement."
+          },
+          "acceptanceCriteria": {
+            "type": "array",
+            "description": "Given/When/Then statements defining when this requirement is satisfied.",
+            "items": { "type": "string" },
+            "minItems": 1
+          }
+        },
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "processValidation": {
+      "type": "object",
+      "description": "Discovery Artifact Validator sign-off confirming the Discovery phase is complete and the artifact is ready for Architecture.",
+      "required": ["validatedBy", "gaps", "readinessConfirmed"],
+      "properties": {
+        "validatedBy": {
+          "type": "string",
+          "description": "Name of the agent that performed process validation (always 'discovery-artifact-validator')."
+        },
+        "gaps": {
+          "type": "array",
+          "description": "Any identified gaps, open questions, or risks carried forward to Architecture. Empty array if none.",
+          "items": { "type": "string" }
+        },
+        "readinessConfirmed": {
+          "type": "boolean",
+          "description": "True only when the Scrum Master confirms all Discovery deliverables are complete and no blocking gaps remain."
+        }
+      },
+      "additionalProperties": false
+    },
+    "ticketKey": {
+      "type": "string",
+      "description": "Optional validated TICKET_KEY scoping this run to knowledge-base/plans/active/<TICKET_KEY>/. Must match the pattern ^[A-Z][A-Z0-9]+-[1-9][0-9]*$. Absent for offline runs.",
+      "pattern": "^[A-Z][A-Z0-9]+-[1-9][0-9]*$"
+    },
+    "sessionPath": {
+      "type": "string",
+      "description": "Optional active artifact directory derived from ticketKey. Defaults to knowledge-base/plans/active/ when absent."
+    }
+  },
+  "additionalProperties": false
+}
