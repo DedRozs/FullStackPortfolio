@@ -120,7 +120,17 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 GS_BUCKET_NAME = env('GS_BUCKET_NAME', default='')
 
 if GS_BUCKET_NAME:
-    DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
+    STORAGES = {
+        'default': {
+            'BACKEND': 'storages.backends.gcloud.GoogleCloudStorage',
+            'OPTIONS': {'location': 'media'},
+        },
+        'staticfiles': {
+            'BACKEND': 'storages.backends.gcloud.GoogleCloudStorage',
+            'OPTIONS': {'location': 'static'},
+        },
+    }
+    STATIC_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/static/'
 
 # ---------------------------------------------------------------------------
 # AI providers
