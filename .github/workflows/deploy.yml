@@ -86,12 +86,23 @@ jobs:
 
           handlers:
             - url: /static
-              static_files: static/*
-              upload: static/*
+              static_files: staticfiles/*
+              upload: staticfiles/*
 
             - url: /(.*)
               script: auto
           EOF
+
+      - name: Build Frontend
+        run: |
+          cd frontend && npm ci && npm run build
+
+      - name: Collect Static Files
+        env:
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          GS_BUCKET_NAME: ${{ secrets.GS_BUCKET_NAME }}
+        run: |
+          python manage.py collectstatic --noinput
 
       - name: Run Database Migrations
         env:

@@ -121,7 +121,6 @@ GS_BUCKET_NAME = env('GS_BUCKET_NAME', default='')
 
 if GS_BUCKET_NAME:
     DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
-    STATICFILES_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
 
 # ---------------------------------------------------------------------------
 # AI providers
