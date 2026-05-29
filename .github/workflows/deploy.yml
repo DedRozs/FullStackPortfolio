@@ -59,7 +59,7 @@ jobs:
             GOOGLE_APPLICATION_CREDENTIALS: "/workspace/key.json"
             DJANGO_SETTINGS_MODULE: "core.settings"
             DEBUG: "False"
-            ALLOWED_HOSTS: "ai-fullstack-portfolio.uc.r.appspot.com,thejosephprince.com,www.thejosephprince.com"
+            ALLOWED_HOSTS: "ai-fullstack-portfolio.uc.r.appspot.com,www.thejosephprince.com"
             DB_NAME: "${{ secrets.DB_NAME }}"
             DB_USER: "${{ secrets.DB_USER }}"
             DB_PASSWORD: "${{ secrets.DB_PASSWORD }}"
