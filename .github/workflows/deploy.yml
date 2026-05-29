@@ -84,14 +84,13 @@ jobs:
             max_instances: 5
 
           handlers:
-            - url: /static
-              static_dir: staticfiles
-
             - url: /(.*)
               script: auto
           EOF
 
       - name: Build Frontend
+        env:
+          VITE_STATIC_BASE: "https://storage.googleapis.com/${{ secrets.GS_BUCKET_NAME }}/static/react_app/"
         run: |
           cd frontend && npm ci && npm run build
 

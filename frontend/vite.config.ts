@@ -10,11 +10,15 @@ const DJANGO_STATIC_DIR = path.resolve(
   '../apps/react_app/static/react_app',
 )
 
+// Allow CI to override the base URL when static files are served from a CDN
+// (e.g. GCS). Falls back to the local Django path for development and test runs.
+const staticBase = process.env.VITE_STATIC_BASE ?? '/static/react_app/'
+
 export default defineConfig({
   plugins: [react(), tailwindcss()],
 
-  // Base URL must match where Django serves static files.
-  base: '/static/react_app/',
+  // Base URL must match where Django/CDN serves static files.
+  base: staticBase,
 
   build: {
     outDir: DJANGO_STATIC_DIR,
