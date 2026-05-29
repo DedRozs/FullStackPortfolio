@@ -86,8 +86,7 @@ jobs:
 
           handlers:
             - url: /static
-              static_files: staticfiles/*
-              upload: staticfiles/*
+              static_dir: staticfiles
 
             - url: /(.*)
               script: auto
