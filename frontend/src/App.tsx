@@ -1,6 +1,8 @@
 ﻿import { lazy, Suspense } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import Layout from './components/layout/Layout'
+import PortalLayout from './components/layout/PortalLayout'
+import DashboardLayout from './components/layout/DashboardLayout'
 import ProtectedRoute from './components/ProtectedRoute'
 
 const AIAssistantPage = lazy(() => import('./pages/AIAssistantPage'))
@@ -15,6 +17,9 @@ const PortalDashboardPage = lazy(() => import('./pages/portal/PortalDashboardPag
 const PortalProjectDetailPage = lazy(() => import('./pages/portal/PortalProjectDetailPage'))
 const PortalFilesPage = lazy(() => import('./pages/portal/PortalFilesPage'))
 const PortalMessagesPage = lazy(() => import('./pages/portal/PortalMessagesPage'))
+const DashboardOverviewPage = lazy(() => import('./pages/dashboard/DashboardOverviewPage'))
+const DashboardMetricsPage = lazy(() => import('./pages/dashboard/DashboardMetricsPage'))
+const DashboardAlertsPage = lazy(() => import('./pages/dashboard/DashboardAlertsPage'))
 
 export default function App() {
   return (
@@ -35,34 +40,27 @@ export default function App() {
             path="portal"
             element={
               <ProtectedRoute>
-                <PortalDashboardPage />
+                <PortalLayout />
               </ProtectedRoute>
             }
-          />
+          >
+            <Route index element={<PortalDashboardPage />} />
+            <Route path="projects/:id" element={<PortalProjectDetailPage />} />
+            <Route path="files" element={<PortalFilesPage />} />
+            <Route path="messages" element={<PortalMessagesPage />} />
+          </Route>
           <Route
-            path="portal/projects/:id"
+            path="dashboard"
             element={
               <ProtectedRoute>
-                <PortalProjectDetailPage />
+                <DashboardLayout />
               </ProtectedRoute>
             }
-          />
-          <Route
-            path="portal/files"
-            element={
-              <ProtectedRoute>
-                <PortalFilesPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="portal/messages"
-            element={
-              <ProtectedRoute>
-                <PortalMessagesPage />
-              </ProtectedRoute>
-            }
-          />
+          >
+            <Route index element={<DashboardOverviewPage />} />
+            <Route path="metrics" element={<DashboardMetricsPage />} />
+            <Route path="alerts" element={<DashboardAlertsPage />} />
+          </Route>
         </Routes>
       </Suspense>
     </BrowserRouter>

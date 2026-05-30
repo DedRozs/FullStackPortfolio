@@ -1,12 +1,13 @@
 import { Link } from '../catalyst-ui-kit/typescript/link'
+import { Text } from '../catalyst-ui-kit/typescript/text'
 
 export default function Footer() {
   return (
     <footer className="mt-auto bg-cyber-surface border-t border-cyber-border py-8">
       <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <p className="text-text-muted text-sm">
+        <Text className="text-sm">
           &copy; {new Date().getFullYear()} Joseph Prince. All rights reserved.
-        </p>
+        </Text>
         <div className="flex gap-6">
           <Link
             href="https://linkedin.com/in/thejprince"

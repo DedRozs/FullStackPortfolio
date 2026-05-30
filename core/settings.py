@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'apps.react_app',
     'apps.client_portal',
     'apps.blog',
+    'apps.ops_dashboard',
 ]
 
 MIDDLEWARE = [
@@ -128,6 +129,13 @@ STATICFILES_DIRS = []
 # ---------------------------------------------------------------------------
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ---------------------------------------------------------------------------
+# File upload limits
+# ---------------------------------------------------------------------------
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10 MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10 MB
 
 # ---------------------------------------------------------------------------
 # Google Cloud Storage (django-storages)
@@ -251,6 +259,15 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '20/hour',
+        'user': '200/hour',
+        'login': '10/hour',
+    },
 }
 
 # ---------------------------------------------------------------------------

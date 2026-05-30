@@ -57,6 +57,30 @@ from apps.client_portal.infrastructure.serializers import (
 )
 from apps.client_portal.infrastructure.storage import GCSFileStorageAdapter
 
+_ALLOWED_MIME_TYPES: frozenset[str] = frozenset({
+    # Documents
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.ms-powerpoint',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'text/plain',
+    'text/csv',
+    # Images
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+    # Archives
+    'application/zip',
+    'application/x-zip-compressed',
+})
+
+_MAX_UPLOAD_BYTES: int = 10 * 1024 * 1024  # 10 MB
+_MAX_MESSAGE_BODY_LENGTH: int = 4000
+
 logger = logging.getLogger(__name__)
 
 
@@ -270,10 +294,10 @@ class MessageViewSet(ModelViewSet):
 
     def get_queryset(self):
         if self.request.user.is_staff:
-            return orm.Message.objects.all()
+            return orm.Message.objects.select_related('sender').all()
         profile = _profile_for(self.request)
         if profile and profile.organization_id:
-            return orm.Message.objects.filter(
+            return orm.Message.objects.select_related('sender').filter(
                 thread__project__organization_id=profile.organization_id
             )
         return orm.Message.objects.none()
@@ -283,6 +307,26 @@ class MessageViewSet(ModelViewSet):
         profile = _profile_for(request)
         if profile is None:
             return Response({'detail': 'Profile not found.'}, status=status.HTTP_403_FORBIDDEN)
+        body_text = request.data.get('body', '')
+        if not body_text or not body_text.strip():
+            return Response({'detail': 'Message body is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        if len(body_text) > _MAX_MESSAGE_BODY_LENGTH:
+            return Response(
+                {'detail': f'Message body exceeds the {_MAX_MESSAGE_BODY_LENGTH}-character limit.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            thread_id = UUID(request.data['thread_id'])
+        except (KeyError, ValueError):
+            return Response({'detail': 'Invalid or missing thread_id.'}, status=status.HTTP_400_BAD_REQUEST)
+        # Verify the thread belongs to the user's organisation.
+        if not request.user.is_staff:
+            owns_thread = orm.MessageThread.objects.filter(
+                pk=thread_id,
+                project__organization_id=profile.organization_id,
+            ).exists()
+            if not owns_thread:
+                return Response({'detail': 'Thread not found.'}, status=status.HTTP_404_NOT_FOUND)
         use_case = SendMessage(
             message_repo=DjangoMessageRepository(),
             thread_repo=DjangoMessageThreadRepository(),
@@ -291,14 +335,19 @@ class MessageViewSet(ModelViewSet):
         try:
             dto = use_case.execute(
                 SendMessageCommand(
-                    thread_id=UUID(request.data['thread_id']),
+                    thread_id=thread_id,
                     sender_id=profile.id,
-                    body=request.data.get('body', ''),
+                    body=body_text,
                 )
             )
         except (ValueError, KeyError) as exc:
             return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
-        return Response({'id': str(dto.id), 'body': dto.body, 'created_at': dto.created_at})
+        return Response({
+            'id': str(dto.id),
+            'body': dto.body,
+            'created_at': dto.created_at,
+            'sender_email': profile.email,
+        })
 
 
 class FileRecordViewSet(ModelViewSet):
@@ -315,14 +364,45 @@ class FileRecordViewSet(ModelViewSet):
             )
         return orm.FileRecord.objects.none()
 
+    def _reject_if_demo(self, request: Request) -> Response | None:
+        profile = _profile_for(request)
+        if profile and profile.is_demo:
+            return Response(
+                {'detail': 'Demo accounts cannot upload or delete files.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        return None
+
+    def destroy(self, request: Request, *args, **kwargs) -> Response:
+        rejection = self._reject_if_demo(request)
+        if rejection is not None:
+            return rejection
+        return super().destroy(request, *args, **kwargs)
+
     @action(detail=False, methods=['post'], url_path='upload')
     def upload(self, request: Request) -> Response:
         profile = _profile_for(request)
         if profile is None:
             return Response({'detail': 'Profile not found.'}, status=status.HTTP_403_FORBIDDEN)
+        if profile.is_demo:
+            return Response(
+                {'detail': 'Demo accounts cannot upload files.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         uploaded = request.FILES.get('file')
         if uploaded is None:
             return Response({'detail': 'No file provided.'}, status=status.HTTP_400_BAD_REQUEST)
+        if uploaded.size > _MAX_UPLOAD_BYTES:
+            return Response(
+                {'detail': f'File exceeds the 10 MB limit ({uploaded.size} bytes).'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        declared_mime = (uploaded.content_type or '').split(';')[0].strip().lower()
+        if declared_mime not in _ALLOWED_MIME_TYPES:
+            return Response(
+                {'detail': f'File type "{declared_mime}" is not permitted.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         dv_id_raw = request.data.get('deliverable_version_id')
         msg_id_raw = request.data.get('message_id')
         use_case = UploadFile(

@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "1.0",
+  "projectName": "FullStackPortfolio",
+  "ticketKey": "FSP-4",
+  "sessionPath": "knowledge-base/plans/active/FSP-4/",
+  "knowledgeBaseManifest": [
+    {
+      "filePath": "knowledge-base/content/components/ops-dashboard.md",
+      "type": "architecture",
+      "description": "Component reference for ops_dashboard: responsibility, domain model, entities, value objects, domain events, domain services, use cases, API endpoints, layer structure, key design decisions, background tasks, React frontend, repository interfaces, and known limitations."
+    },
+    {
+      "filePath": "knowledge-base/content/development/ops-dashboard-runbook.md",
+      "type": "runbook",
+      "description": "Developer runbook for ops_dashboard: local setup, migrations, staff user creation, Q2 worker operation, manual alert evaluation, frontend build, API testing examples (curl), how to add a new metric type, and troubleshooting guide."
+    },
+    {
+      "filePath": "knowledge-base/content/decisions/0007-ops-dashboard-alert-evaluation-architecture.md",
+      "type": "adr",
+      "description": "ADR 0007: documents the decision to implement AlertEvaluationService as a domain service invoked by a Q2 scheduled task every 15 minutes, with rationale for rejecting a model method and a signal-based approach."
+    }
+  ],
+  "readmePath": "README.md",
+  "runbooks": [
+    {
+      "filePath": "knowledge-base/content/development/ops-dashboard-runbook.md",
+      "scope": "Local development setup, Q2 worker operation, alert evaluation, API testing, adding new metric types, and troubleshooting for the ops_dashboard bounded context",
+      "audience": "Developer working on the ops_dashboard app"
+    }
+  ],
+  "adrIndex": {
+    "totalCount": 1,
+    "indexFilePath": "knowledge-base/content/decisions/README.md",
+    "entries": [
+      {
+        "adrId": "0007",
+        "title": "ops_dashboard Alert Evaluation Architecture",
+        "status": "accepted",
+        "filePath": "knowledge-base/content/decisions/0007-ops-dashboard-alert-evaluation-architecture.md"
+      }
+    ]
+  },
+  "decisionLog": {
+    "filePath": "knowledge-base/content/decisions/README.md",
+    "totalDecisions": 4,
+    "phasesCovered": [
+      "architecture",
+      "domain-modeling",
+      "development",
+      "documentation"
+    ]
+  }
+}

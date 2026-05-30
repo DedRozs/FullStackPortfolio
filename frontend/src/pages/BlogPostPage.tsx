@@ -2,7 +2,10 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { Badge } from '../components/catalyst-ui-kit/typescript/badge'
 import { Card, CardBody, CardHeader, CardTitle } from '../components/catalyst-ui-kit/typescript/card'
+import { Heading } from '../components/catalyst-ui-kit/typescript/heading'
+import { Text } from '../components/catalyst-ui-kit/typescript/text'
 
 interface Tag {
   id: number
@@ -74,9 +77,9 @@ export default function BlogPostPage() {
   if (loading) {
     return (
       <div className="flex justify-center py-40">
-        <span className="text-text-muted font-display tracking-widest text-sm uppercase animate-pulse">
+        <Text className="font-display tracking-widest text-sm uppercase animate-pulse">
           Loading...
-        </span>
+        </Text>
       </div>
     )
   }
@@ -84,9 +87,9 @@ export default function BlogPostPage() {
   if (error || !post) {
     return (
       <div className="flex justify-center py-40">
-        <span className="text-neon-magenta font-display tracking-widest text-sm uppercase">
+        <Text className="text-neon-magenta font-display tracking-widest text-sm uppercase">
           {error ?? 'Post not found.'}
-        </span>
+        </Text>
       </div>
     )
   }
@@ -114,23 +117,20 @@ export default function BlogPostPage() {
           {post.tags.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-4">
               {post.tags.map((tag) => (
-                <span
-                  key={tag.id}
-                  className="px-2 py-0.5 text-[10px] font-display tracking-widest uppercase border border-neon-cyan/30 text-neon-cyan/70 rounded"
-                >
+                <Badge key={tag.id} color="neon-cyan" className="font-display text-[10px] tracking-widest uppercase">
                   {tag.name}
-                </span>
+                </Badge>
               ))}
             </div>
           )}
 
-          <h1 className="font-display text-3xl sm:text-4xl font-bold text-text-primary tracking-wide mb-4 animate-fade-in-up">
+          <Heading level={1} className="font-display text-3xl sm:text-4xl font-bold text-text-primary tracking-wide mb-4 animate-fade-in-up">
             {post.title}
-          </h1>
-          <p className="text-text-muted text-sm mb-6">
+          </Heading>
+          <Text className="text-sm mb-6">
             {formatDate(post.published_at)} &middot; {post.reading_time_minutes} min read &middot;{' '}
             {post.author_display_name}
-          </p>
+          </Text>
 
           {post.featured_image_url && (
             <img
@@ -152,9 +152,9 @@ export default function BlogPostPage() {
           {/* Related posts */}
           {post.related_posts.length > 0 && (
             <aside className="mt-16 pt-10 border-t border-cyber-border">
-              <h2 className="font-display text-xl font-bold text-neon-cyan glow-cyan tracking-widest uppercase mb-6">
+              <Heading level={2} className="font-display text-xl font-bold text-neon-cyan glow-cyan tracking-widest uppercase mb-6">
                 Related Posts
-              </h2>
+              </Heading>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {post.related_posts.map((related) => (
                   <Card key={related.id} flush accent="cyan">
@@ -167,15 +167,15 @@ export default function BlogPostPage() {
                           {related.title}
                         </Link>
                       </CardTitle>
-                      <p className="text-text-muted text-xs mt-1">
+                      <Text className="text-xs mt-1">
                         {formatDate(related.published_at)} &middot;{' '}
                         {related.reading_time_minutes} min read
-                      </p>
+                      </Text>
                     </CardHeader>
                     <CardBody>
-                      <p className="text-text-muted text-sm leading-relaxed line-clamp-3">
+                      <Text className="text-sm leading-relaxed line-clamp-3">
                         {related.excerpt}
-                      </p>
+                      </Text>
                     </CardBody>
                   </Card>
                 ))}

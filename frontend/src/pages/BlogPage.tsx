@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Badge } from '../components/catalyst-ui-kit/typescript/badge'
+import { Button } from '../components/catalyst-ui-kit/typescript/button'
 import { Card, CardBody, CardFooter, CardHeader, CardTitle } from '../components/catalyst-ui-kit/typescript/card'
+import { Heading } from '../components/catalyst-ui-kit/typescript/heading'
+import { Text } from '../components/catalyst-ui-kit/typescript/text'
 
 interface Tag {
   id: number
@@ -88,25 +92,26 @@ export default function BlogPage() {
               'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(59,27,114,0.4) 0%, transparent 70%)',
           }}
         />
-        <p
+        <Text
           className="text-neon-magenta text-xs font-display tracking-[0.4em] uppercase mb-3 animate-fade-in-up"
           style={{ animationDelay: '0s' }}
         >
           Thoughts &amp; Tutorials
-        </p>
-        <h1
+        </Text>
+        <Heading
+          level={1}
           className="font-display text-4xl sm:text-5xl font-bold text-neon-cyan glow-cyan tracking-widest uppercase mb-6 animate-fade-in-up"
           style={{ animationDelay: '0.1s' }}
         >
           Blog
-        </h1>
-        <p
-          className="text-text-muted text-lg max-w-2xl leading-relaxed animate-fade-in-up"
+        </Heading>
+        <Text
+          className="text-lg max-w-2xl leading-relaxed animate-fade-in-up"
           style={{ animationDelay: '0.2s' }}
         >
           Articles on software architecture, Django, React, and the lessons learned
           building production systems.
-        </p>
+        </Text>
       </section>
 
       {/* Post list */}
@@ -114,22 +119,22 @@ export default function BlogPage() {
         <div className="max-w-4xl mx-auto px-6">
           {loading && (
             <div className="flex justify-center py-20">
-              <span className="text-text-muted font-display tracking-widest text-sm uppercase animate-pulse">
+              <Text className="font-display tracking-widest text-sm uppercase animate-pulse">
                 Loading...
-              </span>
+              </Text>
             </div>
           )}
 
           {error && (
             <div className="flex justify-center py-20">
-              <span className="text-neon-magenta font-display tracking-widest text-sm uppercase">
+              <Text className="text-neon-magenta font-display tracking-widest text-sm uppercase">
                 {error}
-              </span>
+              </Text>
             </div>
           )}
 
           {!loading && !error && data?.posts.length === 0 && (
-            <p className="text-center text-text-muted py-20">No posts yet.</p>
+            <Text className="text-center py-20">No posts yet.</Text>
           )}
 
           {data && data.posts.length > 0 && (
@@ -147,12 +152,9 @@ export default function BlogPage() {
                       {post.tags.length > 0 && (
                         <div className="flex flex-wrap gap-2 mb-2">
                           {post.tags.map((tag) => (
-                            <span
-                              key={tag.id}
-                              className="px-2 py-0.5 text-[10px] font-display tracking-widest uppercase border border-neon-cyan/30 text-neon-cyan/70 rounded"
-                            >
+                            <Badge key={tag.id} color="neon-cyan" className="font-display text-[10px] tracking-widest uppercase">
                               {tag.name}
-                            </span>
+                            </Badge>
                           ))}
                         </div>
                       )}
@@ -164,14 +166,14 @@ export default function BlogPage() {
                           {post.title}
                         </Link>
                       </CardTitle>
-                      <p className="text-text-muted text-xs mt-1">
+                      <Text className="text-xs mt-1">
                         {formatDate(post.published_at)} &middot;{' '}
                         {post.reading_time_minutes} min read &middot;{' '}
                         {post.author_display_name}
-                      </p>
+                      </Text>
                     </CardHeader>
                     <CardBody>
-                      <p className="text-text-muted leading-relaxed">{post.excerpt}</p>
+                      <Text className="leading-relaxed">{post.excerpt}</Text>
                     </CardBody>
                     <CardFooter>
                       <Link
@@ -187,23 +189,25 @@ export default function BlogPage() {
 
               {data.num_pages > 1 && (
                 <div className="flex items-center justify-center gap-4 mt-10">
-                  <button
+                  <Button
+                    color="neon-cyan-outline"
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={page === 1}
-                    className="px-4 py-2 text-xs font-display tracking-widest uppercase border border-cyber-border text-text-muted disabled:opacity-30 hover:border-neon-cyan hover:text-neon-cyan transition-colors"
+                    className="font-display tracking-widest uppercase"
                   >
                     &larr; Prev
-                  </button>
-                  <span className="text-text-muted text-xs font-display tracking-wider">
+                  </Button>
+                  <Text className="text-xs font-display tracking-wider">
                     {page} / {data.num_pages}
-                  </span>
-                  <button
+                  </Text>
+                  <Button
+                    color="neon-cyan-outline"
                     onClick={() => setPage((p) => Math.min(data.num_pages, p + 1))}
                     disabled={page === data.num_pages}
-                    className="px-4 py-2 text-xs font-display tracking-widest uppercase border border-cyber-border text-text-muted disabled:opacity-30 hover:border-neon-cyan hover:text-neon-cyan transition-colors"
+                    className="font-display tracking-widest uppercase"
                   >
                     Next &rarr;
-                  </button>
+                  </Button>
                 </div>
               )}
             </>

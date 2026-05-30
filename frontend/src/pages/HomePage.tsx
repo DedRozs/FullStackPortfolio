@@ -1,6 +1,9 @@
 import { useEffect, useRef } from 'react'
+import { Badge } from '../components/catalyst-ui-kit/typescript/badge'
 import { Button } from '../components/catalyst-ui-kit/typescript/button'
 import { Card, CardHeader, CardBody, CardFooter, CardTitle, CardDescription } from '../components/catalyst-ui-kit/typescript/card'
+import { Heading } from '../components/catalyst-ui-kit/typescript/heading'
+import { Text } from '../components/catalyst-ui-kit/typescript/text'
 import heroVideo from '../assets/11041434-hd_1920_1080_30fps.mp4'
 
 const HERO_VIDEO_SRC = heroVideo
@@ -100,23 +103,24 @@ export default function HomePage() {
             Available for New Projects
           </div>
 
-          <p
+          <Text
             className="text-neon-magenta text-sm font-display tracking-[0.4em] uppercase mb-4 animate-fade-in-up"
             style={{ animationDelay: '0.1s' }}
           >
             Full Stack Developer &amp; Consultant
-          </p>
+          </Text>
 
-          <h1
+          <Heading
+            level={1}
             className="font-display text-5xl sm:text-7xl font-bold tracking-tight text-text-primary mb-2 animate-fade-in-up"
             style={{ animationDelay: '0.2s' }}
           >
             Joseph{' '}
             <span className="text-neon-cyan glow-cyan animate-glitch">Prince</span>
-          </h1>
+          </Heading>
 
-          <p
-            className="text-text-muted text-lg max-w-2xl mt-6 leading-relaxed animate-fade-in-up"
+          <Text
+            className="text-lg max-w-2xl mt-6 leading-relaxed animate-fade-in-up"
             style={{ animationDelay: '0.3s' }}
           >
             I build and scale production SaaS platforms. Four years at Sports Thread - from
@@ -124,7 +128,7 @@ export default function HomePage() {
             systems reliable at scale.
             <br /><br />
             <span className="text-neon-cyan">Available for senior roles and consulting engagements.</span>
-          </p>
+          </Text>
 
           <div
             className="flex flex-wrap gap-4 mt-10 justify-center animate-fade-in-up"
@@ -157,12 +161,12 @@ export default function HomePage() {
         <div className="max-w-5xl mx-auto px-6">
           {/* Section heading */}
           <div className="text-center mb-12">
-            <p className="text-neon-magenta text-xs font-display tracking-[0.4em] uppercase mb-3">
+            <Text className="text-neon-magenta text-xs font-display tracking-[0.4em] uppercase mb-3">
               Core Expertise
-            </p>
-            <h2 className="font-display text-2xl font-bold text-neon-cyan glow-cyan tracking-widest uppercase">
+            </Text>
+            <Heading level={2} className="font-display text-2xl font-bold text-neon-cyan glow-cyan tracking-widest uppercase">
               What I Do
-            </h2>
+            </Heading>
           </div>
 
           <div className="grid sm:grid-cols-3 gap-6" ref={cardsRef}>
@@ -206,21 +210,21 @@ export default function HomePage() {
         />
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-12">
-            <p className="text-neon-magenta text-xs font-display tracking-[0.4em] uppercase mb-3">
+            <Text className="text-neon-magenta text-xs font-display tracking-[0.4em] uppercase mb-3">
               In Development
-            </p>
-            <h2 className="font-display text-2xl font-bold text-neon-cyan glow-cyan tracking-widest uppercase">
+            </Text>
+            <Heading level={2} className="font-display text-2xl font-bold text-neon-cyan glow-cyan tracking-widest uppercase">
               What I&apos;m Building
-            </h2>
+            </Heading>
           </div>
 
           <div className="grid sm:grid-cols-3 gap-6" ref={projectsCardsRef}>
             {PROJECTS_IN_DEVELOPMENT.map((project, i) => (
               <Card key={project.title} flush data-delay={i * 120} className="reveal cursor-default">
                 <CardHeader className="items-center text-center">
-                  <div className="px-3 py-1 mb-2 text-[10px] font-display tracking-widest uppercase border border-neon-magenta/50 text-neon-magenta/70 rounded self-center">
+                  <Badge color="neon-magenta" className="mb-2 font-display text-[10px] tracking-widest uppercase self-center">
                     In Development
-                  </div>
+                  </Badge>
                   <CardTitle className="text-text-primary">{project.title}</CardTitle>
                 </CardHeader>
                 <CardBody className="items-center text-center">

@@ -26,6 +26,7 @@ class UserProfile(models.Model):
     )
     email = models.EmailField(unique=True)
     is_client = models.BooleanField(default=False)
+    is_demo = models.BooleanField(default=False)
     organization = models.ForeignKey(
         ClientOrganization,
         null=True,

@@ -1,0 +1,1040 @@
+{
+  "schemaVersion": "1.0",
+  "projectName": "FullStackPortfolio",
+  "ticketKey": "FSP-4",
+  "sessionPath": "knowledge-base/plans/active/FSP-4/",
+  "ubiquitousLanguage": [
+    {
+      "term": "CompanyMetric",
+      "definition": "A named business metric tracked over time, such as Monthly Revenue or Active Customers. It is the aggregate root that groups time-series snapshots of the same measurement.",
+      "context": "ops_dashboard",
+      "usageExamples": [
+        "class CompanyMetric",
+        "MetricRepository.get_by_id(metric_id: UUID) -> CompanyMetric | None",
+        "MetricAggregate root"
+      ]
+    },
+    {
+      "term": "MetricValue",
+      "definition": "An immutable amount-and-currency pair representing a single monetary measurement. Used as the value type for RevenueSnapshot amounts.",
+      "context": "ops_dashboard",
+      "usageExamples": [
+        "MetricValue(amount=Decimal('10000'), currency='USD')",
+        "RevenueSnapshot.amount: Decimal paired with RevenueSnapshot.currency: str"
+      ]
+    },
+    {
+      "term": "MetricPeriod",
+      "definition": "The contiguous time window covered by a snapshot, defined by a start date and end date (both inclusive). Represented as a DateRange value object.",
+      "context": "ops_dashboard",
+      "usageExamples": [
+        "DateRange(start_date=date(2025, 1, 1), end_date=date(2025, 1, 31))",
+        "RevenueSnapshot.period_start / RevenueSnapshot.period_end"
+      ]
+    },
+    {
+      "term": "RevenueSnapshot",
+      "definition": "A point-in-time revenue reading for a specific reporting period. Immutable once recorded. Belongs to a CompanyMetric of type REVENUE.",
+      "context": "ops_dashboard",
+      "usageExamples": [
+        "class RevenueSnapshot",
+        "MetricRepository.save_snapshot(snapshot: RevenueSnapshot)"
+      ]
+    },
+    {
+      "term": "CustomerGrowthSnapshot",
+      "definition": "A point-in-time customer count reading capturing new customers acquired, churned customers lost, and the derived net change for a reporting period.",
+      "context": "ops_dashboard",
+      "usageExamples": [
+        "class CustomerGrowthSnapshot",
+        "snapshot.net_customers == snapshot.new_customers - snapshot.churned_customers"
+      ]
+    },
+    {
+      "term": "DashboardAlert",
+      "definition": "A triggered alert instance created when an AlertRule's threshold condition is crossed. Progresses through the ACTIVE -> ACKNOWLEDGED -> RESOLVED lifecycle.",
+      "context": "ops_dashboard",
+      "usageExamples": [
+        "class DashboardAlert",
+        "alert.acknowledge(acknowledged_by=user_id)",
+        "DashboardAlertRepository.list_active()"
+      ]
+    },
+    {
+      "term": "AlertSeverity",
+      "definition": "The urgency classification of an alert: INFO (informational only), WARNING (action recommended), or CRITICAL (immediate action required).",
+      "context": "ops_dashboard",
+      "usageExamples": [
+        "AlertSeverity.CRITICAL",
+        "AlertRule.severity: AlertSeverity",
+        "DashboardAlert.severity: AlertSeverity"
+      ]
+    },
+    {
+      "term": "AlertStatus",
+      "definition": "The lifecycle state of a DashboardAlert: ACTIVE (newly triggered, not yet reviewed), ACKNOWLEDGED (seen by a staff user), or RESOLVED (closed).",
+      "context": "ops_dashboard",
+      "usageExamples": [
+        "AlertStatus.ACTIVE",
+        "DashboardAlert.status: AlertStatus",
+        "DashboardAlertRepository.list_active()"
+      ]
+    },
+    {
+      "term": "AlertRule",
+      "definition": "A persistent configuration that defines the metric, threshold condition, and severity used to create DashboardAlerts when the condition is satisfied during scheduled evaluation.",
+      "context": "ops_dashboard",
+      "usageExamples": [
+        "class AlertRule",
+        "AlertRuleRepository.list_active()",
+        "rule.evaluate(current_value) -> DashboardAlert | None"
+      ]
+    },
+    {
+      "term": "AlertCondition",
+      "definition": "The logical comparison applied during alert evaluation: the combination of a ThresholdOperator and a threshold_value that, when satisfied by a metric reading, triggers a DashboardAlert.",
+      "context": "ops_dashboard",
+      "usageExamples": [
+        "rule.operator: ThresholdOperator",
+        "rule.threshold_value: Decimal",
+        "AlertEvaluationService.evaluate_all_rules()"
+      ]
+    },
+    {
+      "term": "ThresholdOperator",
+      "definition": "An enumeration of comparison operators used in AlertConditions: GT (greater than), LT (less than), GTE (greater than or equal), LTE (less than or equal), EQ (equal).",
+      "context": "ops_dashboard",
+      "usageExamples": [
+        "ThresholdOperator.GT",
+        "ThresholdOperator.LTE",
+        "AlertRule.operator: ThresholdOperator"
+      ]
+    },
+    {
+      "term": "AuditLogEntry",
+      "definition": "An immutable record of a staff-initiated state-changing operation, capturing who performed what action on which target and when. Never modified after creation.",
+      "context": "ops_dashboard",
+      "usageExamples": [
+        "class AuditLogEntry",
+        "AuditLogRepository.append(entry: AuditLogEntry)",
+        "AuditLogRepository.list_by_actor(actor_id)"
+      ]
+    },
+    {
+      "term": "AuditAction",
+      "definition": "An enumeration identifying the type of operation recorded in an AuditLogEntry (e.g., METRIC_CREATED, ALERT_ACKNOWLEDGED, IMPORT_COMPLETED).",
+      "context": "ops_dashboard",
+      "usageExamples": [
+        "AuditAction.ALERT_RESOLVED",
+        "AuditLogEntry.action: AuditAction",
+        "AuditAction.IMPORT_FAILED"
+      ]
+    },
+    {
+      "term": "MetricSeries",
+      "definition": "An ordered sequence of snapshot values for a single CompanyMetric over a DateRange, used as input to aggregation computations such as rolling averages and period deltas.",
+      "context": "ops_dashboard",
+      "usageExamples": [
+        "list[RevenueSnapshot | CustomerGrowthSnapshot] returned by MetricRepository.get_snapshots",
+        "MetricAggregationService.compute_rolling_average input"
+      ]
+    },
+    {
+      "term": "DateRange",
+      "definition": "An immutable value object representing a contiguous interval between a start_date and end_date (both inclusive). Used to scope snapshot queries and aggregation windows.",
+      "context": "ops_dashboard",
+      "usageExamples": [
+        "DateRange(start_date=date(2025, 1, 1), end_date=date(2025, 3, 31))",
+        "MetricRepository.get_snapshots(metric_id, date_range)",
+        "date_range.contains(some_date) -> bool"
+      ]
+    },
+    {
+      "term": "PeriodDelta",
+      "definition": "An immutable value object representing the absolute and percentage change between a current metric value and a prior metric value. Used for KPI delta indicators on the dashboard.",
+      "context": "ops_dashboard",
+      "usageExamples": [
+        "PeriodDelta(current_value=Decimal('12000'), prior_value=Decimal('10000'))",
+        "delta.percentage_change -> Optional[float]",
+        "MetricAggregationService.compute_period_delta"
+      ]
+    },
+    {
+      "term": "RollingAverage",
+      "definition": "The mean of a CompanyMetric's snapshot values within a sliding window of a specified number of days, computed by MetricAggregationService and returned as a Decimal.",
+      "context": "ops_dashboard",
+      "usageExamples": [
+        "MetricAggregationService.compute_rolling_average(metric_id, date_range, window_days)",
+        "Decimal result representing the rolling mean"
+      ]
+    },
+    {
+      "term": "ImportJob",
+      "definition": "A background task that reads a CSV file and persists rows as CompanyMetric snapshots. Transitions through PENDING -> PROCESSING -> COMPLETE | FAILED states.",
+      "context": "ops_dashboard",
+      "usageExamples": [
+        "ImportStatus.PROCESSING",
+        "MetricImportCompleted event payload: import_job_id",
+        "imports.py use case dispatched via Django-Q2"
+      ]
+    },
+    {
+      "term": "ImportStatus",
+      "definition": "The lifecycle state of an ImportJob: PENDING (queued but not yet started), PROCESSING (actively executing), COMPLETE (all rows persisted successfully), FAILED (terminated with a fatal error).",
+      "context": "ops_dashboard",
+      "usageExamples": [
+        "ImportStatus.COMPLETE",
+        "ImportStatus.FAILED",
+        "MetricImportFailed event payload"
+      ]
+    },
+    {
+      "term": "CsvRow",
+      "definition": "A single parsed line from an imported CSV file representing one data point that maps to a snapshot value for a CompanyMetric.",
+      "context": "ops_dashboard",
+      "usageExamples": [
+        "for row in csv_rows",
+        "rows_processed: int in MetricImportCompleted payload",
+        "rows_failed: int in MetricImportCompleted payload"
+      ]
+    },
+    {
+      "term": "MetricType",
+      "definition": "An enumeration classifying what a CompanyMetric measures: REVENUE (monetary amounts), CUSTOMER_GROWTH (customer count changes), or CUSTOM (any other measurement).",
+      "context": "ops_dashboard",
+      "usageExamples": [
+        "MetricType.REVENUE",
+        "CompanyMetric.metric_type: MetricType",
+        "MetricType.CUSTOMER_GROWTH"
+      ]
+    },
+    {
+      "term": "AlertRuleStatus",
+      "definition": "The activation state of an AlertRule: ACTIVE (included in scheduled evaluation runs), PAUSED (evaluation suspended and no new DashboardAlerts will be created).",
+      "context": "ops_dashboard",
+      "usageExamples": [
+        "AlertRuleStatus.ACTIVE",
+        "AlertRuleStatus.PAUSED",
+        "AlertRule.status: AlertRuleStatus"
+      ]
+    }
+  ],
+  "entities": [
+    {
+      "name": "CompanyMetric",
+      "boundedContext": "ops_dashboard",
+      "identity": "UUID",
+      "invariants": [
+        "name must not be blank",
+        "metric_type must be a valid MetricType value",
+        "All snapshots within the MetricAggregate boundary must be consistent with this metric's metric_type"
+      ],
+      "stateTransitions": [],
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "description": "Unique identifier for this metric."
+        },
+        {
+          "name": "name",
+          "type": "str",
+          "description": "Human-readable name (e.g., Monthly Revenue)."
+        },
+        {
+          "name": "metric_type",
+          "type": "MetricType",
+          "description": "Classifies what this metric measures: REVENUE, CUSTOMER_GROWTH, or CUSTOM."
+        },
+        {
+          "name": "description",
+          "type": "str | None",
+          "description": "Optional long-form description of the metric."
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "description": "Timestamp when this metric was first created."
+        }
+      ]
+    },
+    {
+      "name": "RevenueSnapshot",
+      "boundedContext": "ops_dashboard",
+      "identity": "UUID",
+      "invariants": [
+        "metric_id must reference a CompanyMetric with metric_type REVENUE",
+        "amount must be >= 0",
+        "period_end must be >= period_start",
+        "currency must be a 3-letter ISO 4217 alphabetic code"
+      ],
+      "stateTransitions": [],
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "description": "Unique identifier for this snapshot."
+        },
+        {
+          "name": "metric_id",
+          "type": "UUID",
+          "description": "Reference to the parent CompanyMetric by identity."
+        },
+        {
+          "name": "amount",
+          "type": "Decimal",
+          "description": "Revenue amount for the reporting period."
+        },
+        {
+          "name": "currency",
+          "type": "str",
+          "description": "3-letter ISO 4217 currency code (defaults to USD)."
+        },
+        {
+          "name": "period_start",
+          "type": "date",
+          "description": "First day of the reporting period (inclusive)."
+        },
+        {
+          "name": "period_end",
+          "type": "date",
+          "description": "Last day of the reporting period (inclusive)."
+        },
+        {
+          "name": "recorded_at",
+          "type": "datetime",
+          "description": "Timestamp when this snapshot was persisted."
+        }
+      ]
+    },
+    {
+      "name": "CustomerGrowthSnapshot",
+      "boundedContext": "ops_dashboard",
+      "identity": "UUID",
+      "invariants": [
+        "metric_id must reference a CompanyMetric with metric_type CUSTOMER_GROWTH",
+        "new_customers must be >= 0",
+        "churned_customers must be >= 0",
+        "net_customers must equal new_customers - churned_customers at all times",
+        "period_end must be >= period_start"
+      ],
+      "stateTransitions": [],
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "description": "Unique identifier for this snapshot."
+        },
+        {
+          "name": "metric_id",
+          "type": "UUID",
+          "description": "Reference to the parent CompanyMetric by identity."
+        },
+        {
+          "name": "new_customers",
+          "type": "int",
+          "description": "Number of customers acquired during the period."
+        },
+        {
+          "name": "churned_customers",
+          "type": "int",
+          "description": "Number of customers lost during the period."
+        },
+        {
+          "name": "net_customers",
+          "type": "int",
+          "description": "Derived: new_customers - churned_customers. Computed at construction and must remain consistent."
+        },
+        {
+          "name": "period_start",
+          "type": "date",
+          "description": "First day of the reporting period (inclusive)."
+        },
+        {
+          "name": "period_end",
+          "type": "date",
+          "description": "Last day of the reporting period (inclusive)."
+        },
+        {
+          "name": "recorded_at",
+          "type": "datetime",
+          "description": "Timestamp when this snapshot was persisted."
+        }
+      ]
+    },
+    {
+      "name": "DashboardAlert",
+      "boundedContext": "ops_dashboard",
+      "identity": "UUID",
+      "invariants": [
+        "resolved_at must be None unless status is RESOLVED",
+        "acknowledged_at must be None unless status is ACKNOWLEDGED or RESOLVED",
+        "acknowledged_by must be set (non-null) when status is ACKNOWLEDGED or RESOLVED",
+        "resolved_by must be set (non-null) when status is RESOLVED",
+        "An alert in RESOLVED status cannot be transitioned further"
+      ],
+      "stateTransitions": [
+        {
+          "from": "ACTIVE",
+          "to": "ACKNOWLEDGED",
+          "trigger": "acknowledge(acknowledged_by: UUID)",
+          "guard": "status == AlertStatus.ACTIVE"
+        },
+        {
+          "from": "ACKNOWLEDGED",
+          "to": "RESOLVED",
+          "trigger": "resolve(resolved_by: UUID)",
+          "guard": "status == AlertStatus.ACKNOWLEDGED"
+        },
+        {
+          "from": "ACTIVE",
+          "to": "RESOLVED",
+          "trigger": "resolve(resolved_by: UUID)",
+          "guard": "status == AlertStatus.ACTIVE"
+        }
+      ],
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "description": "Unique identifier for this alert instance."
+        },
+        {
+          "name": "rule_id",
+          "type": "UUID",
+          "description": "Reference to the AlertRule that created this alert by identity."
+        },
+        {
+          "name": "metric_id",
+          "type": "UUID",
+          "description": "Reference to the CompanyMetric whose value triggered this alert by identity."
+        },
+        {
+          "name": "triggered_value",
+          "type": "Decimal",
+          "description": "The metric value that crossed the threshold at trigger time."
+        },
+        {
+          "name": "threshold_value",
+          "type": "Decimal",
+          "description": "Snapshot of the threshold defined in the AlertRule at trigger time."
+        },
+        {
+          "name": "operator",
+          "type": "ThresholdOperator",
+          "description": "Snapshot of the comparison operator from the AlertRule at trigger time."
+        },
+        {
+          "name": "severity",
+          "type": "AlertSeverity",
+          "description": "Urgency classification copied from the AlertRule at trigger time."
+        },
+        {
+          "name": "status",
+          "type": "AlertStatus",
+          "description": "Current lifecycle state of this alert."
+        },
+        {
+          "name": "acknowledged_at",
+          "type": "datetime | None",
+          "description": "Timestamp when acknowledged; None if not yet acknowledged."
+        },
+        {
+          "name": "acknowledged_by",
+          "type": "UUID | None",
+          "description": "Actor who acknowledged this alert; None if not yet acknowledged."
+        },
+        {
+          "name": "resolved_at",
+          "type": "datetime | None",
+          "description": "Timestamp when resolved; None if not yet resolved."
+        },
+        {
+          "name": "resolved_by",
+          "type": "UUID | None",
+          "description": "Actor who resolved this alert; None if not yet resolved."
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "description": "Timestamp when this alert was first created."
+        }
+      ]
+    },
+    {
+      "name": "AlertRule",
+      "boundedContext": "ops_dashboard",
+      "identity": "UUID",
+      "invariants": [
+        "name must not be blank",
+        "metric_id must reference an existing CompanyMetric",
+        "threshold_value must be a finite Decimal",
+        "operator must be a valid ThresholdOperator value",
+        "An AlertRule in PAUSED status must not create new DashboardAlerts"
+      ],
+      "stateTransitions": [
+        {
+          "from": "ACTIVE",
+          "to": "PAUSED",
+          "trigger": "pause(paused_by: UUID)",
+          "guard": "status == AlertRuleStatus.ACTIVE"
+        },
+        {
+          "from": "PAUSED",
+          "to": "ACTIVE",
+          "trigger": "activate(activated_by: UUID)",
+          "guard": "status == AlertRuleStatus.PAUSED"
+        }
+      ],
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "description": "Unique identifier for this rule."
+        },
+        {
+          "name": "name",
+          "type": "str",
+          "description": "Human-readable name for this rule."
+        },
+        {
+          "name": "metric_id",
+          "type": "UUID",
+          "description": "Reference to the CompanyMetric this rule evaluates by identity."
+        },
+        {
+          "name": "operator",
+          "type": "ThresholdOperator",
+          "description": "Comparison operator used in the threshold condition."
+        },
+        {
+          "name": "threshold_value",
+          "type": "Decimal",
+          "description": "The numeric threshold to compare against during evaluation."
+        },
+        {
+          "name": "severity",
+          "type": "AlertSeverity",
+          "description": "Severity level assigned to any DashboardAlert created by this rule."
+        },
+        {
+          "name": "status",
+          "type": "AlertRuleStatus",
+          "description": "Activation state: ACTIVE or PAUSED."
+        },
+        {
+          "name": "last_evaluated_at",
+          "type": "datetime | None",
+          "description": "Timestamp of the most recent evaluation run; None if never evaluated."
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "description": "Timestamp when this rule was first created."
+        }
+      ]
+    },
+    {
+      "name": "AuditLogEntry",
+      "boundedContext": "ops_dashboard",
+      "identity": "UUID",
+      "invariants": [
+        "created_at is set at construction and must never change",
+        "actor_id must be provided and non-null",
+        "action must be a valid AuditAction value",
+        "AuditLogEntry is write-once: no fields may be mutated after creation"
+      ],
+      "stateTransitions": [],
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "description": "Unique identifier for this audit record."
+        },
+        {
+          "name": "actor_id",
+          "type": "UUID",
+          "description": "Identity of the staff user who performed the recorded action."
+        },
+        {
+          "name": "action",
+          "type": "AuditAction",
+          "description": "Enumerated type of operation performed."
+        },
+        {
+          "name": "target_id",
+          "type": "UUID | None",
+          "description": "Identity of the affected domain object; None when the action has no single target."
+        },
+        {
+          "name": "target_type",
+          "type": "str | None",
+          "description": "Class name of the affected domain object (e.g., 'CompanyMetric')."
+        },
+        {
+          "name": "detail",
+          "type": "str | None",
+          "description": "Optional free-text detail providing additional context about the operation."
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "description": "Immutable timestamp set at construction. Never updated."
+        }
+      ]
+    }
+  ],
+  "valueObjects": [
+    {
+      "name": "MetricValue",
+      "boundedContext": "ops_dashboard",
+      "properties": [
+        { "name": "amount", "type": "Decimal" },
+        { "name": "currency", "type": "str" }
+      ],
+      "validationRules": [
+        "amount must be >= 0",
+        "currency must be a 3-letter ISO 4217 alphabetic code",
+        "currency defaults to 'USD' when not supplied"
+      ],
+      "equalityBasis": "All properties (amount and currency) must be equal"
+    },
+    {
+      "name": "DateRange",
+      "boundedContext": "ops_dashboard",
+      "properties": [
+        { "name": "start_date", "type": "date" },
+        { "name": "end_date", "type": "date" }
+      ],
+      "validationRules": [
+        "end_date must be >= start_date"
+      ],
+      "equalityBasis": "All properties (start_date and end_date) must be equal"
+    },
+    {
+      "name": "PeriodDelta",
+      "boundedContext": "ops_dashboard",
+      "properties": [
+        { "name": "current_value", "type": "Decimal" },
+        { "name": "prior_value", "type": "Decimal" }
+      ],
+      "validationRules": [
+        "No construction-time numeric constraints; delta (current_value - prior_value) and percentage_change (None when prior_value is 0) are computed properties"
+      ],
+      "equalityBasis": "All properties (current_value and prior_value) must be equal"
+    },
+    {
+      "name": "ThresholdOperator",
+      "boundedContext": "ops_dashboard",
+      "properties": [
+        { "name": "value", "type": "str" }
+      ],
+      "validationRules": [
+        "value must be one of: 'gt', 'lt', 'gte', 'lte', 'eq'"
+      ],
+      "equalityBasis": "Enum identity: equal when the string value is the same"
+    },
+    {
+      "name": "MetricType",
+      "boundedContext": "ops_dashboard",
+      "properties": [
+        { "name": "value", "type": "str" }
+      ],
+      "validationRules": [
+        "value must be one of: 'revenue', 'customer_growth', 'custom'"
+      ],
+      "equalityBasis": "Enum identity: equal when the string value is the same"
+    },
+    {
+      "name": "AlertSeverity",
+      "boundedContext": "ops_dashboard",
+      "properties": [
+        { "name": "value", "type": "str" }
+      ],
+      "validationRules": [
+        "value must be one of: 'info', 'warning', 'critical'"
+      ],
+      "equalityBasis": "Enum identity: equal when the string value is the same"
+    },
+    {
+      "name": "AlertStatus",
+      "boundedContext": "ops_dashboard",
+      "properties": [
+        { "name": "value", "type": "str" }
+      ],
+      "validationRules": [
+        "value must be one of: 'active', 'acknowledged', 'resolved'"
+      ],
+      "equalityBasis": "Enum identity: equal when the string value is the same"
+    },
+    {
+      "name": "AlertRuleStatus",
+      "boundedContext": "ops_dashboard",
+      "properties": [
+        { "name": "value", "type": "str" }
+      ],
+      "validationRules": [
+        "value must be one of: 'active', 'paused'"
+      ],
+      "equalityBasis": "Enum identity: equal when the string value is the same"
+    },
+    {
+      "name": "ImportStatus",
+      "boundedContext": "ops_dashboard",
+      "properties": [
+        { "name": "value", "type": "str" }
+      ],
+      "validationRules": [
+        "value must be one of: 'pending', 'processing', 'complete', 'failed'"
+      ],
+      "equalityBasis": "Enum identity: equal when the string value is the same"
+    },
+    {
+      "name": "AuditAction",
+      "boundedContext": "ops_dashboard",
+      "properties": [
+        { "name": "value", "type": "str" }
+      ],
+      "validationRules": [
+        "value must be one of: 'metric_created', 'metric_updated', 'alert_acknowledged', 'alert_resolved', 'rule_created', 'rule_paused', 'rule_activated', 'import_started', 'import_completed', 'import_failed'"
+      ],
+      "equalityBasis": "Enum identity: equal when the string value is the same"
+    }
+  ],
+  "aggregates": [
+    {
+      "name": "MetricAggregate",
+      "root": "CompanyMetric",
+      "members": [
+        "CompanyMetric",
+        "RevenueSnapshot",
+        "CustomerGrowthSnapshot",
+        "DateRange",
+        "MetricValue",
+        "MetricType"
+      ],
+      "invariants": [
+        "All snapshots within this boundary must have a metric_id matching the root CompanyMetric.id",
+        "All RevenueSnapshots may only belong to a CompanyMetric with metric_type REVENUE",
+        "All CustomerGrowthSnapshots may only belong to a CompanyMetric with metric_type CUSTOMER_GROWTH",
+        "Snapshots are created and retrieved only through the CompanyMetric root - never constructed directly by application code"
+      ],
+      "crossAggregateReferences": [
+        { "targetAggregate": "AlertAggregate", "referenceType": "by-id" }
+      ]
+    },
+    {
+      "name": "AlertAggregate",
+      "root": "AlertRule",
+      "members": [
+        "AlertRule",
+        "DashboardAlert",
+        "ThresholdOperator",
+        "AlertSeverity",
+        "AlertStatus",
+        "AlertRuleStatus"
+      ],
+      "invariants": [
+        "DashboardAlerts are only created by AlertRule.evaluate() - never constructed directly by application code",
+        "An AlertRule in PAUSED status must not create new DashboardAlerts",
+        "All DashboardAlerts within this boundary must have a rule_id matching the root AlertRule.id",
+        "severity, threshold_value, and operator on a DashboardAlert are snapshots taken from the AlertRule at trigger time and must not change thereafter"
+      ],
+      "crossAggregateReferences": [
+        { "targetAggregate": "MetricAggregate", "referenceType": "by-id" }
+      ]
+    },
+    {
+      "name": "AuditAggregate",
+      "root": "AuditLogEntry",
+      "members": [
+        "AuditLogEntry",
+        "AuditAction"
+      ],
+      "invariants": [
+        "AuditLogEntries are write-once: no field may be mutated after persist",
+        "AuditLogEntries are only appended by application use cases after a confirmed state-changing operation - domain entities never write audit entries directly",
+        "actor_id must always be set; anonymous audit entries are not permitted"
+      ],
+      "crossAggregateReferences": [
+        { "targetAggregate": "MetricAggregate", "referenceType": "by-id" },
+        { "targetAggregate": "AlertAggregate", "referenceType": "by-id" }
+      ]
+    }
+  ],
+  "domainEvents": [
+    {
+      "name": "MetricSnapshotRecorded",
+      "trigger": "A RevenueSnapshot or CustomerGrowthSnapshot is added to a CompanyMetric via the MetricAggregate",
+      "payload": [
+        { "field": "event_id", "type": "UUID", "description": "Unique event identifier." },
+        { "field": "occurred_at", "type": "datetime", "description": "Timestamp when the snapshot was recorded." },
+        { "field": "aggregate_id", "type": "UUID", "description": "ID of the root CompanyMetric (same as metric_id)." },
+        { "field": "metric_id", "type": "UUID", "description": "ID of the CompanyMetric this snapshot belongs to." },
+        { "field": "snapshot_id", "type": "UUID", "description": "ID of the newly recorded snapshot." },
+        { "field": "metric_type", "type": "str", "description": "MetricType value indicating snapshot subtype ('revenue' or 'customer_growth')." },
+        { "field": "period_start", "type": "date", "description": "Start of the reporting period covered by this snapshot." },
+        { "field": "period_end", "type": "date", "description": "End of the reporting period covered by this snapshot." }
+      ],
+      "producers": ["MetricAggregate"],
+      "consumers": ["AlertEvaluationService", "AuditAggregate"]
+    },
+    {
+      "name": "AlertTriggered",
+      "trigger": "AlertRule.evaluate() determines the threshold condition is satisfied by the current metric value",
+      "payload": [
+        { "field": "event_id", "type": "UUID", "description": "Unique event identifier." },
+        { "field": "occurred_at", "type": "datetime", "description": "Timestamp when the threshold was crossed." },
+        { "field": "aggregate_id", "type": "UUID", "description": "ID of the AlertRule aggregate root (same as rule_id)." },
+        { "field": "alert_id", "type": "UUID", "description": "ID of the newly created DashboardAlert." },
+        { "field": "rule_id", "type": "UUID", "description": "ID of the AlertRule that fired." },
+        { "field": "metric_id", "type": "UUID", "description": "ID of the CompanyMetric whose value triggered the alert." },
+        { "field": "triggered_value", "type": "Decimal", "description": "The metric value that crossed the threshold." },
+        { "field": "threshold_value", "type": "Decimal", "description": "The configured threshold value from the AlertRule." },
+        { "field": "operator", "type": "str", "description": "ThresholdOperator string value used in the comparison." },
+        { "field": "severity", "type": "str", "description": "AlertSeverity string value assigned to the triggered alert." }
+      ],
+      "producers": ["AlertAggregate"],
+      "consumers": ["notification-service (future)", "AuditAggregate"]
+    },
+    {
+      "name": "AlertAcknowledged",
+      "trigger": "DashboardAlert.acknowledge() transitions status from ACTIVE to ACKNOWLEDGED",
+      "payload": [
+        { "field": "event_id", "type": "UUID", "description": "Unique event identifier." },
+        { "field": "occurred_at", "type": "datetime", "description": "Timestamp of the acknowledgement." },
+        { "field": "aggregate_id", "type": "UUID", "description": "ID of the AlertRule aggregate root." },
+        { "field": "alert_id", "type": "UUID", "description": "ID of the acknowledged DashboardAlert." },
+        { "field": "rule_id", "type": "UUID", "description": "ID of the AlertRule that produced this alert." },
+        { "field": "acknowledged_by", "type": "UUID", "description": "User ID of the staff member who acknowledged the alert." }
+      ],
+      "producers": ["AlertAggregate"],
+      "consumers": ["AuditAggregate"]
+    },
+    {
+      "name": "AlertResolved",
+      "trigger": "DashboardAlert.resolve() transitions status to RESOLVED (from ACTIVE or ACKNOWLEDGED)",
+      "payload": [
+        { "field": "event_id", "type": "UUID", "description": "Unique event identifier." },
+        { "field": "occurred_at", "type": "datetime", "description": "Timestamp of the resolution." },
+        { "field": "aggregate_id", "type": "UUID", "description": "ID of the AlertRule aggregate root." },
+        { "field": "alert_id", "type": "UUID", "description": "ID of the resolved DashboardAlert." },
+        { "field": "rule_id", "type": "UUID", "description": "ID of the AlertRule that produced this alert." },
+        { "field": "resolved_by", "type": "UUID", "description": "User ID of the staff member who resolved the alert." }
+      ],
+      "producers": ["AlertAggregate"],
+      "consumers": ["AuditAggregate"]
+    },
+    {
+      "name": "AlertRulePaused",
+      "trigger": "AlertRule.pause() transitions status from ACTIVE to PAUSED",
+      "payload": [
+        { "field": "event_id", "type": "UUID", "description": "Unique event identifier." },
+        { "field": "occurred_at", "type": "datetime", "description": "Timestamp when the rule was paused." },
+        { "field": "aggregate_id", "type": "UUID", "description": "ID of the AlertRule aggregate root (same as rule_id)." },
+        { "field": "rule_id", "type": "UUID", "description": "ID of the paused AlertRule." },
+        { "field": "paused_by", "type": "UUID", "description": "User ID of the staff member who paused the rule." }
+      ],
+      "producers": ["AlertAggregate"],
+      "consumers": ["AuditAggregate"]
+    },
+    {
+      "name": "AlertRuleActivated",
+      "trigger": "AlertRule.activate() transitions status from PAUSED to ACTIVE",
+      "payload": [
+        { "field": "event_id", "type": "UUID", "description": "Unique event identifier." },
+        { "field": "occurred_at", "type": "datetime", "description": "Timestamp when the rule was reactivated." },
+        { "field": "aggregate_id", "type": "UUID", "description": "ID of the AlertRule aggregate root (same as rule_id)." },
+        { "field": "rule_id", "type": "UUID", "description": "ID of the reactivated AlertRule." },
+        { "field": "activated_by", "type": "UUID", "description": "User ID of the staff member who reactivated the rule." }
+      ],
+      "producers": ["AlertAggregate"],
+      "consumers": ["AuditAggregate"]
+    },
+    {
+      "name": "MetricImportCompleted",
+      "trigger": "A CSV ImportJob finishes processing all rows without a fatal error",
+      "payload": [
+        { "field": "event_id", "type": "UUID", "description": "Unique event identifier." },
+        { "field": "occurred_at", "type": "datetime", "description": "Timestamp when the import job completed." },
+        { "field": "aggregate_id", "type": "UUID", "description": "ID of the CompanyMetric targeted by this import (same as metric_id)." },
+        { "field": "import_job_id", "type": "UUID", "description": "Identifier of the background ImportJob." },
+        { "field": "metric_id", "type": "UUID", "description": "ID of the CompanyMetric populated by this import." },
+        { "field": "rows_processed", "type": "int", "description": "Number of CSV rows successfully persisted as snapshots." },
+        { "field": "rows_failed", "type": "int", "description": "Number of CSV rows skipped due to validation errors." }
+      ],
+      "producers": ["MetricAggregate"],
+      "consumers": ["AuditAggregate"]
+    },
+    {
+      "name": "MetricImportFailed",
+      "trigger": "A CSV ImportJob terminates with a fatal error before all rows are processed",
+      "payload": [
+        { "field": "event_id", "type": "UUID", "description": "Unique event identifier." },
+        { "field": "occurred_at", "type": "datetime", "description": "Timestamp when the failure was detected." },
+        { "field": "aggregate_id", "type": "UUID", "description": "ID of the CompanyMetric targeted by this import (same as metric_id)." },
+        { "field": "import_job_id", "type": "UUID", "description": "Identifier of the failed background ImportJob." },
+        { "field": "metric_id", "type": "UUID", "description": "ID of the CompanyMetric targeted by this import." },
+        { "field": "error_message", "type": "str", "description": "Human-readable description of the fatal error that terminated the job." }
+      ],
+      "producers": ["MetricAggregate"],
+      "consumers": ["AuditAggregate"]
+    }
+  ],
+  "repositoryInterfaces": [
+    {
+      "name": "MetricRepository",
+      "aggregateRoot": "CompanyMetric",
+      "methods": [
+        {
+          "name": "get_by_id",
+          "parameters": [{ "name": "metric_id", "type": "UUID" }],
+          "returnType": "CompanyMetric | None",
+          "description": "Retrieve a CompanyMetric by its unique identifier. Returns None if not found."
+        },
+        {
+          "name": "list_all",
+          "parameters": [],
+          "returnType": "list[CompanyMetric]",
+          "description": "Return all persisted CompanyMetrics."
+        },
+        {
+          "name": "save",
+          "parameters": [{ "name": "metric", "type": "CompanyMetric" }],
+          "returnType": "None",
+          "description": "Persist a new or updated CompanyMetric."
+        },
+        {
+          "name": "get_snapshots",
+          "parameters": [
+            { "name": "metric_id", "type": "UUID" },
+            { "name": "date_range", "type": "DateRange" }
+          ],
+          "returnType": "list[RevenueSnapshot | CustomerGrowthSnapshot]",
+          "description": "Retrieve all snapshots for a CompanyMetric whose reporting period overlaps the given DateRange."
+        },
+        {
+          "name": "save_snapshot",
+          "parameters": [{ "name": "snapshot", "type": "RevenueSnapshot | CustomerGrowthSnapshot" }],
+          "returnType": "None",
+          "description": "Persist a new RevenueSnapshot or CustomerGrowthSnapshot under the owning CompanyMetric."
+        }
+      ]
+    },
+    {
+      "name": "AlertRuleRepository",
+      "aggregateRoot": "AlertRule",
+      "methods": [
+        {
+          "name": "get_by_id",
+          "parameters": [{ "name": "rule_id", "type": "UUID" }],
+          "returnType": "AlertRule | None",
+          "description": "Retrieve an AlertRule by its unique identifier. Returns None if not found."
+        },
+        {
+          "name": "list_active",
+          "parameters": [],
+          "returnType": "list[AlertRule]",
+          "description": "Return all AlertRules with status ACTIVE, used by the scheduled evaluation task."
+        },
+        {
+          "name": "save",
+          "parameters": [{ "name": "rule", "type": "AlertRule" }],
+          "returnType": "None",
+          "description": "Persist a new or updated AlertRule."
+        },
+        {
+          "name": "delete",
+          "parameters": [{ "name": "rule_id", "type": "UUID" }],
+          "returnType": "None",
+          "description": "Remove an AlertRule permanently. Associated DashboardAlerts are deleted by the infrastructure implementation."
+        }
+      ]
+    },
+    {
+      "name": "DashboardAlertRepository",
+      "aggregateRoot": "DashboardAlert",
+      "methods": [
+        {
+          "name": "get_by_id",
+          "parameters": [{ "name": "alert_id", "type": "UUID" }],
+          "returnType": "DashboardAlert | None",
+          "description": "Retrieve a DashboardAlert by its unique identifier. Returns None if not found."
+        },
+        {
+          "name": "list_active",
+          "parameters": [],
+          "returnType": "list[DashboardAlert]",
+          "description": "Return all DashboardAlerts with status ACTIVE."
+        },
+        {
+          "name": "list_by_rule",
+          "parameters": [{ "name": "rule_id", "type": "UUID" }],
+          "returnType": "list[DashboardAlert]",
+          "description": "Return all DashboardAlerts created by a specific AlertRule, ordered by created_at descending."
+        },
+        {
+          "name": "save",
+          "parameters": [{ "name": "alert", "type": "DashboardAlert" }],
+          "returnType": "None",
+          "description": "Persist a new or updated DashboardAlert."
+        }
+      ]
+    },
+    {
+      "name": "AuditLogRepository",
+      "aggregateRoot": "AuditLogEntry",
+      "methods": [
+        {
+          "name": "append",
+          "parameters": [{ "name": "entry", "type": "AuditLogEntry" }],
+          "returnType": "None",
+          "description": "Persist a new AuditLogEntry. This is write-only: entries may not be updated or deleted after append."
+        },
+        {
+          "name": "list_recent",
+          "parameters": [{ "name": "limit", "type": "int" }],
+          "returnType": "list[AuditLogEntry]",
+          "description": "Return the most recent AuditLogEntries up to the given limit, ordered by created_at descending."
+        },
+        {
+          "name": "list_by_actor",
+          "parameters": [
+            { "name": "actor_id", "type": "UUID" },
+            { "name": "limit", "type": "int" }
+          ],
+          "returnType": "list[AuditLogEntry]",
+          "description": "Return the most recent AuditLogEntries for a specific actor up to the given limit, ordered by created_at descending."
+        }
+      ]
+    }
+  ],
+  "domainServices": [
+    {
+      "name": "AlertEvaluationService",
+      "responsibility": "Evaluates all active AlertRules against the most recent metric snapshots and creates DashboardAlerts for any threshold crossings. Spans MetricAggregate (read) and AlertAggregate (write). Contains no Django, Q2, or infrastructure references; pure domain logic.",
+      "operatesOn": ["MetricAggregate", "AlertAggregate"],
+      "methods": [
+        {
+          "name": "evaluate_all_rules",
+          "description": "Iterates all ACTIVE AlertRules via AlertRuleRepository, fetches the most recent snapshot value for each rule's metric_id via MetricRepository, applies the threshold condition, creates a DashboardAlert via the rule when the condition is met, persists it via DashboardAlertRepository, and returns the list of AlertTriggered events raised."
+        }
+      ]
+    },
+    {
+      "name": "MetricAggregationService",
+      "responsibility": "Computes period-over-period PeriodDeltas and rolling averages for a CompanyMetric over a DateRange. Modeled as a domain service because these aggregation computations span multiple snapshots and have no natural home on a single entity. Its results feed AlertEvaluationService and the dashboard KPI use cases.",
+      "operatesOn": ["MetricAggregate", "AlertAggregate"],
+      "methods": [
+        {
+          "name": "compute_period_delta",
+          "description": "Fetches snapshots via MetricRepository for the current DateRange and the prior DateRange for the given metric_id, sums their values, and returns a PeriodDelta containing the absolute change and percentage change (None when prior total is zero)."
+        },
+        {
+          "name": "compute_rolling_average",
+          "description": "Fetches all snapshots within the DateRange for the given metric_id via MetricRepository, applies a sliding window of window_days days across the series, and returns the mean as a Decimal."
+        }
+      ]
+    }
+  ]
+}

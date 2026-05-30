@@ -1,0 +1,112 @@
+{
+  "schemaVersion": "1.0",
+  "projectName": "FullStackPortfolio",
+  "ticketKey": "FSP-4",
+  "sourceCodeManifest": [
+    { "path": "apps/ops_dashboard/__init__.py",                                 "layer": "package" },
+    { "path": "apps/ops_dashboard/apps.py",                                     "layer": "framework" },
+    { "path": "apps/ops_dashboard/domain/__init__.py",                          "layer": "domain" },
+    { "path": "apps/ops_dashboard/domain/value_objects.py",                     "layer": "domain" },
+    { "path": "apps/ops_dashboard/domain/model.py",                             "layer": "domain" },
+    { "path": "apps/ops_dashboard/domain/events.py",                            "layer": "domain" },
+    { "path": "apps/ops_dashboard/domain/repositories.py",                      "layer": "domain" },
+    { "path": "apps/ops_dashboard/domain/services.py",                          "layer": "domain" },
+    { "path": "apps/ops_dashboard/application/__init__.py",                     "layer": "application" },
+    { "path": "apps/ops_dashboard/application/dtos.py",                         "layer": "application" },
+    { "path": "apps/ops_dashboard/application/ports.py",                        "layer": "application" },
+    { "path": "apps/ops_dashboard/application/use_cases.py",                    "layer": "application" },
+    { "path": "apps/ops_dashboard/models.py",                                   "layer": "infrastructure" },
+    { "path": "apps/ops_dashboard/migrations/__init__.py",                      "layer": "infrastructure" },
+    { "path": "apps/ops_dashboard/migrations/0001_initial.py",                  "layer": "infrastructure" },
+    { "path": "apps/ops_dashboard/infrastructure/__init__.py",                  "layer": "infrastructure" },
+    { "path": "apps/ops_dashboard/infrastructure/repositories.py",              "layer": "infrastructure" },
+    { "path": "apps/ops_dashboard/infrastructure/serializers.py",               "layer": "infrastructure" },
+    { "path": "apps/ops_dashboard/infrastructure/permissions.py",               "layer": "infrastructure" },
+    { "path": "apps/ops_dashboard/infrastructure/viewsets.py",                  "layer": "infrastructure" },
+    { "path": "apps/ops_dashboard/api_urls.py",                                 "layer": "infrastructure" },
+    { "path": "apps/ops_dashboard/tasks.py",                                    "layer": "infrastructure" },
+    { "path": "apps/ops_dashboard/tests/__init__.py",                           "layer": "tests" },
+    { "path": "apps/ops_dashboard/tests/test_domain.py",                        "layer": "tests" },
+    { "path": "frontend/src/components/catalyst-ui-kit/typescript/kpi-card.tsx",     "layer": "presentation" },
+    { "path": "frontend/src/components/catalyst-ui-kit/typescript/page-section.tsx", "layer": "presentation" },
+    { "path": "frontend/src/components/catalyst-ui-kit/typescript/kpi-grid.tsx",     "layer": "presentation" },
+    { "path": "frontend/src/components/catalyst-ui-kit/typescript/chart-container.tsx", "layer": "presentation" },
+    { "path": "frontend/src/components/layout/DashboardLayout.tsx",             "layer": "presentation" },
+    { "path": "frontend/src/pages/dashboard/DashboardOverviewPage.tsx",         "layer": "presentation" },
+    { "path": "frontend/src/pages/dashboard/DashboardMetricsPage.tsx",          "layer": "presentation" },
+    { "path": "frontend/src/pages/dashboard/DashboardAlertsPage.tsx",           "layer": "presentation" },
+    { "path": "knowledge-base/scripts/seed_ops_dashboard.py",                   "layer": "tooling" }
+  ],
+  "testCoverageSummary": {
+    "unitTests": {
+      "count": 39,
+      "passing": true,
+      "scope": "domain layer - value objects, entities, state transitions"
+    },
+    "integrationTests": {
+      "count": 0,
+      "note": "Deferred to QA phase. Required: DjangoMetricRepository, DjangoDashboardAlertRepository ORM round-trips; viewset authentication and permission checks."
+    },
+    "e2eTests": {
+      "count": 0,
+      "note": "Deferred to QA phase. Required: overview/metrics/alerts page load; alert rule create-pause-activate cycle; CSV export download."
+    }
+  },
+  "dependencyList": [
+    {
+      "name": "recharts",
+      "version": "latest",
+      "layer": "presentation",
+      "reason": "Revenue trend LineChart and metrics BarChart rendering in dashboard pages.",
+      "installCommand": "cd frontend && npm install recharts"
+    }
+  ],
+  "layerComplianceSummary": {
+    "domain": {
+      "status": "compliant",
+      "violations": [],
+      "notes": "No Django imports. All state transitions return frozen domain events. Value objects are frozen dataclasses."
+    },
+    "application": {
+      "status": "compliant",
+      "violations": [],
+      "notes": "All use cases receive dependencies via constructor injection only. No framework types. Output DTOs are frozen dataclasses."
+    },
+    "infrastructure": {
+      "status": "compliant",
+      "violations": [],
+      "notes": "Implements domain repository ABCs. ORM models contain no business logic. Viewsets delegate to use cases. All routes protected by IsStaffUser permission."
+    },
+    "presentation": {
+      "status": "compliant",
+      "violations": [],
+      "notes": "Zero raw Tailwind in page/layout files. All layout uses Catalyst UI Kit components. recharts used only in page components. Lazy imports in App.tsx."
+    }
+  },
+  "knownIssues": [
+    {
+      "id": "KI-1",
+      "description": "recharts must be installed via `npm install recharts` in frontend/ before the frontend build. It is not yet listed in package.json.",
+      "severity": "blocker-for-build",
+      "owner": "QA phase"
+    },
+    {
+      "id": "KI-2",
+      "description": "Django-Q2 scheduler must be configured to call `apps.ops_dashboard.tasks.evaluate_alert_rules` every 15 minutes in production settings. Not yet wired in core/settings.py Q_CLUSTER configuration.",
+      "severity": "missing-feature",
+      "owner": "QA phase"
+    },
+    {
+      "id": "KI-3",
+      "description": "AlertNotificationPort (application/ports.py) has no concrete implementation. No email/Slack notification is sent when an alert is triggered. A NullNotificationAdapter should be registered in the DI container for the QA phase.",
+      "severity": "deferred-feature",
+      "owner": "QA phase"
+    },
+    {
+      "id": "KI-4",
+      "description": "Migration 0001_initial.py has no dependency on client_portal migrations. If both apps are migrated simultaneously in a fresh database, Django will resolve ordering automatically. No action required.",
+      "severity": "informational",
+      "owner": "none"
+    }
+  ]
+}

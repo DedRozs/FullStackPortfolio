@@ -1,8 +1,11 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Button } from '../components/catalyst-ui-kit/typescript/button'
-import { Field, Label } from '../components/catalyst-ui-kit/typescript/fieldset'
+import { Field, ErrorMessage, Label } from '../components/catalyst-ui-kit/typescript/fieldset'
+import { Heading } from '../components/catalyst-ui-kit/typescript/heading'
 import { Input } from '../components/catalyst-ui-kit/typescript/input'
+import { Link } from '../components/catalyst-ui-kit/typescript/link'
+import { Text } from '../components/catalyst-ui-kit/typescript/text'
 import { Textarea } from '../components/catalyst-ui-kit/typescript/textarea'
 
 interface FormState {
@@ -81,25 +84,26 @@ export default function ContactPage() {
               'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(59,27,114,0.4) 0%, transparent 70%)',
           }}
         />
-        <p
+        <Text
           className="text-neon-magenta text-xs font-display tracking-[0.4em] uppercase mb-3 animate-fade-in-up"
           style={{ animationDelay: '0s' }}
         >
           Available for Engagements
-        </p>
-        <h1
+        </Text>
+        <Heading
+          level={1}
           className="font-display text-4xl sm:text-5xl font-bold text-neon-cyan glow-cyan tracking-widest uppercase mb-6 animate-fade-in-up"
           style={{ animationDelay: '0.1s' }}
         >
           Contact
-        </h1>
-        <p
-          className="text-text-muted text-lg max-w-2xl leading-relaxed animate-fade-in-up"
+        </Heading>
+        <Text
+          className="text-lg max-w-2xl leading-relaxed animate-fade-in-up"
           style={{ animationDelay: '0.2s' }}
         >
           Open to consulting engagements and senior engineering roles. Fill out the form
           or reach out directly on LinkedIn.
-        </p>
+        </Text>
       </section>
 
       {/* Content */}
@@ -117,22 +121,22 @@ export default function ContactPage() {
           {/* Left - contact info */}
           <div className="flex flex-col gap-6">
             <div>
-              <p className="text-neon-magenta text-xs font-display tracking-[0.4em] uppercase mb-3">
+              <Text className="text-neon-magenta text-xs font-display tracking-[0.4em] uppercase mb-3">
                 Reach Out
-              </p>
-              <h2 className="font-display text-xl font-bold text-neon-cyan glow-cyan tracking-widest uppercase mb-4">
+              </Text>
+              <Heading level={2} className="font-display text-xl font-bold text-neon-cyan glow-cyan tracking-widest uppercase mb-4">
                 Let&apos;s Talk
-              </h2>
-              <p className="text-text-muted text-sm leading-relaxed">
+              </Heading>
+              <Text className="text-sm leading-relaxed">
                 Whether you have a project in mind, need a senior engineer on your team,
                 or just want to connect - send a message and I&apos;ll respond within
                 one business day.
-              </p>
+              </Text>
             </div>
 
             <div className="flex flex-col gap-3">
               {CONTACT_LINKS.map((link) => (
-                <a
+                <Link
                   key={link.label}
                   href={link.href}
                   target="_blank"
@@ -145,7 +149,7 @@ export default function ContactPage() {
                   <span className="text-text-muted text-xs font-mono truncate">
                     {link.description}
                   </span>
-                </a>
+                </Link>
               ))}
             </div>
           </div>
@@ -160,9 +164,9 @@ export default function ContactPage() {
                 <p className="text-neon-green font-display tracking-wider uppercase text-sm">
                   Message received.
                 </p>
-                <p className="text-text-muted text-sm">
+                <Text className="text-sm">
                   I&apos;ll be in touch within one business day.
-                </p>
+                </Text>
                 <Button
                   color="neon-cyan-outline"
                   onClick={() => setStatus('idle')}
@@ -207,7 +211,7 @@ export default function ContactPage() {
                 </Field>
 
                 {status === 'error' && (
-                  <p className="text-neon-magenta text-sm">{errorMessage}</p>
+                  <ErrorMessage>{errorMessage}</ErrorMessage>
                 )}
 
                 <Button

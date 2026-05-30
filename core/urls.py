@@ -1,7 +1,16 @@
 from django.contrib import admin
 from django.urls import include, path, re_path
+from rest_framework.throttling import AnonRateThrottle
+from dj_rest_auth.views import LoginView
 
 from apps.react_app.views import index as spa_index
+
+
+class LoginRateThrottle(AnonRateThrottle):
+    rate = '10/hour'
+
+
+LoginView.throttle_classes = [LoginRateThrottle]
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -14,6 +23,7 @@ urlpatterns = [
     path('api/ai/', include('apps.ai_assistant.urls')),
     path('api/auth/', include('dj_rest_auth.urls')),
     path('api/portal/', include('apps.client_portal.api_urls')),
+    path('api/dashboard/', include('apps.ops_dashboard.api_urls')),
     # Catch-all: serve the React SPA for every non-API route.
     # React Router handles client-side navigation.
     re_path(r'^.*$', spa_index, name='spa'),
