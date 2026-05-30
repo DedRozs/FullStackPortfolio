@@ -47,7 +47,7 @@ jobs:
         run: |
           cat <<EOF > app.yaml
           runtime: python314
-          entrypoint: gunicorn -b :\$PORT core.wsgi
+          entrypoint: daphne -b 0.0.0.0 -p \$PORT core.asgi:application
 
           instance_class: F2
 
@@ -130,4 +130,39 @@ jobs:
       - name: Deploy Main App to Google App Engine
         run: |
           gcloud app deploy app.yaml --quiet --version=production --promote
+
+      - name: Generate worker.yaml from GitHub Secrets
+        run: |
+          cat <<EOF > worker.yaml
+          runtime: python314
+          entrypoint: python manage.py qcluster
+
+          service: worker
+          service_account: ai-fullstack-portfolio@appspot.gserviceaccount.com
+
+          instance_class: B2
+          basic_scaling:
+            max_instances: 1
+            idle_timeout: 10m
+
+          env_variables:
+            DJANGO_SETTINGS_MODULE: "core.settings"
+            DEBUG: "False"
+            DB_NAME: "${{ secrets.DB_NAME }}"
+            DB_USER: "${{ secrets.DB_USER }}"
+            DB_PASSWORD: "${{ secrets.DB_PASSWORD }}"
+            DB_HOST: "${{ secrets.DB_HOST }}"
+            DB_PORT: "${{ secrets.DB_PORT }}"
+            DATABASE_URL: "mysql://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@${{ secrets.DB_HOST }}:${{ secrets.DB_PORT }}/${{ secrets.DB_NAME }}"
+            SECRET_KEY: "${{ secrets.SECRET_KEY }}"
+            GS_BUCKET_NAME: "${{ secrets.GS_BUCKET_NAME }}"
+            OPENAI_API_KEY: "${{ secrets.OPENAI_API_KEY }}"
+            ANTHROPIC_API_KEY: "${{ secrets.ANTHROPIC_API_KEY }}"
+            SUPABASE_DB_URL: "${{ secrets.SUPABASE_DB_URL }}"
+            REDIS_URL: "${{ secrets.REDIS_URL }}"
+          EOF
+
+      - name: Deploy Worker to Google App Engine
+        run: |
+          gcloud app deploy worker.yaml --quiet --version=production --promote
 

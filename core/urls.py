@@ -12,6 +12,8 @@ urlpatterns = [
     path('api/blog/', include('apps.blog.api_urls', namespace='blog_api')),
     path('api/contact/', include('apps.contact.urls')),
     path('api/ai/', include('apps.ai_assistant.urls')),
+    path('api/auth/', include('dj_rest_auth.urls')),
+    path('api/portal/', include('apps.client_portal.api_urls')),
     # Catch-all: serve the React SPA for every non-API route.
     # React Router handles client-side navigation.
     re_path(r'^.*$', spa_index, name='spa'),
