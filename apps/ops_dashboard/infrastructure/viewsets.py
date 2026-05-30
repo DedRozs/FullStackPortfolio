@@ -317,7 +317,9 @@ class AlertRuleViewSet(DemoReadOnlyMixin, ModelViewSet):
     permission_classes = [IsStaffUser]
 
     def get_queryset(self):
-        return orm.AlertRule.objects.all()
+        # select_related('metric') prevents N+1: AlertRuleSerializer.metric_name
+        # traverses metric.name, which would otherwise fire one query per row.
+        return orm.AlertRule.objects.select_related('metric')
 
     def create(self, request: Request, *args, **kwargs) -> Response:
         if (block := self._demo_block()) is not None:
@@ -427,7 +429,10 @@ class DashboardAlertViewSet(
     permission_classes = [IsStaffUser]
 
     def get_queryset(self):
-        return orm.DashboardAlert.objects.all()
+        # select_related prevents N+1: DashboardAlertSerializer exposes
+        # rule_name (rule.name) and metric_name (metric.name), each of which
+        # would otherwise fire a separate query per alert row.
+        return orm.DashboardAlert.objects.select_related('rule', 'metric')
 
     @action(detail=True, methods=['post'], url_path='acknowledge')
     def acknowledge(self, request: Request, pk: str = None) -> Response:

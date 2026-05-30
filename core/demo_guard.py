@@ -6,15 +6,25 @@ from rest_framework.response import Response
 _DEMO_DETAIL = (
     'Demo accounts are read-only. This action is disabled for demo purposes.'
 )
+_DEMO_CACHE_MISS = object()
 
 
 def is_demo_user(request) -> bool:
-    """Return True when the authenticated user has is_demo=True on their UserProfile."""
+    """Return True when the authenticated user has is_demo=True on their UserProfile.
+
+    The result is cached on the request object so subsequent calls within the
+    same request cycle cost zero extra queries.
+    """
+    cached = getattr(request, '_is_demo_user_cache', _DEMO_CACHE_MISS)
+    if cached is not _DEMO_CACHE_MISS:
+        return cached  # type: ignore[return-value]
     try:
         from apps.client_portal.models import UserProfile
-        return UserProfile.objects.filter(user=request.user, is_demo=True).exists()
+        result = UserProfile.objects.filter(user=request.user, is_demo=True).exists()
     except Exception:
-        return False
+        result = False
+    request._is_demo_user_cache = result  # type: ignore[attr-defined]
+    return result
 
 
 class DemoReadOnlyMixin:
