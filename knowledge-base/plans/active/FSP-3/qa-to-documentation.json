@@ -1,0 +1,94 @@
+{
+  "schemaVersion": "1.0",
+  "ticketId": "FSP-3",
+  "projectName": "FullStackPortfolio",
+  "sessionPath": "knowledge-base/plans/active/FSP-3/",
+  "testResults": {
+    "unitTestsPassed": true,
+    "unitTestCount": 66,
+    "unitTestFailures": 0,
+    "integrationTestsPassed": true,
+    "e2eTestsPassed": true,
+    "totalDefectsFound": 1,
+    "totalDefectsResolved": 1
+  },
+  "securitySignOff": {
+    "signOffGranted": true,
+    "owaspFindingsResolved": [
+      {
+        "id": "A01",
+        "title": "Broken Access Control",
+        "finding": "IsStaffOrClientOfOrganization applied to all viewsets; each get_queryset scopes to user org; has_object_permission enforces org isolation at object level. IsApprover restricts approval actions to assigned reviewer.",
+        "status": "PASS"
+      },
+      {
+        "id": "A02",
+        "title": "Cryptographic Failures",
+        "finding": "DRF TokenAuthentication used; no tokens logged or printed in any server-side code. HTTPS enforced in production by Google App Engine. Client stores token in localStorage (XSS risk accepted as known limitation for this architecture phase).",
+        "status": "PASS"
+      },
+      {
+        "id": "A03",
+        "title": "Injection",
+        "finding": "All database access is via Django ORM queryset API. No raw SQL, cursor.execute(), or string-interpolated queries found in client_portal. GCS path construction uses UUID-prefixed keys via uuid.uuid4().hex - no user-controlled path segments.",
+        "status": "PASS"
+      },
+      {
+        "id": "A05",
+        "title": "Security Misconfiguration",
+        "finding": "SECRET_KEY, DEBUG, and ALLOWED_HOSTS are all read from environment variables via django-environ. DEBUG defaults to False. AllowedHostsOriginValidator wraps WebSocket URLRouter in asgi.py, preventing cross-origin WebSocket abuse.",
+        "status": "PASS"
+      },
+      {
+        "id": "A07",
+        "title": "Authentication Failures",
+        "finding": "Server-side: IsStaffOrClientOfOrganization.has_permission() returns False for unauthenticated users on all viewsets. Client-side: ProtectedRoute redirects to /portal/login when auth_token absent in localStorage.",
+        "status": "PASS"
+      }
+    ],
+    "openFindings": []
+  },
+  "performanceSummary": {
+    "nfrsMet": true,
+    "notes": "No N+1 queries observed in viewset queryset implementations - all use select_related or filter-by-FK patterns. GCSFileStorageAdapter uploads are async-safe via Django default_storage. No synchronous blocking calls on critical paths. WebSocket channel layer uses Redis (configured in settings). No performance regressions identified against baseline."
+  },
+  "defectsLog": [
+    {
+      "id": "DEFECT-001",
+      "severity": "HIGH",
+      "title": "ActivityEvent.actor FK non-nullable causes IntegrityError on system-initiated events",
+      "description": "ActivityEvent.actor was a non-nullable ForeignKey to UserProfile. The RegisterClientOrganization use case calls _record_activity with actor_id=None (system-initiated event with no human actor), which would raise a database IntegrityError on save.",
+      "resolution": "Made ActivityEvent.actor nullable (null=True, blank=True, on_delete=SET_NULL) in apps/client_portal/models.py. Created and applied migration 0002_make_activityevent_actor_nullable.",
+      "status": "RESOLVED",
+      "filesChanged": [
+        "apps/client_portal/models.py",
+        "apps/client_portal/migrations/0002_make_activityevent_actor_nullable.py"
+      ]
+    }
+  ],
+  "verifiedCodebaseReference": {
+    "branch": "feature/FSP-3-secure-client-portal-with-project-approvals",
+    "commitHash": "f6c824ae140e89a9d556fea8c1825ae2288f69bb",
+    "verifiedAt": "2026-05-29",
+    "djangoCheckClean": true,
+    "frontendBuildClean": true,
+    "totalTestsRun": 66,
+    "totalTestsPassed": 66
+  },
+  "knownLimitationsLog": [
+    {
+      "id": "LIMIT-001",
+      "title": "MySQL W036 - allauth EmailAddress conditional unique constraint",
+      "description": "MySQL does not support unique constraints with conditions. The allauth EmailAddress model defines such a constraint. Django emits W036 warnings during migration. This is benign in development (SQLite) and deferred to deployment where the GAE Cloud SQL (MySQL) configuration will be validated.",
+      "acceptedBy": "QA Orchestrator",
+      "deferredTo": "deployment"
+    },
+    {
+      "id": "LIMIT-002",
+      "title": "Token stored in localStorage (XSS surface)",
+      "description": "The React portal stores the DRF auth token in localStorage, which is accessible to JavaScript and therefore exposed if an XSS vulnerability is introduced. Mitigation: CSP headers should be configured at the deployment/GAE level. HttpOnly cookie upgrade is a future security hardening task.",
+      "acceptedBy": "QA Orchestrator",
+      "deferredTo": "future-hardening"
+    }
+  ]
+}

@@ -1,0 +1,1678 @@
+{
+  "ticketId": "FSP-3",
+  "sessionPath": "knowledge-base/plans/active/FSP-3/",
+  "ubiquitousLanguage": [
+    {
+      "term": "ClientOrganization",
+      "definition": "A company or client entity that owns projects; the top-level tenancy boundary in the portal"
+    },
+    {
+      "term": "UserProfile",
+      "definition": "A portal user - either a client stakeholder scoped to one ClientOrganization, or a staff/admin user with cross-org access"
+    },
+    {
+      "term": "Stakeholder",
+      "definition": "A client UserProfile belonging to a ClientOrganization; can view and act on that org's data only"
+    },
+    {
+      "term": "Project",
+      "definition": "A unit of work delivered to a ClientOrganization; lifecycle DRAFT -> ACTIVE -> PENDING_APPROVAL -> COMPLETE | ARCHIVED"
+    },
+    {
+      "term": "Milestone",
+      "definition": "A named checkpoint within a Project; lifecycle PENDING -> IN_PROGRESS -> COMPLETE"
+    },
+    {
+      "term": "Deliverable",
+      "definition": "A named artifact within a Milestone; versioned via DeliverableVersions"
+    },
+    {
+      "term": "DeliverableVersion",
+      "definition": "A numbered snapshot of a Deliverable submitted for review; version_number is unique per Deliverable"
+    },
+    {
+      "term": "Approval",
+      "definition": "A reviewer decision on a specific DeliverableVersion; states PENDING -> APPROVED | REJECTED | REVISION_REQUESTED"
+    },
+    {
+      "term": "Approver",
+      "definition": "A UserProfile authorized to grant, reject, or request revision on an Approval"
+    },
+    {
+      "term": "Revision Requested",
+      "definition": "ApprovalStatus indicating the reviewer requires changes before re-submission; does not permanently close the deliverable"
+    },
+    {
+      "term": "FileRecord",
+      "definition": "GCS file metadata attached to exactly one of: DeliverableVersion or Message (mutual exclusion enforced by invariant)"
+    },
+    {
+      "term": "MessageThread",
+      "definition": "A named conversation thread scoped to a Project"
+    },
+    {
+      "term": "Message",
+      "definition": "A single post within a MessageThread, sent by a UserProfile"
+    },
+    {
+      "term": "InvoiceRecord",
+      "definition": "A billing record for a ClientOrganization; lifecycle DRAFT -> SENT -> PAID | OVERDUE | CANCELLED"
+    },
+    {
+      "term": "ActivityEvent",
+      "definition": "An immutable append-only audit log entry recording a domain action with its actor, project, org, and payload"
+    },
+    {
+      "term": "Money",
+      "definition": "Immutable value: amount (Decimal >= 0) + ISO 4217 3-letter currency code"
+    },
+    {
+      "term": "VersionNumber",
+      "definition": "Immutable positive integer (>= 1) identifying a specific DeliverableVersion"
+    },
+    {
+      "term": "FileMetadata",
+      "definition": "Immutable value capturing content_type, size_bytes (> 0), and storage_key for an uploaded file"
+    },
+    {
+      "term": "StakeholderRole",
+      "definition": "Role classification of a UserProfile: CLIENT, STAFF, or ADMIN"
+    },
+    {
+      "term": "Object-level permission",
+      "definition": "A DRF permission that restricts access to records belonging to the caller's ClientOrganization; not just IsAuthenticated"
+    },
+    {
+      "term": "Portal",
+      "definition": "The React frontend at /portal/* where authenticated stakeholders interact with their projects, files, messages, and invoices"
+    }
+  ],
+  "entities": [
+    {
+      "name": "ClientOrganization",
+      "aggregateRoot": true,
+      "identity": "UUID pk",
+      "invariants": [
+        "name must not be blank",
+        "slug must not be blank"
+      ],
+      "stateTransitions": []
+    },
+    {
+      "name": "UserProfile",
+      "aggregateRoot": false,
+      "identity": "UUID pk; OneToOne with Django User",
+      "invariants": [
+        "email must not be blank",
+        "is_client=True requires organization_id to be set",
+        "is_client=False requires organization_id=None"
+      ],
+      "stateTransitions": []
+    },
+    {
+      "name": "Project",
+      "aggregateRoot": true,
+      "identity": "UUID pk",
+      "invariants": [
+        "name must not be blank"
+      ],
+      "stateTransitions": [
+        "DRAFT -> ACTIVE via activate()",
+        "ACTIVE -> PENDING_APPROVAL via submit_for_approval()",
+        "PENDING_APPROVAL -> ACTIVE via return_to_active()",
+        "PENDING_APPROVAL -> COMPLETE via mark_complete()",
+        "ACTIVE | COMPLETE -> ARCHIVED via archive()"
+      ]
+    },
+    {
+      "name": "Milestone",
+      "aggregateRoot": false,
+      "identity": "UUID pk",
+      "invariants": [
+        "name must not be blank",
+        "target_date must be set before begin()"
+      ],
+      "stateTransitions": [
+        "PENDING -> IN_PROGRESS via begin()",
+        "IN_PROGRESS -> COMPLETE via complete()"
+      ]
+    },
+    {
+      "name": "Deliverable",
+      "aggregateRoot": false,
+      "identity": "UUID pk",
+      "invariants": [
+        "name must not be blank"
+      ],
+      "stateTransitions": []
+    },
+    {
+      "name": "DeliverableVersion",
+      "aggregateRoot": false,
+      "identity": "UUID pk; (deliverable_id, version_number) unique",
+      "invariants": [
+        "version_number >= 1",
+        "(deliverable_id, version_number) must be unique"
+      ],
+      "stateTransitions": []
+    },
+    {
+      "name": "Approval",
+      "aggregateRoot": true,
+      "identity": "UUID pk; OneToOne with DeliverableVersion",
+      "invariants": [
+        "rejection requires non-blank comment",
+        "revision request requires non-blank comment",
+        "one Approval per DeliverableVersion"
+      ],
+      "stateTransitions": [
+        "PENDING -> APPROVED via approve(comment?)",
+        "PENDING -> REJECTED via reject(comment required)",
+        "PENDING -> REVISION_REQUESTED via request_revision(comment required)"
+      ]
+    },
+    {
+      "name": "MessageThread",
+      "aggregateRoot": true,
+      "identity": "UUID pk",
+      "invariants": [
+        "subject must not be blank"
+      ],
+      "stateTransitions": []
+    },
+    {
+      "name": "Message",
+      "aggregateRoot": false,
+      "identity": "UUID pk",
+      "invariants": [
+        "body must not be blank"
+      ],
+      "stateTransitions": []
+    },
+    {
+      "name": "FileRecord",
+      "aggregateRoot": false,
+      "identity": "UUID pk",
+      "invariants": [
+        "filename not blank",
+        "storage_path not blank",
+        "mime_type not blank",
+        "file_size_bytes > 0",
+        "exactly one of deliverable_version_id or message_id must be set (XOR)"
+      ],
+      "stateTransitions": []
+    },
+    {
+      "name": "InvoiceRecord",
+      "aggregateRoot": true,
+      "identity": "UUID pk",
+      "invariants": [
+        "amount must be positive",
+        "due_date required before send()"
+      ],
+      "stateTransitions": [
+        "DRAFT -> SENT via send() (due_date required)",
+        "SENT -> PAID via mark_paid()",
+        "SENT -> OVERDUE via mark_overdue()"
+      ]
+    },
+    {
+      "name": "ActivityEvent",
+      "aggregateRoot": false,
+      "identity": "UUID pk; append-only, never mutated",
+      "invariants": [
+        "event_type must not be blank"
+      ],
+      "stateTransitions": []
+    }
+  ],
+  "valueObjects": [
+    {
+      "name": "Money",
+      "fields": [
+        "amount: Decimal (>= 0)",
+        "currency: str (ISO 4217, exactly 3 alpha chars)"
+      ],
+      "immutable": true
+    },
+    {
+      "name": "FileMetadata",
+      "fields": [
+        "content_type: str (not blank)",
+        "size_bytes: int (> 0)",
+        "storage_key: str (not blank)"
+      ],
+      "immutable": true
+    },
+    {
+      "name": "VersionNumber",
+      "fields": [
+        "value: int (>= 1)"
+      ],
+      "immutable": true
+    },
+    {
+      "name": "ProjectStatus",
+      "fields": [
+        "DRAFT",
+        "ACTIVE",
+        "PENDING_APPROVAL",
+        "COMPLETE",
+        "ARCHIVED"
+      ],
+      "immutable": true
+    },
+    {
+      "name": "MilestoneStatus",
+      "fields": [
+        "PENDING",
+        "IN_PROGRESS",
+        "COMPLETE"
+      ],
+      "immutable": true
+    },
+    {
+      "name": "ApprovalStatus",
+      "fields": [
+        "PENDING",
+        "APPROVED",
+        "REJECTED",
+        "REVISION_REQUESTED"
+      ],
+      "immutable": true
+    },
+    {
+      "name": "InvoiceStatus",
+      "fields": [
+        "DRAFT",
+        "SENT",
+        "PAID",
+        "OVERDUE",
+        "CANCELLED"
+      ],
+      "immutable": true
+    },
+    {
+      "name": "StakeholderRole",
+      "fields": [
+        "CLIENT",
+        "STAFF",
+        "ADMIN"
+      ],
+      "immutable": true
+    }
+  ],
+  "aggregates": [
+    {
+      "root": "Project",
+      "members": [
+        "Milestone",
+        "Deliverable",
+        "DeliverableVersion"
+      ],
+      "invariants": [
+        "Milestone.project_id must reference this root",
+        "Deliverable.milestone_id must reference a Milestone in this aggregate",
+        "DeliverableVersion.deliverable_id must reference a Deliverable in this aggregate"
+      ]
+    },
+    {
+      "root": "ClientOrganization",
+      "members": [
+        "UserProfile"
+      ],
+      "invariants": [
+        "Client UserProfile.organization_id must equal this root's id"
+      ]
+    },
+    {
+      "root": "Approval",
+      "members": [],
+      "invariants": [
+        "One Approval per DeliverableVersion (OneToOne constraint)"
+      ]
+    },
+    {
+      "root": "InvoiceRecord",
+      "members": [],
+      "invariants": [
+        "amount must be positive",
+        "due_date must be set before transitioning to SENT"
+      ]
+    },
+    {
+      "root": "MessageThread",
+      "members": [
+        "Message",
+        "FileRecord"
+      ],
+      "invariants": [
+        "Message.thread_id must reference this root",
+        "FileRecord.message_id (when set) must reference a Message in this thread",
+        "subject must not be blank"
+      ]
+    }
+  ],
+  "domainEvents": [
+    {
+      "name": "ClientOrganizationRegistered",
+      "trigger": "RegisterClientOrganization use case",
+      "payload": [
+        "organization_id: UUID",
+        "name: str",
+        "slug: str",
+        "occurred_at: datetime"
+      ]
+    },
+    {
+      "name": "UserProfileCreated",
+      "trigger": "CreateUserProfile use case",
+      "payload": [
+        "user_profile_id: UUID",
+        "is_client: bool",
+        "organization_id: UUID | None",
+        "occurred_at: datetime"
+      ]
+    },
+    {
+      "name": "ProjectActivated",
+      "trigger": "ActivateProject use case",
+      "payload": [
+        "project_id: UUID",
+        "organization_id: UUID",
+        "name: str",
+        "occurred_at: datetime"
+      ]
+    },
+    {
+      "name": "ProjectSubmittedForApproval",
+      "trigger": "SubmitProjectForApproval use case",
+      "payload": [
+        "project_id: UUID",
+        "organization_id: UUID",
+        "occurred_at: datetime"
+      ]
+    },
+    {
+      "name": "ProjectReturnedToActive",
+      "trigger": "RejectProject or RejectApproval triggering project revert",
+      "payload": [
+        "project_id: UUID",
+        "organization_id: UUID",
+        "occurred_at: datetime"
+      ]
+    },
+    {
+      "name": "ProjectCompleted",
+      "trigger": "ApproveProject use case",
+      "payload": [
+        "project_id: UUID",
+        "organization_id: UUID",
+        "occurred_at: datetime"
+      ]
+    },
+    {
+      "name": "ProjectArchived",
+      "trigger": "ArchiveProject use case",
+      "payload": [
+        "project_id: UUID",
+        "organization_id: UUID",
+        "occurred_at: datetime"
+      ]
+    },
+    {
+      "name": "MilestoneStarted",
+      "trigger": "Milestone.begin() via StartMilestone use case",
+      "payload": [
+        "milestone_id: UUID",
+        "project_id: UUID",
+        "organization_id: UUID",
+        "name: str",
+        "target_date: date",
+        "occurred_at: datetime"
+      ]
+    },
+    {
+      "name": "MilestoneCompleted",
+      "trigger": "CompleteMilestone use case",
+      "payload": [
+        "milestone_id: UUID",
+        "project_id: UUID",
+        "organization_id: UUID",
+        "name: str",
+        "occurred_at: datetime"
+      ]
+    },
+    {
+      "name": "DeliverableRevisionSubmitted",
+      "trigger": "AddDeliverableVersion use case",
+      "payload": [
+        "deliverable_id: UUID",
+        "deliverable_version_id: UUID",
+        "version_number: int",
+        "milestone_id: UUID",
+        "project_id: UUID",
+        "occurred_at: datetime"
+      ]
+    },
+    {
+      "name": "DeliverableApproved",
+      "trigger": "GrantApproval use case",
+      "payload": [
+        "deliverable_id: UUID",
+        "deliverable_version_id: UUID",
+        "approval_id: UUID",
+        "reviewer_id: UUID",
+        "comment: str | None",
+        "milestone_id: UUID",
+        "project_id: UUID",
+        "occurred_at: datetime"
+      ]
+    },
+    {
+      "name": "DeliverableRejected",
+      "trigger": "RejectApproval use case",
+      "payload": [
+        "deliverable_id: UUID",
+        "deliverable_version_id: UUID",
+        "approval_id: UUID",
+        "reviewer_id: UUID",
+        "comment: str",
+        "milestone_id: UUID",
+        "project_id: UUID",
+        "occurred_at: datetime"
+      ]
+    },
+    {
+      "name": "DeliverableRevisionRequested",
+      "trigger": "RequestRevision use case (on Approval)",
+      "payload": [
+        "deliverable_id: UUID",
+        "deliverable_version_id: UUID",
+        "approval_id: UUID",
+        "reviewer_id: UUID",
+        "comment: str",
+        "milestone_id: UUID",
+        "project_id: UUID",
+        "occurred_at: datetime"
+      ]
+    },
+    {
+      "name": "FileRecordUploaded",
+      "trigger": "UploadFile use case",
+      "payload": [
+        "file_record_id: UUID",
+        "filename: str",
+        "mime_type: str",
+        "file_size_bytes: int",
+        "uploaded_by_id: UUID",
+        "deliverable_version_id: UUID | None",
+        "message_id: UUID | None",
+        "occurred_at: datetime"
+      ]
+    },
+    {
+      "name": "MessagePosted",
+      "trigger": "SendMessage use case",
+      "payload": [
+        "message_id: UUID",
+        "thread_id: UUID",
+        "project_id: UUID",
+        "sender_id: UUID",
+        "occurred_at: datetime"
+      ]
+    },
+    {
+      "name": "InvoiceSent",
+      "trigger": "InvoiceRecord.send()",
+      "payload": [
+        "invoice_record_id: UUID",
+        "organization_id: UUID",
+        "amount_cents: int",
+        "due_date: date",
+        "occurred_at: datetime"
+      ]
+    },
+    {
+      "name": "InvoicePaid",
+      "trigger": "InvoiceRecord.mark_paid()",
+      "payload": [
+        "invoice_record_id: UUID",
+        "organization_id: UUID",
+        "occurred_at: datetime"
+      ]
+    },
+    {
+      "name": "InvoiceMarkedOverdue",
+      "trigger": "InvoiceRecord.mark_overdue()",
+      "payload": [
+        "invoice_record_id: UUID",
+        "organization_id: UUID",
+        "occurred_at: datetime"
+      ]
+    }
+  ],
+  "repositoryInterfaces": [
+    {
+      "name": "ClientOrganizationRepository",
+      "methods": [
+        "get_by_id(organization_id: UUID) -> ClientOrganization | None",
+        "get_by_slug(slug: str) -> ClientOrganization | None",
+        "save(organization: ClientOrganization) -> None",
+        "list_all() -> Sequence[ClientOrganization]"
+      ]
+    },
+    {
+      "name": "UserProfileRepository",
+      "methods": [
+        "get_by_id(profile_id: UUID) -> UserProfile | None",
+        "get_by_user_id(user_id: int) -> UserProfile | None",
+        "save(profile: UserProfile) -> None",
+        "list_stakeholders_for_organization(organization_id: UUID) -> Sequence[UserProfile]"
+      ]
+    },
+    {
+      "name": "ProjectRepository",
+      "methods": [
+        "get_by_id(project_id: UUID) -> Project | None",
+        "save(project: Project) -> None",
+        "list_by_organization(organization_id: UUID) -> Sequence[Project]",
+        "list_by_status(status: ProjectStatus) -> Sequence[Project]"
+      ]
+    },
+    {
+      "name": "MilestoneRepository",
+      "methods": [
+        "get_by_id(milestone_id: UUID) -> Milestone | None",
+        "save(milestone: Milestone) -> None",
+        "list_by_project(project_id: UUID) -> Sequence[Milestone]"
+      ]
+    },
+    {
+      "name": "DeliverableRepository",
+      "methods": [
+        "get_by_id(deliverable_id: UUID) -> Deliverable | None",
+        "save(deliverable: Deliverable) -> None",
+        "list_by_milestone(milestone_id: UUID) -> Sequence[Deliverable]"
+      ]
+    },
+    {
+      "name": "DeliverableVersionRepository",
+      "methods": [
+        "get_by_id(version_id: UUID) -> DeliverableVersion | None",
+        "save(version: DeliverableVersion) -> None",
+        "list_by_deliverable(deliverable_id: UUID) -> Sequence[DeliverableVersion]"
+      ]
+    },
+    {
+      "name": "ApprovalRepository",
+      "methods": [
+        "get_by_id(approval_id: UUID) -> Approval | None",
+        "get_by_deliverable_version(deliverable_version_id: UUID) -> Approval | None",
+        "save(approval: Approval) -> None"
+      ]
+    },
+    {
+      "name": "FileRecordRepository",
+      "methods": [
+        "get_by_id(file_record_id: UUID) -> FileRecord | None",
+        "save(file_record: FileRecord) -> None",
+        "list_by_deliverable_version(deliverable_version_id: UUID) -> Sequence[FileRecord]",
+        "list_by_message(message_id: UUID) -> Sequence[FileRecord]"
+      ]
+    },
+    {
+      "name": "MessageThreadRepository",
+      "methods": [
+        "get_by_id(thread_id: UUID) -> MessageThread | None",
+        "save(thread: MessageThread) -> None",
+        "list_by_project(project_id: UUID) -> Sequence[MessageThread]"
+      ]
+    },
+    {
+      "name": "MessageRepository",
+      "methods": [
+        "get_by_id(message_id: UUID) -> Message | None",
+        "save(message: Message) -> None",
+        "list_by_thread(thread_id: UUID) -> Sequence[Message]"
+      ]
+    },
+    {
+      "name": "InvoiceRecordRepository",
+      "methods": [
+        "get_by_id(invoice_id: UUID) -> InvoiceRecord | None",
+        "save(invoice: InvoiceRecord) -> None",
+        "list_by_organization(organization_id: UUID) -> Sequence[InvoiceRecord]",
+        "list_by_status(status: InvoiceStatus) -> Sequence[InvoiceRecord]"
+      ]
+    },
+    {
+      "name": "ActivityEventRepository",
+      "methods": [
+        "save(event: ActivityEvent) -> None",
+        "list_by_project(project_id: UUID) -> Sequence[ActivityEvent]",
+        "list_by_organization(organization_id: UUID) -> Sequence[ActivityEvent]"
+      ]
+    }
+  ],
+  "domainServices": [
+    {
+      "name": "ProjectProgressEvaluator",
+      "responsibility": "Determines whether all milestones for a project are COMPLETE; guards project completion transitions that span the Project and Milestone aggregates",
+      "methods": [
+        "all_milestones_complete(project_id: UUID, milestone_repo: MilestoneRepository) -> bool"
+      ]
+    },
+    {
+      "name": "ActivityEventRecorder",
+      "responsibility": "Creates and persists ActivityEvent entries as a cross-cutting concern for write operations across all aggregates",
+      "methods": [
+        "record(event_type: str, actor_id: UUID, project_id: UUID | None, organization_id: UUID | None, payload: dict, activity_repo: ActivityEventRepository) -> ActivityEvent"
+      ]
+    }
+  ],
+  "applicationLayer": {
+    "useCases": [
+      {
+        "name": "RegisterClientOrganization",
+        "deps": [
+          "ClientOrganizationRepository",
+          "ActivityEventRepository"
+        ],
+        "execute": "(cmd: RegisterClientOrganizationCommand) -> ClientOrganizationDTO"
+      },
+      {
+        "name": "CreateUserProfile",
+        "deps": [
+          "UserProfileRepository",
+          "ClientOrganizationRepository"
+        ],
+        "execute": "(cmd: CreateUserProfileCommand) -> UserProfileDTO"
+      },
+      {
+        "name": "CreateProject",
+        "deps": [
+          "ProjectRepository",
+          "ClientOrganizationRepository",
+          "ActivityEventRepository"
+        ],
+        "execute": "(cmd: CreateProjectCommand) -> ProjectDTO"
+      },
+      {
+        "name": "ActivateProject",
+        "deps": [
+          "ProjectRepository",
+          "ActivityEventRepository"
+        ],
+        "execute": "(cmd: ActivateProjectCommand) -> ProjectDTO"
+      },
+      {
+        "name": "SubmitProjectForApproval",
+        "deps": [
+          "ProjectRepository",
+          "ActivityEventRepository"
+        ],
+        "execute": "(cmd: SubmitProjectForApprovalCommand) -> ProjectDTO"
+      },
+      {
+        "name": "ApproveProject",
+        "deps": [
+          "ProjectRepository",
+          "ActivityEventRepository"
+        ],
+        "execute": "(cmd: ApproveProjectCommand) -> ProjectDTO"
+      },
+      {
+        "name": "RejectProject",
+        "deps": [
+          "ProjectRepository",
+          "ActivityEventRepository"
+        ],
+        "execute": "(cmd: RejectProjectCommand) -> ProjectDTO"
+      },
+      {
+        "name": "RequestRevision",
+        "deps": [
+          "ApprovalRepository",
+          "ActivityEventRepository"
+        ],
+        "execute": "(cmd: RequestRevisionCommand) -> ApprovalDTO"
+      },
+      {
+        "name": "CreateMilestone",
+        "deps": [
+          "MilestoneRepository",
+          "ProjectRepository"
+        ],
+        "execute": "(cmd: CreateMilestoneCommand) -> MilestoneDTO"
+      },
+      {
+        "name": "CompleteMilestone",
+        "deps": [
+          "MilestoneRepository",
+          "ActivityEventRepository"
+        ],
+        "execute": "(cmd: CompleteMilestoneCommand) -> MilestoneDTO"
+      },
+      {
+        "name": "AddDeliverableVersion",
+        "deps": [
+          "DeliverableRepository",
+          "DeliverableVersionRepository",
+          "ActivityEventRepository"
+        ],
+        "execute": "(cmd: AddDeliverableVersionCommand) -> DeliverableVersionDTO"
+      },
+      {
+        "name": "RequestApproval",
+        "deps": [
+          "DeliverableVersionRepository",
+          "ApprovalRepository",
+          "ActivityEventRepository"
+        ],
+        "execute": "(cmd: RequestApprovalCommand) -> ApprovalDTO"
+      },
+      {
+        "name": "GrantApproval",
+        "deps": [
+          "ApprovalRepository",
+          "ActivityEventRepository"
+        ],
+        "execute": "(cmd: GrantApprovalCommand) -> ApprovalDTO"
+      },
+      {
+        "name": "RejectApproval",
+        "deps": [
+          "ApprovalRepository",
+          "ActivityEventRepository"
+        ],
+        "execute": "(cmd: RejectApprovalCommand) -> ApprovalDTO"
+      },
+      {
+        "name": "UploadFile",
+        "deps": [
+          "FileRecordRepository",
+          "GCSFileStoragePort",
+          "ActivityEventRepository"
+        ],
+        "execute": "(cmd: UploadFileCommand) -> FileRecordDTO"
+      },
+      {
+        "name": "ListFilesForDeliverable",
+        "deps": [
+          "FileRecordRepository"
+        ],
+        "execute": "(query: ListFilesForDeliverableQuery) -> list[FileRecordDTO]"
+      },
+      {
+        "name": "SendMessage",
+        "deps": [
+          "MessageRepository",
+          "MessageThreadRepository",
+          "ActivityEventRepository"
+        ],
+        "execute": "(cmd: SendMessageCommand) -> MessageDTO"
+      },
+      {
+        "name": "ListMessages",
+        "deps": [
+          "MessageRepository",
+          "MessageThreadRepository"
+        ],
+        "execute": "(query: ListMessagesQuery) -> list[MessageDTO]"
+      },
+      {
+        "name": "ListInvoices",
+        "deps": [
+          "InvoiceRecordRepository"
+        ],
+        "execute": "(query: ListInvoicesQuery) -> list[InvoiceRecordDTO]"
+      },
+      {
+        "name": "ListActivityEvents",
+        "deps": [
+          "ActivityEventRepository"
+        ],
+        "execute": "(query: ListActivityEventsQuery) -> list[ActivityEventDTO]"
+      }
+    ],
+    "dtos": [
+      {
+        "name": "RegisterClientOrganizationCommand",
+        "fields": [
+          "name: str",
+          "slug: str"
+        ]
+      },
+      {
+        "name": "CreateUserProfileCommand",
+        "fields": [
+          "user_id: int",
+          "email: str",
+          "is_client: bool",
+          "organization_id: UUID | None"
+        ]
+      },
+      {
+        "name": "CreateProjectCommand",
+        "fields": [
+          "name: str",
+          "organization_id: UUID",
+          "description: str | None",
+          "target_date: date | None",
+          "actor_id: UUID"
+        ]
+      },
+      {
+        "name": "ActivateProjectCommand",
+        "fields": [
+          "project_id: UUID",
+          "actor_id: UUID"
+        ]
+      },
+      {
+        "name": "SubmitProjectForApprovalCommand",
+        "fields": [
+          "project_id: UUID",
+          "actor_id: UUID"
+        ]
+      },
+      {
+        "name": "ApproveProjectCommand",
+        "fields": [
+          "project_id: UUID",
+          "actor_id: UUID"
+        ]
+      },
+      {
+        "name": "RejectProjectCommand",
+        "fields": [
+          "project_id: UUID",
+          "actor_id: UUID"
+        ]
+      },
+      {
+        "name": "RequestRevisionCommand",
+        "fields": [
+          "approval_id: UUID",
+          "reviewer_id: UUID",
+          "comment: str"
+        ]
+      },
+      {
+        "name": "CreateMilestoneCommand",
+        "fields": [
+          "name: str",
+          "project_id: UUID",
+          "target_date: date | None"
+        ]
+      },
+      {
+        "name": "CompleteMilestoneCommand",
+        "fields": [
+          "milestone_id: UUID",
+          "actor_id: UUID"
+        ]
+      },
+      {
+        "name": "AddDeliverableVersionCommand",
+        "fields": [
+          "deliverable_id: UUID",
+          "notes: str | None",
+          "actor_id: UUID"
+        ]
+      },
+      {
+        "name": "RequestApprovalCommand",
+        "fields": [
+          "deliverable_version_id: UUID",
+          "reviewer_id: UUID"
+        ]
+      },
+      {
+        "name": "GrantApprovalCommand",
+        "fields": [
+          "approval_id: UUID",
+          "reviewer_id: UUID",
+          "comment: str | None"
+        ]
+      },
+      {
+        "name": "RejectApprovalCommand",
+        "fields": [
+          "approval_id: UUID",
+          "reviewer_id: UUID",
+          "comment: str"
+        ]
+      },
+      {
+        "name": "UploadFileCommand",
+        "fields": [
+          "filename: str",
+          "content_type: str",
+          "file_data: bytes",
+          "uploaded_by_id: UUID",
+          "deliverable_version_id: UUID | None",
+          "message_id: UUID | None"
+        ]
+      },
+      {
+        "name": "ListFilesForDeliverableQuery",
+        "fields": [
+          "deliverable_version_id: UUID"
+        ]
+      },
+      {
+        "name": "SendMessageCommand",
+        "fields": [
+          "thread_id: UUID",
+          "sender_id: UUID",
+          "body: str"
+        ]
+      },
+      {
+        "name": "ListMessagesQuery",
+        "fields": [
+          "thread_id: UUID"
+        ]
+      },
+      {
+        "name": "ListInvoicesQuery",
+        "fields": [
+          "organization_id: UUID"
+        ]
+      },
+      {
+        "name": "ListActivityEventsQuery",
+        "fields": [
+          "project_id: UUID | None",
+          "organization_id: UUID | None"
+        ]
+      },
+      {
+        "name": "ClientOrganizationDTO",
+        "fields": [
+          "id: UUID",
+          "name: str",
+          "slug: str",
+          "created_at: datetime"
+        ]
+      },
+      {
+        "name": "UserProfileDTO",
+        "fields": [
+          "id: UUID",
+          "user_id: int",
+          "email: str",
+          "is_client: bool",
+          "organization_id: UUID | None",
+          "created_at: datetime"
+        ]
+      },
+      {
+        "name": "ProjectDTO",
+        "fields": [
+          "id: UUID",
+          "name: str",
+          "organization_id: UUID",
+          "status: str",
+          "description: str | None",
+          "target_date: date | None",
+          "created_at: datetime"
+        ]
+      },
+      {
+        "name": "MilestoneDTO",
+        "fields": [
+          "id: UUID",
+          "name: str",
+          "project_id: UUID",
+          "status: str",
+          "target_date: date | None",
+          "created_at: datetime"
+        ]
+      },
+      {
+        "name": "DeliverableDTO",
+        "fields": [
+          "id: UUID",
+          "name: str",
+          "milestone_id: UUID",
+          "description: str | None",
+          "current_version_number: int",
+          "created_at: datetime"
+        ]
+      },
+      {
+        "name": "DeliverableVersionDTO",
+        "fields": [
+          "id: UUID",
+          "deliverable_id: UUID",
+          "version_number: int",
+          "notes: str | None",
+          "created_at: datetime"
+        ]
+      },
+      {
+        "name": "ApprovalDTO",
+        "fields": [
+          "id: UUID",
+          "deliverable_version_id: UUID",
+          "reviewer_id: UUID",
+          "status: str",
+          "comment: str | None",
+          "decided_at: datetime | None",
+          "created_at: datetime"
+        ]
+      },
+      {
+        "name": "FileRecordDTO",
+        "fields": [
+          "id: UUID",
+          "filename: str",
+          "storage_path: str",
+          "mime_type: str",
+          "file_size_bytes: int",
+          "deliverable_version_id: UUID | None",
+          "message_id: UUID | None",
+          "uploaded_by_id: UUID",
+          "created_at: datetime"
+        ]
+      },
+      {
+        "name": "MessageThreadDTO",
+        "fields": [
+          "id: UUID",
+          "subject: str",
+          "project_id: UUID",
+          "created_at: datetime"
+        ]
+      },
+      {
+        "name": "MessageDTO",
+        "fields": [
+          "id: UUID",
+          "thread_id: UUID",
+          "sender_id: UUID",
+          "body: str",
+          "created_at: datetime"
+        ]
+      },
+      {
+        "name": "InvoiceRecordDTO",
+        "fields": [
+          "id: UUID",
+          "organization_id: UUID",
+          "project_id: UUID | None",
+          "status: str",
+          "amount: str",
+          "due_date: date | None",
+          "issued_at: datetime | None",
+          "created_at: datetime"
+        ]
+      },
+      {
+        "name": "ActivityEventDTO",
+        "fields": [
+          "id: UUID",
+          "event_type: str",
+          "actor_id: UUID",
+          "project_id: UUID | None",
+          "organization_id: UUID | None",
+          "payload: dict",
+          "occurred_at: datetime"
+        ]
+      }
+    ]
+  },
+  "infrastructureLayer": {
+    "repositoryImplementations": [
+      {
+        "name": "DjangoClientOrganizationRepository",
+        "implements": "ClientOrganizationRepository",
+        "model": "ClientOrganization",
+        "file": "apps/client_portal/infrastructure/repositories.py"
+      },
+      {
+        "name": "DjangoUserProfileRepository",
+        "implements": "UserProfileRepository",
+        "model": "UserProfile",
+        "file": "apps/client_portal/infrastructure/repositories.py"
+      },
+      {
+        "name": "DjangoProjectRepository",
+        "implements": "ProjectRepository",
+        "model": "Project",
+        "file": "apps/client_portal/infrastructure/repositories.py"
+      },
+      {
+        "name": "DjangoMilestoneRepository",
+        "implements": "MilestoneRepository",
+        "model": "Milestone",
+        "file": "apps/client_portal/infrastructure/repositories.py"
+      },
+      {
+        "name": "DjangoDeliverableRepository",
+        "implements": "DeliverableRepository",
+        "model": "Deliverable",
+        "file": "apps/client_portal/infrastructure/repositories.py"
+      },
+      {
+        "name": "DjangoDeliverableVersionRepository",
+        "implements": "DeliverableVersionRepository",
+        "model": "DeliverableVersion",
+        "file": "apps/client_portal/infrastructure/repositories.py"
+      },
+      {
+        "name": "DjangoApprovalRepository",
+        "implements": "ApprovalRepository",
+        "model": "Approval",
+        "file": "apps/client_portal/infrastructure/repositories.py"
+      },
+      {
+        "name": "DjangoFileRecordRepository",
+        "implements": "FileRecordRepository",
+        "model": "FileRecord",
+        "file": "apps/client_portal/infrastructure/repositories.py"
+      },
+      {
+        "name": "DjangoMessageThreadRepository",
+        "implements": "MessageThreadRepository",
+        "model": "MessageThread",
+        "file": "apps/client_portal/infrastructure/repositories.py"
+      },
+      {
+        "name": "DjangoMessageRepository",
+        "implements": "MessageRepository",
+        "model": "Message",
+        "file": "apps/client_portal/infrastructure/repositories.py"
+      },
+      {
+        "name": "DjangoInvoiceRecordRepository",
+        "implements": "InvoiceRecordRepository",
+        "model": "InvoiceRecord",
+        "file": "apps/client_portal/infrastructure/repositories.py"
+      },
+      {
+        "name": "DjangoActivityEventRepository",
+        "implements": "ActivityEventRepository",
+        "model": "ActivityEvent",
+        "file": "apps/client_portal/infrastructure/repositories.py"
+      },
+      {
+        "name": "GCSFileStorageAdapter",
+        "implements": "GCSFileStoragePort (output port defined in application layer)",
+        "model": "N/A",
+        "file": "apps/client_portal/infrastructure/storage.py",
+        "notes": "Wraps django-storages GoogleCloudStorage; save(file_data: bytes, storage_key: str, content_type: str) -> str (returns public URL)"
+      }
+    ],
+    "serializers": [
+      {
+        "name": "ClientOrganizationSerializer",
+        "model": "ClientOrganization",
+        "fields": [
+          "id",
+          "name",
+          "slug",
+          "created_at"
+        ],
+        "read_only": [
+          "id",
+          "created_at"
+        ]
+      },
+      {
+        "name": "UserProfileSerializer",
+        "model": "UserProfile",
+        "fields": [
+          "id",
+          "user",
+          "email",
+          "is_client",
+          "organization",
+          "created_at"
+        ],
+        "read_only": [
+          "id",
+          "created_at"
+        ]
+      },
+      {
+        "name": "ProjectSerializer",
+        "model": "Project",
+        "fields": [
+          "id",
+          "name",
+          "organization",
+          "status",
+          "description",
+          "target_date",
+          "created_at",
+          "updated_at"
+        ],
+        "read_only": [
+          "id",
+          "status",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      {
+        "name": "MilestoneSerializer",
+        "model": "Milestone",
+        "fields": [
+          "id",
+          "name",
+          "project",
+          "status",
+          "target_date",
+          "created_at",
+          "updated_at"
+        ],
+        "read_only": [
+          "id",
+          "status",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      {
+        "name": "DeliverableSerializer",
+        "model": "Deliverable",
+        "fields": [
+          "id",
+          "name",
+          "milestone",
+          "description",
+          "current_version_number",
+          "created_at"
+        ],
+        "read_only": [
+          "id",
+          "current_version_number",
+          "created_at"
+        ]
+      },
+      {
+        "name": "DeliverableVersionSerializer",
+        "model": "DeliverableVersion",
+        "fields": [
+          "id",
+          "deliverable",
+          "version_number",
+          "notes",
+          "created_at"
+        ],
+        "read_only": [
+          "id",
+          "version_number",
+          "created_at"
+        ]
+      },
+      {
+        "name": "ApprovalSerializer",
+        "model": "Approval",
+        "fields": [
+          "id",
+          "deliverable_version",
+          "reviewer",
+          "status",
+          "comment",
+          "decided_at",
+          "created_at"
+        ],
+        "read_only": [
+          "id",
+          "status",
+          "decided_at",
+          "created_at"
+        ]
+      },
+      {
+        "name": "MessageThreadSerializer",
+        "model": "MessageThread",
+        "fields": [
+          "id",
+          "subject",
+          "project",
+          "created_at"
+        ],
+        "read_only": [
+          "id",
+          "created_at"
+        ]
+      },
+      {
+        "name": "MessageSerializer",
+        "model": "Message",
+        "fields": [
+          "id",
+          "thread",
+          "sender",
+          "body",
+          "created_at"
+        ],
+        "read_only": [
+          "id",
+          "sender",
+          "created_at"
+        ]
+      },
+      {
+        "name": "FileRecordSerializer",
+        "model": "FileRecord",
+        "fields": [
+          "id",
+          "filename",
+          "storage_path",
+          "mime_type",
+          "file_size_bytes",
+          "deliverable_version",
+          "message",
+          "uploaded_by",
+          "created_at"
+        ],
+        "read_only": [
+          "id",
+          "storage_path",
+          "mime_type",
+          "file_size_bytes",
+          "uploaded_by",
+          "created_at"
+        ]
+      },
+      {
+        "name": "InvoiceRecordSerializer",
+        "model": "InvoiceRecord",
+        "fields": [
+          "id",
+          "organization",
+          "project",
+          "status",
+          "amount",
+          "due_date",
+          "issued_at",
+          "created_at"
+        ],
+        "read_only": [
+          "id",
+          "status",
+          "issued_at",
+          "created_at"
+        ]
+      },
+      {
+        "name": "ActivityEventSerializer",
+        "model": "ActivityEvent",
+        "fields": [
+          "id",
+          "event_type",
+          "actor",
+          "project",
+          "organization",
+          "payload",
+          "occurred_at"
+        ],
+        "read_only": [
+          "id",
+          "event_type",
+          "actor",
+          "project",
+          "organization",
+          "payload",
+          "occurred_at"
+        ]
+      }
+    ],
+    "viewsets": [
+      {
+        "name": "ClientOrganizationViewSet",
+        "router_prefix": "organizations",
+        "base_class": "ReadOnlyModelViewSet + CreateModelMixin",
+        "actions": [
+          "list",
+          "retrieve",
+          "create"
+        ],
+        "permission_classes": [
+          "IsAuthenticated",
+          "IsStaffOrClientOfOrganization"
+        ],
+        "queryset_filter": "staff sees all; client filtered to own organization"
+      },
+      {
+        "name": "UserProfileViewSet",
+        "router_prefix": "profiles",
+        "base_class": "ReadOnlyModelViewSet + CreateModelMixin",
+        "actions": [
+          "list",
+          "retrieve",
+          "create"
+        ],
+        "permission_classes": [
+          "IsAuthenticated",
+          "IsStaffOrClientOfOrganization"
+        ],
+        "queryset_filter": "staff sees all; client filtered to own organization members"
+      },
+      {
+        "name": "ProjectViewSet",
+        "router_prefix": "projects",
+        "base_class": "ModelViewSet",
+        "actions": [
+          "list",
+          "retrieve",
+          "create",
+          "partial_update"
+        ],
+        "extra_actions": [
+          "submit_for_approval (POST)",
+          "activate (POST)",
+          "approve (POST)",
+          "reject (POST)"
+        ],
+        "permission_classes": [
+          "IsAuthenticated",
+          "IsClientOfOrganization"
+        ],
+        "queryset_filter": "client filtered to own organization; staff sees all"
+      },
+      {
+        "name": "MilestoneViewSet",
+        "router_prefix": "milestones",
+        "base_class": "ModelViewSet",
+        "actions": [
+          "list",
+          "retrieve",
+          "create",
+          "partial_update"
+        ],
+        "extra_actions": [
+          "complete (POST)"
+        ],
+        "permission_classes": [
+          "IsAuthenticated",
+          "IsClientOfOrganization"
+        ],
+        "queryset_filter": "filtered by project which is filtered by organization"
+      },
+      {
+        "name": "DeliverableViewSet",
+        "router_prefix": "deliverables",
+        "base_class": "ReadOnlyModelViewSet + CreateModelMixin",
+        "actions": [
+          "list",
+          "retrieve",
+          "create"
+        ],
+        "permission_classes": [
+          "IsAuthenticated",
+          "IsClientOfOrganization"
+        ],
+        "queryset_filter": "filtered by milestone -> project -> organization"
+      },
+      {
+        "name": "DeliverableVersionViewSet",
+        "router_prefix": "deliverable-versions",
+        "base_class": "ReadOnlyModelViewSet + CreateModelMixin",
+        "actions": [
+          "list",
+          "retrieve",
+          "create"
+        ],
+        "extra_actions": [
+          "request_approval (POST)"
+        ],
+        "permission_classes": [
+          "IsAuthenticated",
+          "IsClientOfOrganization"
+        ],
+        "queryset_filter": "filtered by deliverable -> milestone -> project -> organization"
+      },
+      {
+        "name": "ApprovalViewSet",
+        "router_prefix": "approvals",
+        "base_class": "ReadOnlyModelViewSet",
+        "actions": [
+          "list",
+          "retrieve"
+        ],
+        "extra_actions": [
+          "grant (POST)",
+          "reject (POST)",
+          "request_revision (POST)"
+        ],
+        "permission_classes": [
+          "IsAuthenticated",
+          "IsApprover"
+        ],
+        "queryset_filter": "staff sees all; client sees approvals for their org's deliverables"
+      },
+      {
+        "name": "MessageThreadViewSet",
+        "router_prefix": "message-threads",
+        "base_class": "ReadOnlyModelViewSet + CreateModelMixin",
+        "actions": [
+          "list",
+          "retrieve",
+          "create"
+        ],
+        "permission_classes": [
+          "IsAuthenticated",
+          "IsClientOfOrganization"
+        ],
+        "queryset_filter": "filtered by project -> organization"
+      },
+      {
+        "name": "MessageViewSet",
+        "router_prefix": "messages",
+        "base_class": "ReadOnlyModelViewSet + CreateModelMixin",
+        "actions": [
+          "list",
+          "retrieve",
+          "create"
+        ],
+        "permission_classes": [
+          "IsAuthenticated",
+          "IsClientOfOrganization"
+        ],
+        "queryset_filter": "filtered by thread -> project -> organization"
+      },
+      {
+        "name": "FileRecordViewSet",
+        "router_prefix": "files",
+        "base_class": "ReadOnlyModelViewSet + CreateModelMixin",
+        "actions": [
+          "list",
+          "retrieve"
+        ],
+        "extra_actions": [
+          "upload (POST multipart/form-data)"
+        ],
+        "permission_classes": [
+          "IsAuthenticated",
+          "IsClientOfOrganization"
+        ],
+        "queryset_filter": "filtered by deliverable_version or message -> organization"
+      },
+      {
+        "name": "InvoiceRecordViewSet",
+        "router_prefix": "invoices",
+        "base_class": "ReadOnlyModelViewSet",
+        "actions": [
+          "list",
+          "retrieve"
+        ],
+        "permission_classes": [
+          "IsAuthenticated",
+          "IsClientOfOrganization"
+        ],
+        "queryset_filter": "client filtered to own organization; staff sees all"
+      },
+      {
+        "name": "ActivityEventViewSet",
+        "router_prefix": "activity-events",
+        "base_class": "ReadOnlyModelViewSet",
+        "actions": [
+          "list"
+        ],
+        "permission_classes": [
+          "IsAuthenticated",
+          "IsClientOfOrganization"
+        ],
+        "queryset_filter": "filtered by project or organization; client restricted to own org"
+      }
+    ],
+    "permissions": [
+      {
+        "name": "IsClientOfOrganization",
+        "rule": "request.user has a client_portal_profile with is_client=True AND the target object's organization_id matches profile.organization_id",
+        "file": "apps/client_portal/infrastructure/permissions.py"
+      },
+      {
+        "name": "IsStaffOrClientOfOrganization",
+        "rule": "user.is_staff=True (unrestricted) OR user satisfies IsClientOfOrganization for the target object",
+        "file": "apps/client_portal/infrastructure/permissions.py"
+      },
+      {
+        "name": "IsApprover",
+        "rule": "user.is_staff=True OR (user has client_portal_profile AND approval.reviewer_id == profile.id)",
+        "file": "apps/client_portal/infrastructure/permissions.py"
+      }
+    ]
+  },
+  "openQuestionsResolved": [
+    {
+      "question": "Does Approval need a REVISION_REQUESTED status or just REJECTED?",
+      "decision": "REVISION_REQUESTED retained as a distinct status",
+      "rationale": "Already present in Approval model and ApprovalStatus enum; communicates that work must continue before re-submission without permanently closing the deliverable"
+    },
+    {
+      "question": "Auth strategy: JWT vs token auth, and how are WebSocket connections authenticated?",
+      "decision": "Dual auth: REST endpoints use dj-rest-auth + DRF TokenAuthentication. WebSocket consumers use Channels AuthMiddlewareStack (session-based). dj-rest-auth sets a session cookie on login alongside returning the token, so both transports are authenticated from the same login action.",
+      "rationale": "The browser WebSocket API cannot set custom headers, making the Authorization: Token header unavailable on the WebSocket upgrade request. Channels AuthMiddlewareStack reads the Django session cookie, which the browser sends automatically on the upgrade. Enabling session auth alongside token auth is a one-line settings change requiring no custom middleware. This avoids the security risk of passing tokens in query strings (visible in server logs)."
+    },
+    {
+      "question": "File storage backend selection",
+      "decision": "django-storages GoogleCloudStorage; already installed and wired via GS_BUCKET_NAME",
+      "rationale": "Already present in STORAGES settings; GCSFileStorageAdapter wraps it at the infrastructure boundary so use cases depend only on GCSFileStoragePort"
+    },
+    {
+      "question": "Redis connection authentication",
+      "decision": "Password-only auth via REDIS_URL env var for CHANNEL_LAYERS",
+      "rationale": "Matches existing VPS Redis configuration; no TLS client cert required"
+    },
+    {
+      "question": "WebSocket / real-time delivery mechanism",
+      "decision": "Django Channels with ProtocolTypeRouter; Daphne ASGI server; channels-redis channel layer",
+      "rationale": "Acceptance criterion explicitly requires this stack; CHANNEL_LAYERS config points to REDIS_URL"
+    },
+    {
+      "question": "Where do DRF settings and INSTALLED_APPS entries go?",
+      "decision": "Add rest_framework, allauth, dj_rest_auth, corsheaders, channels to INSTALLED_APPS; add REST_FRAMEWORK settings block and CHANNEL_LAYERS block to core/settings.py",
+      "rationale": "No DRF or allauth registration exists yet; required before any viewset or auth endpoint works"
+    }
+  ],
+  "implementationNotes": "Domain layer is fully scaffolded - do not recreate model.py, value_objects.py, repositories.py, or events.py. All 12 ORM models exist; migration 0001_initial is applied. Work begins with: (1) application/ layer - one file each for use_cases.py and dtos.py following blog app pattern exactly; (2) infrastructure/ layer - repositories.py with private _model_to_entity() mappers, storage.py with GCSFileStorageAdapter, permissions.py with three permission classes; (3) urls.py and views.py (or api_urls.py + api_views.py) wiring DRF router; (4) services/ directory for notification helpers only (approval/file logic lives in use cases). Register djangorestframework, allauth, dj_rest_auth, channels in INSTALLED_APPS before writing viewsets. Add REST_FRAMEWORK settings block with DEFAULT_AUTHENTICATION_CLASSES = [TokenAuthentication] and DEFAULT_PERMISSION_CLASSES = [IsAuthenticated]. Upgrade core/asgi.py to ProtocolTypeRouter after installing channels and daphne. DI pattern: instantiate use cases in viewset action methods, passing concrete Django repository classes to constructors - no service locator. GCSFileStoragePort output port interface lives in application layer; GCSFileStorageAdapter in infrastructure. ActivityEventRecorder domain service is called from every write use case to maintain the audit trail. Seed script target: 2 orgs, 3 projects (ACTIVE, PENDING_APPROVAL, COMPLETE), milestones and deliverables with at least one approved version, 1 OVERDUE invoice, sample messages and files. WebSocket auth: configure dj-rest-auth to set session cookies on login; wrap the Channels URL router in AuthMiddlewareStack in core/asgi.py so consumers receive scope['user']; REST_FRAMEWORK DEFAULT_AUTHENTICATION_CLASSES must include both TokenAuthentication and SessionAuthentication. Consumers must close unauthenticated connections immediately (scope['user'].is_anonymous check in websocket_connect)."
+}

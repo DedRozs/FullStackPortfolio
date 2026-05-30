@@ -7,13 +7,20 @@ Coverage:
 - Domain value object invariants (value_objects.py, no I/O)
 - Domain entity invariants and state transitions (model.py, no I/O)
 - Repository ABC instantiation guard
+- Permission class: IsClientOfOrganization org isolation
+- Permission class: IsStaffOrClientOfOrganization staff bypass
+- GrantApproval use case: PENDING -> APPROVED produces ActivityEvent
+- RejectApproval use case: PENDING -> REJECTED produces ActivityEvent
+- GCSFileStorageAdapter.upload() stores to correct path
+- ProjectViewSet queryset scoping: client cannot see other org's projects
 """
 import uuid
 from datetime import date, datetime, timezone
 from decimal import Decimal
+from unittest.mock import MagicMock, patch
 
 from django.apps import apps
-from django.test import SimpleTestCase
+from django.test import RequestFactory, SimpleTestCase, TestCase
 
 import apps.client_portal.models as orm
 from apps.client_portal.domain import model as domain
@@ -22,6 +29,7 @@ from apps.client_portal.domain.repositories import (
     ProjectRepository,
 )
 from apps.client_portal.domain.value_objects import (
+    ApprovalStatus,
     FileMetadata,
     InvoiceStatus,
     MilestoneStatus,
@@ -464,3 +472,286 @@ class RepositoryAbcTest(SimpleTestCase):
     def test_project_repository_cannot_be_instantiated(self):
         with self.assertRaises(TypeError):
             ProjectRepository()
+
+
+# ---------------------------------------------------------------------------
+# Permission tests
+# ---------------------------------------------------------------------------
+
+from apps.client_portal.infrastructure.permissions import (  # noqa: E402
+    IsClientOfOrganization,
+    IsStaffOrClientOfOrganization,
+)
+
+
+class IsClientOfOrganizationPermissionTest(SimpleTestCase):
+    """IsClientOfOrganization enforces org isolation at object level."""
+
+    def _make_profile(self, organization_id, is_client=True):
+        profile = MagicMock(spec=orm.UserProfile)
+        profile.is_client = is_client
+        profile.organization_id = organization_id
+        return profile
+
+    def test_denies_cross_org_access(self):
+        org_a = uuid.uuid4()
+        org_b = uuid.uuid4()
+        profile = self._make_profile(org_a)
+        obj = MagicMock()
+        obj.organization_id = org_b
+        perm = IsClientOfOrganization()
+        request = MagicMock()
+        request.user.is_authenticated = True
+        with patch(
+            'apps.client_portal.infrastructure.permissions._get_user_profile',
+            return_value=profile,
+        ):
+            self.assertFalse(perm.has_object_permission(request, MagicMock(), obj))
+
+    def test_allows_own_org_access(self):
+        org_a = uuid.uuid4()
+        profile = self._make_profile(org_a)
+        obj = MagicMock()
+        obj.organization_id = org_a
+        perm = IsClientOfOrganization()
+        request = MagicMock()
+        request.user.is_authenticated = True
+        with patch(
+            'apps.client_portal.infrastructure.permissions._get_user_profile',
+            return_value=profile,
+        ):
+            self.assertTrue(perm.has_object_permission(request, MagicMock(), obj))
+
+    def test_denies_unauthenticated_user(self):
+        perm = IsClientOfOrganization()
+        request = MagicMock()
+        request.user = None
+        with patch(
+            'apps.client_portal.infrastructure.permissions._get_user_profile',
+            return_value=None,
+        ):
+            self.assertFalse(perm.has_object_permission(request, MagicMock(), MagicMock()))
+
+
+class IsStaffOrClientOfOrganizationPermissionTest(SimpleTestCase):
+    """IsStaffOrClientOfOrganization: staff users bypass org restrictions."""
+
+    def test_staff_bypass_returns_true(self):
+        request = MagicMock()
+        request.user.is_authenticated = True
+        request.user.is_staff = True
+        obj = MagicMock()
+        obj.organization_id = uuid.uuid4()
+        perm = IsStaffOrClientOfOrganization()
+        self.assertTrue(perm.has_object_permission(request, MagicMock(), obj))
+
+    def test_client_with_matching_org_allowed(self):
+        org_id = uuid.uuid4()
+        profile = MagicMock(spec=orm.UserProfile)
+        profile.is_client = True
+        profile.organization_id = org_id
+        request = MagicMock()
+        request.user.is_authenticated = True
+        request.user.is_staff = False
+        obj = MagicMock()
+        obj.organization_id = org_id
+        perm = IsStaffOrClientOfOrganization()
+        with patch(
+            'apps.client_portal.infrastructure.permissions._get_user_profile',
+            return_value=profile,
+        ):
+            self.assertTrue(perm.has_object_permission(request, MagicMock(), obj))
+
+
+# ---------------------------------------------------------------------------
+# Use case tests - GrantApproval and RejectApproval
+# ---------------------------------------------------------------------------
+
+from apps.client_portal.application.dtos import (  # noqa: E402
+    GrantApprovalCommand,
+    RejectApprovalCommand,
+)
+from apps.client_portal.application.use_cases import (  # noqa: E402
+    GrantApproval,
+    RejectApproval,
+)
+
+
+def _make_pending_approval() -> domain.Approval:
+    return domain.Approval(
+        id=uuid.uuid4(),
+        deliverable_version_id=uuid.uuid4(),
+        reviewer_id=uuid.uuid4(),
+        status=ApprovalStatus.PENDING,
+        comment=None,
+        decided_at=None,
+        created_at=_now(),
+    )
+
+
+class GrantApprovalUseCaseTest(SimpleTestCase):
+    """GrantApproval: PENDING->APPROVED transition records a DeliverableApproved ActivityEvent."""
+
+    def test_pending_to_approved_produces_activity_event(self):
+        approval = _make_pending_approval()
+        approval_repo = MagicMock()
+        approval_repo.get_by_id.return_value = approval
+        activity_repo = MagicMock()
+
+        use_case = GrantApproval(approval_repo=approval_repo, activity_repo=activity_repo)
+        dto = use_case.execute(
+            GrantApprovalCommand(
+                approval_id=approval.id,
+                reviewer_id=approval.reviewer_id,
+                comment='LGTM',
+            )
+        )
+
+        self.assertEqual(dto.status, ApprovalStatus.APPROVED.value)
+        activity_repo.save.assert_called_once()
+        saved_event = activity_repo.save.call_args[0][0]
+        self.assertEqual(saved_event.event_type, 'DeliverableApproved')
+        self.assertEqual(saved_event.actor_id, approval.reviewer_id)
+
+    def test_wrong_reviewer_raises_value_error(self):
+        approval = _make_pending_approval()
+        approval_repo = MagicMock()
+        approval_repo.get_by_id.return_value = approval
+        activity_repo = MagicMock()
+
+        use_case = GrantApproval(approval_repo=approval_repo, activity_repo=activity_repo)
+        with self.assertRaises(ValueError):
+            use_case.execute(
+                GrantApprovalCommand(
+                    approval_id=approval.id,
+                    reviewer_id=uuid.uuid4(),  # different reviewer
+                    comment=None,
+                )
+            )
+
+
+class RejectApprovalUseCaseTest(SimpleTestCase):
+    """RejectApproval: PENDING->REJECTED transition records a DeliverableRejected ActivityEvent."""
+
+    def test_pending_to_rejected_produces_activity_event(self):
+        approval = _make_pending_approval()
+        approval_repo = MagicMock()
+        approval_repo.get_by_id.return_value = approval
+        activity_repo = MagicMock()
+
+        use_case = RejectApproval(approval_repo=approval_repo, activity_repo=activity_repo)
+        dto = use_case.execute(
+            RejectApprovalCommand(
+                approval_id=approval.id,
+                reviewer_id=approval.reviewer_id,
+                comment='Does not meet requirements.',
+            )
+        )
+
+        self.assertEqual(dto.status, ApprovalStatus.REJECTED.value)
+        activity_repo.save.assert_called_once()
+        saved_event = activity_repo.save.call_args[0][0]
+        self.assertEqual(saved_event.event_type, 'DeliverableRejected')
+        self.assertEqual(saved_event.actor_id, approval.reviewer_id)
+
+    def test_wrong_reviewer_raises_value_error(self):
+        approval = _make_pending_approval()
+        approval_repo = MagicMock()
+        approval_repo.get_by_id.return_value = approval
+        activity_repo = MagicMock()
+
+        use_case = RejectApproval(approval_repo=approval_repo, activity_repo=activity_repo)
+        with self.assertRaises(ValueError):
+            use_case.execute(
+                RejectApprovalCommand(
+                    approval_id=approval.id,
+                    reviewer_id=uuid.uuid4(),  # different reviewer
+                    comment='Reject.',
+                )
+            )
+
+
+# ---------------------------------------------------------------------------
+# Storage adapter tests
+# ---------------------------------------------------------------------------
+
+from apps.client_portal.infrastructure.storage import GCSFileStorageAdapter  # noqa: E402
+
+
+class GCSFileStorageAdapterTest(SimpleTestCase):
+    """GCSFileStorageAdapter.upload() delegates to default_storage with a prefixed key."""
+
+    def test_upload_returns_saved_path(self):
+        expected_path = 'client_portal/abc123hex/design.pdf'
+        with patch('apps.client_portal.infrastructure.storage.default_storage') as mock_storage:
+            mock_storage.save.return_value = expected_path
+            result = GCSFileStorageAdapter().upload(b'pdfdata', 'design.pdf', 'application/pdf')
+        self.assertEqual(result, expected_path)
+
+    def test_upload_key_has_client_portal_prefix_and_filename(self):
+        with patch('apps.client_portal.infrastructure.storage.default_storage') as mock_storage:
+            mock_storage.save.return_value = 'client_portal/x/design.pdf'
+            GCSFileStorageAdapter().upload(b'data', 'design.pdf', 'application/pdf')
+        call_key = mock_storage.save.call_args[0][0]
+        self.assertTrue(
+            call_key.startswith('client_portal/'),
+            f'Expected key to start with "client_portal/", got: {call_key}',
+        )
+        self.assertIn('design.pdf', call_key)
+
+
+# ---------------------------------------------------------------------------
+# Viewset queryset scoping tests (require database)
+# ---------------------------------------------------------------------------
+
+from apps.client_portal.infrastructure.viewsets import ProjectViewSet  # noqa: E402
+
+
+class ProjectViewSetQueryScopingTest(TestCase):
+    """ProjectViewSet.get_queryset() scopes results to the authenticated client's organization."""
+
+    def setUp(self):
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+
+        self.org1 = orm.ClientOrganization.objects.create(
+            id=uuid.uuid4(), name='Org Alpha', slug='org-alpha',
+        )
+        self.org2 = orm.ClientOrganization.objects.create(
+            id=uuid.uuid4(), name='Org Beta', slug='org-beta',
+        )
+        self.user1 = User.objects.create_user(
+            username='alice_scoping', password='pw', email='alice_scoping@example.com',
+        )
+        orm.UserProfile.objects.create(
+            id=uuid.uuid4(),
+            user=self.user1,
+            email='alice_scoping@example.com',
+            is_client=True,
+            organization=self.org1,
+        )
+        self.project_org1 = orm.Project.objects.create(
+            id=uuid.uuid4(), name='Alpha Project',
+            organization=self.org1, status=orm.Project.STATUS_ACTIVE,
+        )
+        self.project_org2 = orm.Project.objects.create(
+            id=uuid.uuid4(), name='Beta Project',
+            organization=self.org2, status=orm.Project.STATUS_ACTIVE,
+        )
+
+    def test_client_cannot_see_other_orgs_projects(self):
+        factory = RequestFactory()
+        request = factory.get('/api/client-portal/projects/')
+        request.user = self.user1
+
+        view = ProjectViewSet()
+        view.request = request
+        view.kwargs = {}
+        view.action = 'list'
+        view.format_kwarg = None
+
+        qs = view.get_queryset()
+        ids = list(qs.values_list('id', flat=True))
+        self.assertIn(self.project_org1.id, ids)
+        self.assertNotIn(self.project_org2.id, ids)
+

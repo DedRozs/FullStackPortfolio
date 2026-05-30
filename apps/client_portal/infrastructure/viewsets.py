@@ -1,0 +1,409 @@
+from __future__ import annotations
+
+import logging
+from uuid import UUID
+
+from rest_framework import status
+from rest_framework.decorators import action
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
+
+from apps.client_portal import models as orm
+from apps.client_portal.application.dtos import (
+    GrantApprovalCommand,
+    ListActivityEventsQuery,
+    ListInvoicesQuery,
+    ListMessagesQuery,
+    RejectApprovalCommand,
+    RequestRevisionCommand,
+    SendMessageCommand,
+    SubmitProjectForApprovalCommand,
+    UploadFileCommand,
+)
+from apps.client_portal.application.use_cases import (
+    GrantApproval,
+    ListActivityEvents,
+    ListInvoices,
+    ListMessages,
+    RejectApproval,
+    RequestRevision,
+    SendMessage,
+    SubmitProjectForApproval,
+    UploadFile,
+)
+from apps.client_portal.infrastructure.permissions import IsStaffOrClientOfOrganization
+from apps.client_portal.infrastructure.repositories import (
+    DjangoActivityEventRepository,
+    DjangoApprovalRepository,
+    DjangoInvoiceRecordRepository,
+    DjangoMessageRepository,
+    DjangoMessageThreadRepository,
+    DjangoProjectRepository,
+)
+from apps.client_portal.infrastructure.serializers import (
+    ActivityEventSerializer,
+    ApprovalSerializer,
+    ClientOrganizationSerializer,
+    DeliverableSerializer,
+    DeliverableVersionSerializer,
+    FileRecordSerializer,
+    InvoiceRecordSerializer,
+    MessageSerializer,
+    MessageThreadSerializer,
+    MilestoneSerializer,
+    ProjectSerializer,
+    UserProfileSerializer,
+)
+from apps.client_portal.infrastructure.storage import GCSFileStorageAdapter
+
+logger = logging.getLogger(__name__)
+
+
+def _profile_for(request: Request) -> orm.UserProfile | None:
+    try:
+        return orm.UserProfile.objects.get(user=request.user)
+    except orm.UserProfile.DoesNotExist:
+        return None
+
+
+class ClientOrganizationViewSet(ModelViewSet):
+    serializer_class = ClientOrganizationSerializer
+    permission_classes = [IsStaffOrClientOfOrganization]
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return orm.ClientOrganization.objects.all()
+        profile = _profile_for(self.request)
+        if profile and profile.organization_id:
+            return orm.ClientOrganization.objects.filter(pk=profile.organization_id)
+        return orm.ClientOrganization.objects.none()
+
+
+class UserProfileViewSet(ModelViewSet):
+    serializer_class = UserProfileSerializer
+    permission_classes = [IsStaffOrClientOfOrganization]
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return orm.UserProfile.objects.all()
+        profile = _profile_for(self.request)
+        if profile and profile.organization_id:
+            return orm.UserProfile.objects.filter(organization_id=profile.organization_id)
+        return orm.UserProfile.objects.none()
+
+
+class ProjectViewSet(ModelViewSet):
+    serializer_class = ProjectSerializer
+    permission_classes = [IsStaffOrClientOfOrganization]
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return orm.Project.objects.all()
+        profile = _profile_for(self.request)
+        if profile and profile.organization_id:
+            return orm.Project.objects.filter(organization_id=profile.organization_id)
+        return orm.Project.objects.none()
+
+    @action(detail=True, methods=['post'], url_path='submit-for-approval')
+    def submit_for_approval(self, request: Request, pk: str = None) -> Response:
+        profile = _profile_for(request)
+        if profile is None:
+            return Response({'detail': 'Profile not found.'}, status=status.HTTP_403_FORBIDDEN)
+        use_case = SubmitProjectForApproval(
+            project_repo=DjangoProjectRepository(),
+            activity_repo=DjangoActivityEventRepository(),
+        )
+        try:
+            dto = use_case.execute(
+                SubmitProjectForApprovalCommand(
+                    project_id=UUID(str(pk)),
+                    actor_id=profile.id,
+                )
+            )
+        except ValueError as exc:
+            return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'status': dto.status})
+
+
+class MilestoneViewSet(ModelViewSet):
+    serializer_class = MilestoneSerializer
+    permission_classes = [IsStaffOrClientOfOrganization]
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return orm.Milestone.objects.all()
+        profile = _profile_for(self.request)
+        if profile and profile.organization_id:
+            return orm.Milestone.objects.filter(
+                project__organization_id=profile.organization_id
+            )
+        return orm.Milestone.objects.none()
+
+
+class DeliverableViewSet(ModelViewSet):
+    serializer_class = DeliverableSerializer
+    permission_classes = [IsStaffOrClientOfOrganization]
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return orm.Deliverable.objects.all()
+        profile = _profile_for(self.request)
+        if profile and profile.organization_id:
+            return orm.Deliverable.objects.filter(
+                milestone__project__organization_id=profile.organization_id
+            )
+        return orm.Deliverable.objects.none()
+
+
+class DeliverableVersionViewSet(ModelViewSet):
+    serializer_class = DeliverableVersionSerializer
+    permission_classes = [IsStaffOrClientOfOrganization]
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return orm.DeliverableVersion.objects.all()
+        profile = _profile_for(self.request)
+        if profile and profile.organization_id:
+            return orm.DeliverableVersion.objects.filter(
+                deliverable__milestone__project__organization_id=profile.organization_id
+            )
+        return orm.DeliverableVersion.objects.none()
+
+
+class ApprovalViewSet(ModelViewSet):
+    serializer_class = ApprovalSerializer
+    permission_classes = [IsStaffOrClientOfOrganization]
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return orm.Approval.objects.all()
+        profile = _profile_for(self.request)
+        if profile and profile.organization_id:
+            return orm.Approval.objects.filter(
+                deliverable_version__deliverable__milestone__project__organization_id=profile.organization_id
+            )
+        return orm.Approval.objects.none()
+
+    @action(detail=True, methods=['post'], url_path='grant')
+    def grant(self, request: Request, pk: str = None) -> Response:
+        profile = _profile_for(request)
+        if profile is None:
+            return Response({'detail': 'Profile not found.'}, status=status.HTTP_403_FORBIDDEN)
+        use_case = GrantApproval(
+            approval_repo=DjangoApprovalRepository(),
+            activity_repo=DjangoActivityEventRepository(),
+        )
+        try:
+            dto = use_case.execute(
+                GrantApprovalCommand(
+                    approval_id=UUID(str(pk)),
+                    reviewer_id=profile.id,
+                    comment=request.data.get('comment'),
+                )
+            )
+        except ValueError as exc:
+            return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'status': dto.status, 'decided_at': dto.decided_at})
+
+    @action(detail=True, methods=['post'], url_path='reject')
+    def reject(self, request: Request, pk: str = None) -> Response:
+        profile = _profile_for(request)
+        if profile is None:
+            return Response({'detail': 'Profile not found.'}, status=status.HTTP_403_FORBIDDEN)
+        use_case = RejectApproval(
+            approval_repo=DjangoApprovalRepository(),
+            activity_repo=DjangoActivityEventRepository(),
+        )
+        try:
+            dto = use_case.execute(
+                RejectApprovalCommand(
+                    approval_id=UUID(str(pk)),
+                    reviewer_id=profile.id,
+                    comment=request.data.get('comment', ''),
+                )
+            )
+        except ValueError as exc:
+            return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'status': dto.status, 'decided_at': dto.decided_at})
+
+    @action(detail=True, methods=['post'], url_path='request-revision')
+    def request_revision(self, request: Request, pk: str = None) -> Response:
+        profile = _profile_for(request)
+        if profile is None:
+            return Response({'detail': 'Profile not found.'}, status=status.HTTP_403_FORBIDDEN)
+        use_case = RequestRevision(
+            approval_repo=DjangoApprovalRepository(),
+            activity_repo=DjangoActivityEventRepository(),
+        )
+        try:
+            dto = use_case.execute(
+                RequestRevisionCommand(
+                    approval_id=UUID(str(pk)),
+                    reviewer_id=profile.id,
+                    comment=request.data.get('comment', ''),
+                )
+            )
+        except ValueError as exc:
+            return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'status': dto.status, 'decided_at': dto.decided_at})
+
+
+class MessageThreadViewSet(ModelViewSet):
+    serializer_class = MessageThreadSerializer
+    permission_classes = [IsStaffOrClientOfOrganization]
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return orm.MessageThread.objects.all()
+        profile = _profile_for(self.request)
+        if profile and profile.organization_id:
+            return orm.MessageThread.objects.filter(
+                project__organization_id=profile.organization_id
+            )
+        return orm.MessageThread.objects.none()
+
+
+class MessageViewSet(ModelViewSet):
+    serializer_class = MessageSerializer
+    permission_classes = [IsStaffOrClientOfOrganization]
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return orm.Message.objects.all()
+        profile = _profile_for(self.request)
+        if profile and profile.organization_id:
+            return orm.Message.objects.filter(
+                thread__project__organization_id=profile.organization_id
+            )
+        return orm.Message.objects.none()
+
+    @action(detail=False, methods=['post'], url_path='send')
+    def send(self, request: Request) -> Response:
+        profile = _profile_for(request)
+        if profile is None:
+            return Response({'detail': 'Profile not found.'}, status=status.HTTP_403_FORBIDDEN)
+        use_case = SendMessage(
+            message_repo=DjangoMessageRepository(),
+            thread_repo=DjangoMessageThreadRepository(),
+            activity_repo=DjangoActivityEventRepository(),
+        )
+        try:
+            dto = use_case.execute(
+                SendMessageCommand(
+                    thread_id=UUID(request.data['thread_id']),
+                    sender_id=profile.id,
+                    body=request.data.get('body', ''),
+                )
+            )
+        except (ValueError, KeyError) as exc:
+            return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'id': str(dto.id), 'body': dto.body, 'created_at': dto.created_at})
+
+
+class FileRecordViewSet(ModelViewSet):
+    serializer_class = FileRecordSerializer
+    permission_classes = [IsStaffOrClientOfOrganization]
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return orm.FileRecord.objects.all()
+        profile = _profile_for(self.request)
+        if profile and profile.organization_id:
+            return orm.FileRecord.objects.filter(
+                uploaded_by__organization_id=profile.organization_id
+            )
+        return orm.FileRecord.objects.none()
+
+    @action(detail=False, methods=['post'], url_path='upload')
+    def upload(self, request: Request) -> Response:
+        profile = _profile_for(request)
+        if profile is None:
+            return Response({'detail': 'Profile not found.'}, status=status.HTTP_403_FORBIDDEN)
+        uploaded = request.FILES.get('file')
+        if uploaded is None:
+            return Response({'detail': 'No file provided.'}, status=status.HTTP_400_BAD_REQUEST)
+        dv_id_raw = request.data.get('deliverable_version_id')
+        msg_id_raw = request.data.get('message_id')
+        use_case = UploadFile(
+            file_repo=__import__(
+                'apps.client_portal.infrastructure.repositories',
+                fromlist=['DjangoFileRecordRepository'],
+            ).DjangoFileRecordRepository(),
+            storage=GCSFileStorageAdapter(),
+            activity_repo=DjangoActivityEventRepository(),
+        )
+        try:
+            dto = use_case.execute(
+                UploadFileCommand(
+                    filename=uploaded.name,
+                    content_type=uploaded.content_type or 'application/octet-stream',
+                    file_size_bytes=uploaded.size,
+                    file_data=uploaded.read(),
+                    deliverable_version_id=UUID(dv_id_raw) if dv_id_raw else None,
+                    message_id=UUID(msg_id_raw) if msg_id_raw else None,
+                    uploaded_by_id=profile.id,
+                )
+            )
+        except ValueError as exc:
+            return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {
+                'id': str(dto.id),
+                'filename': dto.filename,
+                'download_url': dto.download_url,
+                'file_size_bytes': dto.file_size_bytes,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class InvoiceRecordViewSet(ModelViewSet):
+    serializer_class = InvoiceRecordSerializer
+    permission_classes = [IsStaffOrClientOfOrganization]
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return orm.InvoiceRecord.objects.all()
+        profile = _profile_for(self.request)
+        if profile and profile.organization_id:
+            return orm.InvoiceRecord.objects.filter(organization_id=profile.organization_id)
+        return orm.InvoiceRecord.objects.none()
+
+    @action(detail=False, methods=['get'], url_path='my-invoices')
+    def my_invoices(self, request: Request) -> Response:
+        profile = _profile_for(request)
+        if profile is None or not profile.organization_id:
+            return Response([], status=status.HTTP_200_OK)
+        use_case = ListInvoices(
+            invoice_repo=DjangoInvoiceRecordRepository(),
+        )
+        dtos = use_case.execute(ListInvoicesQuery(organization_id=profile.organization_id))
+        return Response(
+            [
+                {
+                    'id': str(d.id),
+                    'status': d.status,
+                    'amount': str(d.amount),
+                    'due_date': str(d.due_date) if d.due_date else None,
+                    'issued_at': d.issued_at.isoformat() if d.issued_at else None,
+                }
+                for d in dtos
+            ]
+        )
+
+
+class ActivityEventViewSet(ModelViewSet):
+    serializer_class = ActivityEventSerializer
+    permission_classes = [IsStaffOrClientOfOrganization]
+    http_method_names = ['get', 'head', 'options']
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return orm.ActivityEvent.objects.all()
+        profile = _profile_for(self.request)
+        if profile and profile.organization_id:
+            return orm.ActivityEvent.objects.filter(
+                organization_id=profile.organization_id
+            )
+        return orm.ActivityEvent.objects.none()

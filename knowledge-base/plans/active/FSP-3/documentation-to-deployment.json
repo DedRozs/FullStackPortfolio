@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "1.0",
+  "ticketId": "FSP-3",
+  "projectName": "FullStackPortfolio",
+  "sessionPath": "knowledge-base/plans/active/FSP-3/",
+  "knowledgeBaseManifest": [
+    {
+      "path": "knowledge-base/content/components/client-portal.md",
+      "type": "component-reference",
+      "title": "Component Reference: client_portal - Secure Client Portal bounded context",
+      "note": "Updated from Phase 1 stub to full Phase 2 reference covering domain model, aggregate boundaries, key business rules, use cases, API endpoints, WebSocket infrastructure, dual authentication, GCS file storage, and background tasks"
+    },
+    {
+      "path": "knowledge-base/content/development/client-portal-runbook.md",
+      "type": "runbook",
+      "title": "Developer Runbook: client_portal - Local setup, Redis, Daphne, tests, auth flow",
+      "note": "New file"
+    },
+    {
+      "path": "knowledge-base/content/decisions/0005-dual-authentication-rest-websocket.md",
+      "type": "adr",
+      "title": "ADR 0005: Dual Authentication for REST and WebSocket Transports",
+      "note": "New ADR"
+    },
+    {
+      "path": "knowledge-base/content/decisions/0006-asgi-migration-channels-infrastructure.md",
+      "type": "adr",
+      "title": "ADR 0006: ASGI Migration and Django Channels Infrastructure",
+      "note": "New ADR"
+    },
+    {
+      "path": "README.md",
+      "type": "readme-update",
+      "title": "README.md - Added Client Portal section (additive)",
+      "note": "Added ## Client Portal section after ## Blog section with key capabilities and environment variable requirements"
+    },
+    {
+      "path": "knowledge-base/content/components/overview.md",
+      "type": "component-reference",
+      "title": "Component Map - Added client_portal entry",
+      "note": "Additive update to the Portfolio Demo Applications section"
+    }
+  ],
+  "readmePath": "README.md",
+  "runbooks": [
+    "knowledge-base/content/development/client-portal-runbook.md"
+  ],
+  "adrs": [
+    {
+      "number": "0005",
+      "path": "knowledge-base/content/decisions/0005-dual-authentication-rest-websocket.md",
+      "title": "Dual Authentication for REST and WebSocket Transports",
+      "status": "Accepted"
+    },
+    {
+      "number": "0006",
+      "path": "knowledge-base/content/decisions/0006-asgi-migration-channels-infrastructure.md",
+      "title": "ASGI Migration and Django Channels Infrastructure",
+      "status": "Accepted"
+    }
+  ],
+  "implementationNotes": "All 6 documentation deliverables produced for FSP-3. Component reference replaces Phase 1 stub with full Phase 2 coverage. Two new ADRs capture the dual authentication decision and the ASGI/Channels infrastructure decision. README updated additively with a Client Portal section matching the Blog section pattern. Component overview updated additively with client_portal entry. All files are UTF-8 encoded with no emojis."
+}

@@ -27,6 +27,36 @@ for the full component reference and
 [knowledge-base/content/development/blog-runbook.md](knowledge-base/content/development/blog-runbook.md)
 for the developer runbook.
 
+## Client Portal
+
+The client_portal bounded context (`apps/client_portal/`) delivers a full-stack secure
+portal where client organizations manage projects, deliverables, approvals, files,
+messages, and invoices.
+
+Key capabilities:
+
+- **Multi-tenant isolation:** All API read and write paths are scoped to the caller's
+  `ClientOrganization`. Staff users have cross-org access; client users see only their
+  own data. Object-level DRF permissions enforce isolation at every viewset.
+- **Approval state machine:** Deliverable versions go through a formal
+  PENDING -> APPROVED | REJECTED | REVISION_REQUESTED workflow. Only the assigned
+  reviewer may decide. All decisions emit an immutable `ActivityEvent` audit entry.
+- **File storage:** Files are uploaded to Google Cloud Storage via `GCSFileStorageAdapter`
+  implementing the `FileStoragePort` abstraction. Storage keys are UUID-prefixed to
+  prevent path traversal.
+- **Real-time infrastructure:** Django Channels + Daphne (ASGI) with a Redis channel
+  layer on a VPS. WebSocket consumers are registered in `core/asgi.py` and will be
+  implemented in the `workflow_automation` epic.
+- **Background tasks:** Approval notification emails are dispatched via Django Q2 async
+  tasks processed by the Cloud Run worker.
+
+Required environment variables: `REDIS_URL`, `GS_BUCKET_NAME`,
+`GOOGLE_APPLICATION_CREDENTIALS`, `SENDGRID_API_KEY`. See
+[knowledge-base/content/components/client-portal.md](knowledge-base/content/components/client-portal.md)
+for the full component reference and
+[knowledge-base/content/development/client-portal-runbook.md](knowledge-base/content/development/client-portal-runbook.md)
+for the developer runbook.
+
 ## Author
 
 **Joseph Prince**

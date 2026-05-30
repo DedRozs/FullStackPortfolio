@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { Button } from '../components/catalyst-ui-kit/typescript/button'
 import { SKILLS } from '../data/skills'
+import headshot from '../assets/headshot.jpg'
 
 const CAREER_MILESTONES = [
   {
@@ -128,24 +129,45 @@ export default function AboutPage() {
               'radial-gradient(ellipse 80% 60% at 50% 50%, rgba(0,255,255,0.04) 0%, transparent 70%)',
           }}
         />
-        <div className="max-w-3xl mx-auto px-6 space-y-6 text-text-muted leading-relaxed">
-          <p>
-            Joseph Prince is the Chief Technical Officer at Sports Thread, where he leads
-            technology strategy, platform development, and engineering execution. Over 4+
-            years he has grown from Marketing Manager to Director to VP to CTO - hands-on
-            throughout, writing and reviewing production code while owning architecture,
-            scalability, and security.
-          </p>
-          <p>
-            Proficient in Python and Django on the backend, React and TypeScript on the
-            frontend, and Google Cloud Platform for deployment. Holds a B.S. in Computer
-            Science from Colorado Technical University and certifications in
-            Scrum (CSM, CSPO, CSD).
-          </p>
-          <p>
-            Available for consulting engagements. Focused on clean architecture,
-            maintainable code, and AI integration.
-          </p>
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="flex flex-col sm:flex-row gap-10 items-start">
+            {/* Headshot */}
+            <div className="flex-shrink-0 mx-auto sm:mx-0">
+              <div className="relative w-48 h-48 sm:w-56 sm:h-56 rounded-2xl overflow-hidden border-2 border-neon-cyan/60 shadow-[0_0_28px_rgba(0,255,255,0.2)]">
+                <img
+                  src={headshot}
+                  alt="Joseph Prince"
+                  className="w-full h-full object-cover object-top grayscale contrast-110"
+                />
+                <div
+                  className="absolute inset-0 pointer-events-none"
+                  aria-hidden="true"
+                  style={{ background: 'rgba(0,255,255,0.06)', mixBlendMode: 'screen' }}
+                />
+              </div>
+            </div>
+
+            {/* Bio text */}
+            <div className="space-y-6 text-text-muted leading-relaxed">
+              <p>
+                Joseph Prince is the Chief Technical Officer at Sports Thread, where he leads
+                technology strategy, platform development, and engineering execution. Over 4+
+                years he has grown from Marketing Manager to Director to VP to CTO - hands-on
+                throughout, writing and reviewing production code while owning architecture,
+                scalability, and security.
+              </p>
+              <p>
+                Proficient in Python and Django on the backend, React and TypeScript on the
+                frontend, and Google Cloud Platform for deployment. Holds a B.S. in Computer
+                Science from Colorado Technical University and certifications in
+                Scrum (CSM, CSPO, CSD).
+              </p>
+              <p>
+                Available for consulting engagements. Focused on clean architecture,
+                maintainable code, and AI integration.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
