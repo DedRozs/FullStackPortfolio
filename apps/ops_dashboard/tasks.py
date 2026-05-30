@@ -41,6 +41,23 @@ def evaluate_alert_rules() -> None:
     else:
         logger.debug('evaluate_alert_rules: no new alerts triggered')
 
+    for alert in (triggered or []):
+        try:
+            from apps.workflow_automation.engine import fire_trigger
+            fire_trigger(
+                'metric.threshold_crossed',
+                {
+                    'trigger_type': 'metric.threshold_crossed',
+                    'source_id': str(getattr(alert, 'id', '')),
+                    'source_type': 'DashboardAlert',
+                    'payload': {
+                        'rule_id': str(getattr(alert, 'rule_id', '')),
+                    },
+                },
+            )
+        except Exception:
+            logger.exception('fire_trigger failed for metric.threshold_crossed')
+
 
 def process_metric_import(import_id: str) -> None:
     """Process a CSV metric import job in the background.

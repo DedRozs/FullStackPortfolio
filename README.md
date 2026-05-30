@@ -57,6 +57,36 @@ for the full component reference and
 [knowledge-base/content/development/client-portal-runbook.md](knowledge-base/content/development/client-portal-runbook.md)
 for the developer runbook.
 
+## Workflow Automation
+
+The workflow_automation bounded context (`apps/workflow_automation/`) is a lightweight
+internal automation engine where users define rules that bind a trigger type to a set of
+conditions and an ordered list of actions - think internal Zapier built for business
+workflows. It is the architectural showpiece that connects client_portal and ops_dashboard
+into a coherent ecosystem.
+
+Key capabilities:
+
+- **Decorator-based registry:** `@register_action_handler` and
+  `@register_condition_evaluator` allow new trigger types, condition operators, and action
+  handlers to be added by decorating a function. Zero changes to the core engine are
+  ever required.
+- **Cross-app triggers:** `deliverable.approved` fires when a client_portal deliverable
+  version is approved; `metric.threshold_crossed` fires when an ops_dashboard alert rule
+  trips. Both call `fire_trigger()` which enqueues Q2 tasks for all matching enabled rules.
+- **Dry-run mode:** Rules are fully evaluated (all conditions checked) against a provided
+  context payload without dispatching any actions or sending any notifications. Safe to
+  use in production for rule validation.
+- **React rule builder:** Step-by-step form at `/automations/new` (trigger, conditions,
+  actions). Run history with expandable log entries at `/automations/:id/runs`.
+
+Required environment variables: `SENDGRID_API_KEY`, `TWILIO_ACCOUNT_SID`,
+`TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER`. See
+[knowledge-base/content/components/workflow-automation.md](knowledge-base/content/components/workflow-automation.md)
+for the full component reference and
+[knowledge-base/content/development/workflow-automation-runbook.md](knowledge-base/content/development/workflow-automation-runbook.md)
+for the developer runbook.
+
 ## Author
 
 **Joseph Prince**

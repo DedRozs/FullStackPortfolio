@@ -1,0 +1,78 @@
+{
+  "schemaVersion": "1.0",
+  "projectName": "FullStackPortfolio",
+  "ticketKey": "FSP-5",
+  "sessionPath": "knowledge-base/plans/active/FSP-5/",
+  "knowledgeBaseManifest": [
+    {
+      "path": "knowledge-base/content/components/workflow-automation.md",
+      "type": "component-reference",
+      "description": "Full component reference for the workflow_automation bounded context: architecture diagram, domain model (5 entities, 5 value objects), registry pattern explanation, fire_trigger() entry point, cross-app integrations, dry-run mode, React UI routes, and complete API endpoint table."
+    },
+    {
+      "path": "knowledge-base/content/development/workflow-automation-runbook.md",
+      "type": "runbook",
+      "description": "Developer runbook for workflow_automation: local setup, running tests, migrations, seed script, adding trigger types, adding action handlers, adding condition operators, Q2 task monitoring, and troubleshooting guide."
+    },
+    {
+      "path": "knowledge-base/content/decisions/0008-workflow-automation-registry-pattern.md",
+      "type": "adr",
+      "description": "ADR 0008: Decorator-based registry pattern for trigger/condition/action extensibility. Status: Accepted."
+    },
+    {
+      "path": "README.md",
+      "type": "readme",
+      "description": "Project README updated to add a Workflow Automation section with overview, key capabilities, required environment variables, and links to component reference and runbook."
+    },
+    {
+      "path": "knowledge-base/plans/active/portfolio-projects-roadmap.md",
+      "type": "roadmap",
+      "description": "Portfolio projects roadmap updated: Project 3 Phase 1, Phase 2, and Phase 3 checkboxes all marked complete ([x])."
+    }
+  ],
+  "readmePath": "README.md",
+  "runbooks": [
+    {
+      "path": "knowledge-base/content/development/workflow-automation-runbook.md",
+      "scope": "workflow_automation bounded context",
+      "audience": "Developers working on or extending the workflow automation engine"
+    }
+  ],
+  "adrs": [
+    {
+      "path": "knowledge-base/content/decisions/0008-workflow-automation-registry-pattern.md",
+      "title": "ADR 0008: Decorator-Based Registry Pattern for Trigger/Condition/Action Extensibility",
+      "status": "Accepted"
+    }
+  ],
+  "componentDocs": [
+    {
+      "path": "knowledge-base/content/components/workflow-automation.md",
+      "boundedContext": "workflow_automation",
+      "description": "Component reference for the Internal Workflow Automation bounded context"
+    }
+  ],
+  "adrIndex": {
+    "totalCount": 1,
+    "entries": [
+      {
+        "id": "0008",
+        "title": "Decorator-Based Registry Pattern for Trigger/Condition/Action Extensibility",
+        "path": "knowledge-base/content/decisions/0008-workflow-automation-registry-pattern.md",
+        "status": "Accepted",
+        "date": "2026-05-30"
+      }
+    ]
+  },
+  "decisionLog": {
+    "filePath": "knowledge-base/content/decisions/0008-workflow-automation-registry-pattern.md",
+    "totalDecisions": 1,
+    "phasesCovered": ["Documentation"]
+  },
+  "knownLimitations": [
+    "KI-3: AutomationNewPage.tsx multi-step form submits rule, conditions, and actions as separate POST requests. If condition/action POSTs fail after rule creation, the rule is left in a partial state. A bulk-create endpoint would prevent this. Deferred to future sprint.",
+    "KI-4: Integration tests for DjangoAutomationRuleRepository and DjangoAutomationRunRepository are not yet written. Deferred to future sprint.",
+    "Integration tests and e2e tests for React UI deferred per QA sign-off."
+  ],
+  "generatedAt": "2026-05-30T00:00:00Z"
+}
