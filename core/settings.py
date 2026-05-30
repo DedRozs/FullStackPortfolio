@@ -93,7 +93,12 @@ ASGI_APPLICATION = 'core.asgi.application'
 # ---------------------------------------------------------------------------
 
 DATABASES = {
-    'default': env.db('DATABASE_URL', default=f'sqlite:///{BASE_DIR}/db.sqlite3'),
+    'default': {
+        **env.db('DATABASE_URL', default=f'sqlite:///{BASE_DIR}/db.sqlite3'),
+        # Keep the Cloud SQL connection alive across requests instead of
+        # paying the 2-4 s TCP/TLS setup cost on every API call.
+        'CONN_MAX_AGE': 600,
+    },
 }
 
 # ---------------------------------------------------------------------------
@@ -105,6 +110,18 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
     {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
+]
+
+# ---------------------------------------------------------------------------
+# Password hashing
+# ---------------------------------------------------------------------------
+
+# Default PBKDF2 at 870 000 iterations takes 3-8 s on a constrained GAE
+# instance. ScryptPasswordHasher is faster on modern hardware; SHA1 is kept
+# as the fallback for tokens created before this change.
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.ScryptPasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
 ]
 
 # ---------------------------------------------------------------------------
