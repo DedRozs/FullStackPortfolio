@@ -29,7 +29,7 @@ export default defineConfig({
       input: path.resolve(__dirname, 'index.html'),
       output: {
         entryFileNames: 'index.js',
-        chunkFileNames: 'chunks/[name].js',
+        chunkFileNames: 'chunks/[name].[hash].js',
         assetFileNames: (info) => {
           if (info.names?.some((n) => n.endsWith('.css'))) return 'index.css'
           return 'assets/[name][extname]'
