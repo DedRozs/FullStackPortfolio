@@ -85,10 +85,18 @@ logger = logging.getLogger(__name__)
 
 
 def _profile_for(request: Request) -> orm.UserProfile | None:
+    cached = getattr(request, '_portal_profile_cache', _CACHE_MISS)
+    if cached is not _CACHE_MISS:
+        return cached
     try:
-        return orm.UserProfile.objects.get(user=request.user)
+        profile = orm.UserProfile.objects.get(user=request.user)
     except orm.UserProfile.DoesNotExist:
-        return None
+        profile = None
+    request._portal_profile_cache = profile  # type: ignore[attr-defined]
+    return profile
+
+
+_CACHE_MISS = object()
 
 
 class ClientOrganizationViewSet(ModelViewSet):
