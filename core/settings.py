@@ -28,6 +28,7 @@ ALLOWED_HOSTS = env('ALLOWED_HOSTS')
 # ---------------------------------------------------------------------------
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -35,6 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # Third-party
+    'channels',
     'django_q',
     'markdownx',
     # Portfolio apps
@@ -75,6 +77,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'core.wsgi.application'
+ASGI_APPLICATION = 'core.asgi.application'
 
 # ---------------------------------------------------------------------------
 # Database
@@ -125,20 +128,57 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 GS_BUCKET_NAME = env('GS_BUCKET_NAME', default='')
 
 if GS_BUCKET_NAME:
-    STORAGES = {
+    # In DEBUG mode serve static files locally so new builds are picked up
+    # immediately without a collectstatic upload.  Media files (user uploads)
+    # always use GCS even in DEBUG so upload/retrieval round-trips work.
+    if DEBUG:
+        STORAGES = {
+            'default': {
+                'BACKEND': 'storages.backends.gcloud.GoogleCloudStorage',
+                'OPTIONS': {'location': 'media'},
+            },
+            'staticfiles': {
+                'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+            },
+        }
+    else:
+        STORAGES = {
+            'default': {
+                'BACKEND': 'storages.backends.gcloud.GoogleCloudStorage',
+                'OPTIONS': {'location': 'media'},
+            },
+            'staticfiles': {
+                'BACKEND': 'storages.backends.gcloud.GoogleCloudStorage',
+                # querystring_auth=False generates plain public URLs instead of
+                # signed URLs, so no credentials are needed at request time.
+                # Static assets in this bucket are intentionally public-read.
+                'OPTIONS': {'location': 'static', 'querystring_auth': False},
+            },
+        }
+        STATIC_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/static/'
+
+# ---------------------------------------------------------------------------
+# Django Channels / Redis channel layer
+# ---------------------------------------------------------------------------
+
+REDIS_URL = env('REDIS_URL', default='')
+
+if REDIS_URL:
+    CHANNEL_LAYERS = {
         'default': {
-            'BACKEND': 'storages.backends.gcloud.GoogleCloudStorage',
-            'OPTIONS': {'location': 'media'},
-        },
-        'staticfiles': {
-            'BACKEND': 'storages.backends.gcloud.GoogleCloudStorage',
-            # querystring_auth=False generates plain public URLs instead of
-            # signed URLs, so no credentials are needed at request time.
-            # Static assets in this bucket are intentionally public-read.
-            'OPTIONS': {'location': 'static', 'querystring_auth': False},
+            'BACKEND': 'channels_redis.core.RedisChannelLayer',
+            'CONFIG': {
+                'hosts': [REDIS_URL],
+            },
         },
     }
-    STATIC_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/static/'
+else:
+    # Falls back to in-memory layer for local development without Redis.
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels.layers.InMemoryChannelLayer',
+        },
+    }
 
 # ---------------------------------------------------------------------------
 # AI providers
