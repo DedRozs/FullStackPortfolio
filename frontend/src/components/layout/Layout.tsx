@@ -15,6 +15,7 @@ const NAV_LINKS = [
   { href: '/contact', label: 'Contact' },
   { href: '/portal', label: 'Portal' },
   { href: '/dashboard', label: 'Dashboard' },
+  { href: '/automations', label: 'Automations' },
 ]
 
 export default function Layout() {

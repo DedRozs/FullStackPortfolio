@@ -87,7 +87,7 @@ def run() -> None:
     # ------------------------------------------------------------------
     staff_profile, _ = UserProfile.objects.get_or_create(
         user=staff_user,
-        defaults={'email': staff_user.email, 'is_client': False, 'is_demo': False, 'organization': None},
+        defaults={'email': staff_user.email, 'is_client': False, 'is_demo': True, 'organization': None},
     )
     acme_profile, _ = UserProfile.objects.get_or_create(
         user=acme_user,
@@ -100,7 +100,7 @@ def run() -> None:
     # Ensure is_demo is set correctly even on existing profiles.
     UserProfile.objects.filter(pk=acme_profile.pk).update(is_demo=True)
     UserProfile.objects.filter(pk=nova_profile.pk).update(is_demo=True)
-    UserProfile.objects.filter(pk=staff_profile.pk).update(is_demo=False)
+    UserProfile.objects.filter(pk=staff_profile.pk).update(is_demo=True)
     print(f"  Profiles: {acme_profile.email}, {nova_profile.email}, {staff_profile.email}")
 
     # ------------------------------------------------------------------

@@ -199,7 +199,7 @@ Design carefully before writing views. This is the part that differentiates the 
 
 This is the "ecosystem" moment - one action in the portal visibly changes the dashboard.
 
-- [ ] Wire cross-project trigger: portal deliverable approved -> automation fires ->
+- [x] Wire cross-project trigger: portal deliverable approved -> automation fires ->
       activity event appears in dashboard
 - [ ] Projects page writeup:
   - The registry pattern and why it matters for extensibility

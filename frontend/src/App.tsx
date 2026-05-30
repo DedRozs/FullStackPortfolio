@@ -5,6 +5,8 @@ import PortalLayout from './components/layout/PortalLayout'
 import DashboardLayout from './components/layout/DashboardLayout'
 import AutomationLayout from './components/layout/AutomationLayout'
 import ProtectedRoute from './components/ProtectedRoute'
+import StaffRoute from './components/StaffRoute'
+import { ToastProvider } from './components/tailwind-components/simple-notification'
 
 const AIAssistantPage = lazy(() => import('./pages/AIAssistantPage'))
 const AboutPage = lazy(() => import('./pages/AboutPage'))
@@ -27,7 +29,8 @@ const AutomationRunsPage = lazy(() => import('./pages/automation/AutomationRunsP
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <ToastProvider>
+      <BrowserRouter>
       <Suspense>
         <Routes>
           <Route element={<Layout />}>
@@ -56,9 +59,9 @@ export default function App() {
           <Route
             path="dashboard"
             element={
-              <ProtectedRoute>
+              <StaffRoute>
                 <DashboardLayout />
-              </ProtectedRoute>
+              </StaffRoute>
             }
           >
             <Route index element={<DashboardOverviewPage />} />
@@ -68,9 +71,9 @@ export default function App() {
           <Route
             path="automations"
             element={
-              <ProtectedRoute>
+              <StaffRoute>
                 <AutomationLayout />
-              </ProtectedRoute>
+              </StaffRoute>
             }
           >
             <Route index element={<AutomationListPage />} />
@@ -79,6 +82,5 @@ export default function App() {
           </Route>
         </Routes>
       </Suspense>
-    </BrowserRouter>
-  )
+    </BrowserRouter>    </ToastProvider>  )
 }

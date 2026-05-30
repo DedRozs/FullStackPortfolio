@@ -3,13 +3,16 @@ import { SidebarLayout } from '../catalyst-ui-kit/typescript/sidebar-layout'
 import {
   Sidebar,
   SidebarBody,
+  SidebarDivider,
   SidebarFooter,
   SidebarHeader,
+  SidebarHeading,
   SidebarItem,
   SidebarSection,
 } from '../catalyst-ui-kit/typescript/sidebar'
 import { Navbar, NavbarItem, NavbarLabel } from '../catalyst-ui-kit/typescript/navbar'
 import { Link } from '../catalyst-ui-kit/typescript/link'
+import { clearAuth } from '../../lib/auth'
 import brandLogo from '../../assets/Joseph Prince Logo.png'
 
 const DASHBOARD_NAV = [
@@ -26,8 +29,8 @@ export default function DashboardLayout() {
     end ? location.pathname === href : location.pathname.startsWith(href)
 
   function handleSignOut() {
-    localStorage.removeItem('auth_token')
-    navigate('/dashboard/login')
+    clearAuth()
+    navigate('/portal/login')
   }
 
   const sidebar = (
@@ -52,6 +55,12 @@ export default function DashboardLayout() {
               {label}
             </SidebarItem>
           ))}
+        </SidebarSection>
+        <SidebarDivider />
+        <SidebarSection>
+          <SidebarHeading>Switch App</SidebarHeading>
+          <SidebarItem href="/portal">Client Portal</SidebarItem>
+          <SidebarItem href="/automations">Automations</SidebarItem>
         </SidebarSection>
       </SidebarBody>
 
