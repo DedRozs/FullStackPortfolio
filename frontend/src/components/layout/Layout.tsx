@@ -13,6 +13,7 @@ const NAV_LINKS = [
   { href: '/ai', label: 'AI Assistant' },
   { href: '/about', label: 'About' },
   { href: '/contact', label: 'Contact' },
+  { href: '/portal', label: 'Portal' },
 ]
 
 export default function Layout() {

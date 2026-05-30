@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { Button } from '../components/catalyst-ui-kit/typescript/button'
 import { SKILLS } from '../data/skills'
-import headshot from '../assets/headshot.jpg'
+import headshot from '../assets/Headshot.png'
 
 const CAREER_MILESTONES = [
   {
@@ -137,7 +137,7 @@ export default function AboutPage() {
                 <img
                   src={headshot}
                   alt="Joseph Prince"
-                  className="w-full h-full object-cover object-top grayscale contrast-110"
+                  className="w-full h-full object-cover object-top grayscale"
                 />
                 <div
                   className="absolute inset-0 pointer-events-none"
