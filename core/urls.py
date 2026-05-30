@@ -5,6 +5,9 @@ from apps.react_app.views import index as spa_index
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    # Blog (server-side rendered; must appear before the SPA catch-all)
+    path('blog/', include('apps.blog.urls', namespace='blog')),
+    path('markdownx/', include('markdownx.urls')),
     # REST API endpoints
     path('api/contact/', include('apps.contact.urls')),
     path('api/ai/', include('apps.ai_assistant.urls')),

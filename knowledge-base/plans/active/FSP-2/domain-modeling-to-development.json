@@ -1,0 +1,700 @@
+{
+  "schemaVersion": "1.0",
+  "projectName": "FullStackPortfolio",
+  "ticketKey": "FSP-2",
+  "sessionPath": "knowledge-base/plans/active/FSP-2/",
+  "ubiquitousLanguage": [
+    {
+      "term": "Post",
+      "definition": "A single blog article authored by a portfolio owner. A Post transitions from DRAFT to PUBLISHED status and carries all content required for public display: title, slug, rich-text body, excerpt, featured image, tags, author reference, published date, and estimated reading time.",
+      "context": "blog",
+      "usageExamples": [
+        "Post.publish() transitions the Post from DRAFT to PUBLISHED",
+        "PostRepository.find_by_slug(slug) -> Optional[Post]",
+        "A Post may not be PUBLISHED with an empty body"
+      ]
+    },
+    {
+      "term": "Tag",
+      "definition": "A short topic label attached to one or more Posts. Tags are created independently and associated with Posts via a many-to-many relationship. Slug is derived from the tag name.",
+      "context": "blog",
+      "usageExamples": [
+        "TagRepository.find_all() returns all Tag instances",
+        "Post.add_tag(tag_id) associates a Tag with a Post by ID reference",
+        "RelatedPostFinder uses shared Tag IDs to find related Posts"
+      ]
+    },
+    {
+      "term": "Author",
+      "definition": "A reference to the Django auth user who wrote the Post. The domain layer stores only the author_id (integer); the display name is resolved by the infrastructure layer from the auth user table.",
+      "context": "blog",
+      "usageExamples": [
+        "Post.author_id: int references the Django auth User",
+        "The Author name is resolved at render time, not stored on the Post",
+        "Author identity is required before a Post may be PUBLISHED"
+      ]
+    },
+    {
+      "term": "Slug",
+      "definition": "A URL-safe string identifier derived from the title or name, consisting only of lowercase ASCII letters, digits, and hyphens. Uniqueness is enforced at the repository boundary. Auto-generated on first save if not supplied.",
+      "context": "blog",
+      "usageExamples": [
+        "Slug('my-first-post') is the value object wrapping the string 'my-first-post'",
+        "PostRepository.find_by_slug(slug: Slug) -> Optional[Post]",
+        "Slug must match the pattern ^[a-z0-9]+(-[a-z0-9]+)*$"
+      ]
+    },
+    {
+      "term": "Excerpt",
+      "definition": "A short plain-text summary of the Post, displayed in the blog list view and included in the AI embedding context. Maximum 500 characters. Maps to the existing 'summary' field in the ORM model.",
+      "context": "blog",
+      "usageExamples": [
+        "Excerpt('A short summary of the post') is the value object for post summaries",
+        "The Excerpt is included in the text sent to the embedding model alongside title and body",
+        "Post list view renders the Excerpt beneath the post title and metadata"
+      ]
+    },
+    {
+      "term": "PostStatus",
+      "definition": "An enumeration of the lifecycle states a Post can occupy. DRAFT means the post is not publicly visible. PUBLISHED means the post is visible on the public blog and eligible for vectorization.",
+      "context": "blog",
+      "usageExamples": [
+        "PostStatus.DRAFT is the initial state of every new Post",
+        "PostStatus.PUBLISHED is required for a Post to appear in the blog list view",
+        "Post.publish() sets status from DRAFT to PUBLISHED"
+      ]
+    },
+    {
+      "term": "EmbeddingVector",
+      "definition": "A 1536-dimensional list of floating-point numbers produced by OpenAI text-embedding-3-small from the concatenation of a Post's title, excerpt, and body. Stored in Supabase pgvector to enable semantic similarity search by AI agents.",
+      "context": "blog",
+      "usageExamples": [
+        "EmbeddingVector(values=[0.01, -0.23, ...], dimensions=1536)",
+        "EmbeddingService.vectorize(post) -> EmbeddingVector",
+        "The EmbeddingVector is upserted by post_id into the Supabase post_embeddings table"
+      ]
+    },
+    {
+      "term": "ReadingTime",
+      "definition": "The estimated number of minutes required for an average reader to read a Post's body text, calculated at approximately 200 words per minute and rounded up to the nearest whole minute. Minimum value is 1.",
+      "context": "blog",
+      "usageExamples": [
+        "ReadingTime(minutes=3) is the value object for a 600-word post",
+        "ReadingTimeCalculator.calculate(body) -> ReadingTime",
+        "ReadingTime is displayed in the post list row and the post detail header"
+      ]
+    },
+    {
+      "term": "FeaturedImagePath",
+      "definition": "The GCS object path (relative key) of the hero image associated with a Post. Resolved to a public URL by the infrastructure layer using the django-storages GCS backend. Absent when no image has been uploaded.",
+      "context": "blog",
+      "usageExamples": [
+        "FeaturedImagePath('blog/images/my-post-hero.jpg') is the stored GCS key",
+        "FeaturedImagePath is absent (None) for posts created without an image upload",
+        "Infrastructure resolves FeaturedImagePath to a signed or public GCS URL at render time"
+      ]
+    },
+    {
+      "term": "VectorizationJob",
+      "definition": "An asynchronous task enqueued to Django Q2 that calls EmbeddingService to compute and upsert an EmbeddingVector for a given Post. A failed VectorizationJob is logged; re-queuing is not automatic in the first implementation.",
+      "context": "blog",
+      "usageExamples": [
+        "A VectorizationJob is enqueued when PostPublished or PostUpdated is raised",
+        "VectorizationJob calls EmbeddingService.vectorize() then EmbeddingService.upsert_vector()",
+        "A failing VectorizationJob raises PostVectorizationFailed and logs the error"
+      ]
+    },
+    {
+      "term": "RelatedPost",
+      "definition": "A PUBLISHED Post that shares at least one Tag with the currently viewed Post. Displayed in the sidebar of the post detail view. Ordered by shared tag count descending, then by published_at descending.",
+      "context": "blog",
+      "usageExamples": [
+        "RelatedPostFinder.find_related(post_id, limit=3) -> list[Post]",
+        "RelatedPost sidebar shows title, excerpt, and featured image thumbnail",
+        "A Post with no Tags has no RelatedPosts"
+      ]
+    },
+    {
+      "term": "PostFeedChannel",
+      "definition": "An RSS 2.0 feed of all PUBLISHED Posts served at /blog/feed/. Implemented using Django's built-in syndication framework. Each entry exposes title, link, excerpt (as description), and published_at.",
+      "context": "blog",
+      "usageExamples": [
+        "PostFeedChannel is served at /blog/feed/ with no authentication required",
+        "Each PostFeedChannel entry maps one PUBLISHED Post to an RSS 2.0 item",
+        "PostFeedChannel is a consumer of PostPublished events for feed cache invalidation"
+      ]
+    },
+    {
+      "term": "PublishedPost",
+      "definition": "A Post in PUBLISHED status that is visible to unauthenticated visitors. A DRAFT Post accessed by an unauthenticated visitor must result in a 404 response. Only PublishedPosts appear in the blog list, RSS feed, and vectorization pipeline.",
+      "context": "blog",
+      "usageExamples": [
+        "PostRepository.find_published(page, page_size) returns only PublishedPosts",
+        "Accessing a DRAFT Post URL as an anonymous visitor returns HTTP 404",
+        "PublishedPost body is sent to EmbeddingService for vectorization on every content change"
+      ]
+    }
+  ],
+  "entities": [
+    {
+      "name": "Post",
+      "boundedContext": "blog",
+      "identity": "auto-increment integer primary key assigned by the persistence layer (Django ORM pk)",
+      "invariants": [
+        "title must be non-empty and no longer than 300 characters",
+        "slug must be non-empty, URL-safe, and unique within the blog bounded context",
+        "body must be non-empty when status is PUBLISHED",
+        "published_at must be a non-null UTC datetime when status is PUBLISHED",
+        "excerpt must be non-empty and no longer than 500 characters",
+        "author_id must be set (non-null) on every Post",
+        "reading_time_minutes must be a positive integer greater than zero",
+        "tag_ids contains only integer IDs; no Tag objects are embedded within the Post"
+      ],
+      "stateTransitions": [
+        {
+          "from": "DRAFT",
+          "to": "PUBLISHED",
+          "trigger": "publish(published_at: datetime)",
+          "guard": "body is non-empty AND title is non-empty AND excerpt is non-empty AND author_id is set"
+        },
+        {
+          "from": "PUBLISHED",
+          "to": "DRAFT",
+          "trigger": "unpublish()",
+          "guard": "always allowed; sets published_at to None"
+        }
+      ],
+      "attributes": [
+        {
+          "name": "id",
+          "type": "Optional[int]",
+          "description": "Auto-increment surrogate key; None before the first persistence save"
+        },
+        {
+          "name": "title",
+          "type": "str",
+          "description": "Human-readable headline of the Post; maximum 300 characters"
+        },
+        {
+          "name": "slug",
+          "type": "Slug",
+          "description": "URL-safe unique identifier derived from title; auto-generated on first save if blank"
+        },
+        {
+          "name": "excerpt",
+          "type": "Excerpt",
+          "description": "Short plain-text summary; maximum 500 characters; used in list view and AI embedding context"
+        },
+        {
+          "name": "body",
+          "type": "str",
+          "description": "Full rich-text content of the Post stored as HTML from the rich-text editor"
+        },
+        {
+          "name": "status",
+          "type": "PostStatus",
+          "description": "Lifecycle state: DRAFT (default) or PUBLISHED"
+        },
+        {
+          "name": "featured_image_path",
+          "type": "Optional[FeaturedImagePath]",
+          "description": "GCS object key for the hero image; None when no image has been uploaded"
+        },
+        {
+          "name": "author_id",
+          "type": "int",
+          "description": "Foreign key reference to the Django auth User who authored the Post"
+        },
+        {
+          "name": "reading_time_minutes",
+          "type": "int",
+          "description": "Estimated reading time in whole minutes; recomputed by ReadingTimeCalculator whenever body changes"
+        },
+        {
+          "name": "published_at",
+          "type": "Optional[datetime]",
+          "description": "UTC datetime when the Post was first published; None for DRAFT posts"
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "description": "UTC datetime when the Post record was first persisted"
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "description": "UTC datetime of the most recent save; updated automatically by the persistence layer"
+        },
+        {
+          "name": "tag_ids",
+          "type": "list[int]",
+          "description": "Ordered list of Tag surrogate IDs associated with this Post; cross-aggregate references by ID only"
+        }
+      ]
+    },
+    {
+      "name": "Tag",
+      "boundedContext": "blog",
+      "identity": "auto-increment integer primary key assigned by the persistence layer (Django ORM pk)",
+      "invariants": [
+        "name must be non-empty and no longer than 100 characters",
+        "name must be unique across all Tags in the blog bounded context",
+        "slug must be non-empty, URL-safe, and unique within the blog bounded context",
+        "slug is auto-derived from name and must not be set to an empty string"
+      ],
+      "stateTransitions": [],
+      "attributes": [
+        {
+          "name": "id",
+          "type": "Optional[int]",
+          "description": "Auto-increment surrogate key; None before the first persistence save"
+        },
+        {
+          "name": "name",
+          "type": "str",
+          "description": "Human-readable tag label shown in the UI and admin; maximum 100 characters"
+        },
+        {
+          "name": "slug",
+          "type": "Slug",
+          "description": "URL-safe unique identifier derived from name; used in tag archive URLs"
+        }
+      ]
+    }
+  ],
+  "valueObjects": [
+    {
+      "name": "Slug",
+      "boundedContext": "blog",
+      "properties": [
+        { "name": "value", "type": "str" }
+      ],
+      "validationRules": [
+        "value must be non-empty",
+        "value must match the regex pattern ^[a-z0-9]+(-[a-z0-9]+)*$",
+        "value must be no longer than 255 characters",
+        "value is always lowercase; uppercase input is lowercased at construction"
+      ],
+      "equalityBasis": "Two Slug instances are equal when their value strings are equal (exact byte comparison after lowercasing)"
+    },
+    {
+      "name": "Excerpt",
+      "boundedContext": "blog",
+      "properties": [
+        { "name": "text", "type": "str" }
+      ],
+      "validationRules": [
+        "text must be non-empty after stripping leading and trailing whitespace",
+        "text must be no longer than 500 characters",
+        "text is plain text; HTML tags are stripped at construction to prevent injection"
+      ],
+      "equalityBasis": "Two Excerpt instances are equal when their text values are identical strings"
+    },
+    {
+      "name": "ReadingTime",
+      "boundedContext": "blog",
+      "properties": [
+        { "name": "minutes", "type": "int" }
+      ],
+      "validationRules": [
+        "minutes must be an integer greater than or equal to 1",
+        "minutes is computed as ceil(word_count / 200) with a floor of 1"
+      ],
+      "equalityBasis": "Two ReadingTime instances are equal when their minutes integer values are equal"
+    },
+    {
+      "name": "EmbeddingVector",
+      "boundedContext": "blog",
+      "properties": [
+        { "name": "values", "type": "list[float]" },
+        { "name": "dimensions", "type": "int" }
+      ],
+      "validationRules": [
+        "dimensions must equal 1536 for the text-embedding-3-small model",
+        "len(values) must equal dimensions",
+        "every element of values must be a finite float (no NaN, no Inf)"
+      ],
+      "equalityBasis": "Two EmbeddingVector instances are equal when dimensions match and every float value at every index is equal"
+    },
+    {
+      "name": "PostStatus",
+      "boundedContext": "blog",
+      "properties": [
+        { "name": "value", "type": "str" }
+      ],
+      "validationRules": [
+        "value must be one of 'DRAFT' or 'PUBLISHED'",
+        "PostStatus is implemented as a Python Enum with members DRAFT='draft' and PUBLISHED='published'"
+      ],
+      "equalityBasis": "Two PostStatus instances are equal when their enum members are the same"
+    },
+    {
+      "name": "FeaturedImagePath",
+      "boundedContext": "blog",
+      "properties": [
+        { "name": "path", "type": "str" }
+      ],
+      "validationRules": [
+        "path must be non-empty after stripping whitespace",
+        "path must not start with a leading forward slash",
+        "path must not contain directory traversal sequences (..)",
+        "path must contain only characters valid in a GCS object key"
+      ],
+      "equalityBasis": "Two FeaturedImagePath instances are equal when their path strings are equal"
+    }
+  ],
+  "aggregates": [
+    {
+      "name": "PostAggregate",
+      "root": "Post",
+      "members": [
+        "Post",
+        "Slug",
+        "Excerpt",
+        "ReadingTime",
+        "PostStatus",
+        "FeaturedImagePath"
+      ],
+      "invariants": [
+        "A Post in PUBLISHED status must have a non-empty body, a non-null published_at, and a valid author_id",
+        "A Post slug must be unique; PostRepository.save() raises SlugConflictError on collision",
+        "tag_ids holds only integer ID references to Tags; Tag objects are never embedded inside PostAggregate",
+        "reading_time_minutes is recomputed by ReadingTimeCalculator whenever the Post body changes before save"
+      ],
+      "crossAggregateReferences": [
+        {
+          "targetAggregate": "TagAggregate",
+          "referenceType": "by-id"
+        }
+      ]
+    },
+    {
+      "name": "TagAggregate",
+      "root": "Tag",
+      "members": [
+        "Tag",
+        "Slug"
+      ],
+      "invariants": [
+        "Tag name must be unique across all Tags in the blog context",
+        "Tag slug is derived from name and must remain unique; TagRepository.save() raises TagNameConflictError on collision",
+        "A Tag must not be deleted while any Post still carries its ID in tag_ids"
+      ],
+      "crossAggregateReferences": []
+    }
+  ],
+  "domainEvents": [
+    {
+      "name": "PostPublished",
+      "trigger": "Post.publish() is called and the Post status transitions from DRAFT to PUBLISHED",
+      "payload": [
+        {
+          "field": "post_id",
+          "type": "int",
+          "description": "Surrogate ID of the Post that was published"
+        },
+        {
+          "field": "slug",
+          "type": "str",
+          "description": "URL slug of the published Post"
+        },
+        {
+          "field": "title",
+          "type": "str",
+          "description": "Title of the published Post"
+        },
+        {
+          "field": "published_at",
+          "type": "datetime",
+          "description": "UTC datetime when the Post was published"
+        },
+        {
+          "field": "author_id",
+          "type": "int",
+          "description": "ID of the user who authored the Post"
+        }
+      ],
+      "producers": ["PostAggregate"],
+      "consumers": [
+        "VectorizationJob",
+        "PostFeedChannel"
+      ]
+    },
+    {
+      "name": "PostUnpublished",
+      "trigger": "Post.unpublish() is called and the Post status transitions from PUBLISHED to DRAFT",
+      "payload": [
+        {
+          "field": "post_id",
+          "type": "int",
+          "description": "Surrogate ID of the Post that was unpublished"
+        },
+        {
+          "field": "slug",
+          "type": "str",
+          "description": "URL slug of the unpublished Post"
+        }
+      ],
+      "producers": ["PostAggregate"],
+      "consumers": [
+        "VectorizationJob"
+      ]
+    },
+    {
+      "name": "PostUpdated",
+      "trigger": "A PUBLISHED Post is saved with changes to title, body, excerpt, or tags",
+      "payload": [
+        {
+          "field": "post_id",
+          "type": "int",
+          "description": "Surrogate ID of the Post that was updated"
+        },
+        {
+          "field": "slug",
+          "type": "str",
+          "description": "Current URL slug of the Post"
+        },
+        {
+          "field": "updated_at",
+          "type": "datetime",
+          "description": "UTC datetime of the update"
+        },
+        {
+          "field": "content_changed",
+          "type": "bool",
+          "description": "True when body, title, or excerpt changed; signals that re-vectorization is required"
+        }
+      ],
+      "producers": ["PostAggregate"],
+      "consumers": [
+        "VectorizationJob"
+      ]
+    },
+    {
+      "name": "PostVectorized",
+      "trigger": "EmbeddingService.upsert_vector() completes successfully for a Post",
+      "payload": [
+        {
+          "field": "post_id",
+          "type": "int",
+          "description": "Surrogate ID of the Post whose embedding was stored"
+        },
+        {
+          "field": "slug",
+          "type": "str",
+          "description": "URL slug of the Post"
+        },
+        {
+          "field": "dimensions",
+          "type": "int",
+          "description": "Number of dimensions in the stored EmbeddingVector; always 1536 for text-embedding-3-small"
+        },
+        {
+          "field": "vectorized_at",
+          "type": "datetime",
+          "description": "UTC datetime when the embedding was upserted into Supabase"
+        }
+      ],
+      "producers": ["EmbeddingService"],
+      "consumers": []
+    },
+    {
+      "name": "PostVectorizationFailed",
+      "trigger": "EmbeddingService raises an exception during vectorize() or upsert_vector()",
+      "payload": [
+        {
+          "field": "post_id",
+          "type": "int",
+          "description": "Surrogate ID of the Post whose vectorization failed"
+        },
+        {
+          "field": "slug",
+          "type": "str",
+          "description": "URL slug of the Post"
+        },
+        {
+          "field": "error_message",
+          "type": "str",
+          "description": "Human-readable description of the failure reason"
+        },
+        {
+          "field": "failed_at",
+          "type": "datetime",
+          "description": "UTC datetime when the failure was recorded"
+        }
+      ],
+      "producers": ["EmbeddingService"],
+      "consumers": []
+    }
+  ],
+  "repositoryInterfaces": [
+    {
+      "name": "PostRepository",
+      "aggregateRoot": "Post",
+      "methods": [
+        {
+          "name": "save",
+          "parameters": [
+            { "name": "post", "type": "Post" }
+          ],
+          "returnType": "None",
+          "description": "Persist a new or updated Post. Raises SlugConflictError if the slug already exists for a different Post."
+        },
+        {
+          "name": "find_by_id",
+          "parameters": [
+            { "name": "post_id", "type": "int" }
+          ],
+          "returnType": "Optional[Post]",
+          "description": "Return the Post with the given surrogate ID, or None if not found."
+        },
+        {
+          "name": "find_by_slug",
+          "parameters": [
+            { "name": "slug", "type": "Slug" }
+          ],
+          "returnType": "Optional[Post]",
+          "description": "Return the Post whose slug matches the given Slug value object, or None if not found."
+        },
+        {
+          "name": "find_published",
+          "parameters": [
+            { "name": "page", "type": "int" },
+            { "name": "page_size", "type": "int" }
+          ],
+          "returnType": "list[Post]",
+          "description": "Return a paginated list of Posts in PUBLISHED status ordered by published_at descending."
+        },
+        {
+          "name": "find_by_tag",
+          "parameters": [
+            { "name": "tag_id", "type": "int" },
+            { "name": "page", "type": "int" },
+            { "name": "page_size", "type": "int" }
+          ],
+          "returnType": "list[Post]",
+          "description": "Return a paginated list of PUBLISHED Posts carrying the given tag_id, ordered by published_at descending."
+        },
+        {
+          "name": "find_published_by_tag_ids",
+          "parameters": [
+            { "name": "tag_ids", "type": "list[int]" },
+            { "name": "exclude_post_id", "type": "int" },
+            { "name": "limit", "type": "int" }
+          ],
+          "returnType": "list[Post]",
+          "description": "Return up to limit PUBLISHED Posts whose tag_ids overlap with the given list, excluding exclude_post_id. Used by RelatedPostFinder."
+        },
+        {
+          "name": "find_all_published",
+          "parameters": [],
+          "returnType": "list[Post]",
+          "description": "Return all PUBLISHED Posts ordered by published_at descending. Used exclusively by PostFeedChannel for RSS generation; do not use for paginated list views."
+        },
+        {
+          "name": "delete",
+          "parameters": [
+            { "name": "post_id", "type": "int" }
+          ],
+          "returnType": "None",
+          "description": "Delete the Post with the given ID. Raises PostNotFoundError if no Post with that ID exists."
+        }
+      ]
+    },
+    {
+      "name": "TagRepository",
+      "aggregateRoot": "Tag",
+      "methods": [
+        {
+          "name": "save",
+          "parameters": [
+            { "name": "tag", "type": "Tag" }
+          ],
+          "returnType": "None",
+          "description": "Persist a new or updated Tag. Raises TagNameConflictError if the name already exists for a different Tag."
+        },
+        {
+          "name": "find_by_id",
+          "parameters": [
+            { "name": "tag_id", "type": "int" }
+          ],
+          "returnType": "Optional[Tag]",
+          "description": "Return the Tag with the given surrogate ID, or None if not found."
+        },
+        {
+          "name": "find_by_slug",
+          "parameters": [
+            { "name": "slug", "type": "Slug" }
+          ],
+          "returnType": "Optional[Tag]",
+          "description": "Return the Tag whose slug matches the given Slug value object, or None if not found."
+        },
+        {
+          "name": "find_all",
+          "parameters": [],
+          "returnType": "list[Tag]",
+          "description": "Return all Tags ordered by name ascending. Used to populate tag dropdowns in the admin and the tag list in the public UI."
+        },
+        {
+          "name": "find_by_ids",
+          "parameters": [
+            { "name": "tag_ids", "type": "list[int]" }
+          ],
+          "returnType": "list[Tag]",
+          "description": "Return all Tags whose IDs are in the given list. Used to resolve tag_ids on a Post for display in views."
+        },
+        {
+          "name": "delete",
+          "parameters": [
+            { "name": "tag_id", "type": "int" }
+          ],
+          "returnType": "None",
+          "description": "Delete the Tag with the given ID. Raises TagInUseError if any Post still carries this tag_id."
+        }
+      ]
+    }
+  ],
+  "domainServices": [
+    {
+      "name": "ReadingTimeCalculator",
+      "responsibility": "Calculates the estimated reading time for a Post's body text and produces a ReadingTime value object. Strips HTML tags, counts whitespace-delimited words, divides by 200 words-per-minute, and rounds up to the nearest whole minute with a floor of 1. Pure computation - no I/O.",
+      "operatesOn": ["PostAggregate", "PostFeedChannel"],
+      "methods": [
+        {
+          "name": "calculate",
+          "description": "Accepts the Post body as a raw HTML string. Strips all HTML tags, splits on whitespace to count words, computes ceil(word_count / 200), enforces a minimum of 1, and returns a ReadingTime value object."
+        }
+      ]
+    },
+    {
+      "name": "RelatedPostFinder",
+      "responsibility": "Finds Posts related to a given Post by shared Tags. Reads tag_ids from the PostAggregate and queries the TagAggregate boundary via PostRepository to retrieve PUBLISHED Posts sharing those IDs. Returns a ranked list ordered by shared tag count descending, then published_at descending.",
+      "operatesOn": ["PostAggregate", "TagAggregate"],
+      "methods": [
+        {
+          "name": "find_related",
+          "description": "Accepts a post_id and a limit integer. Reads the source Post's tag_ids via PostRepository, calls PostRepository.find_published_by_tag_ids to retrieve candidates, ranks by shared tag count, and returns up to limit results. Returns an empty list when the source Post has no tags."
+        }
+      ]
+    },
+    {
+      "name": "EmbeddingService",
+      "responsibility": "Vectorizes Post content by calling the OpenAI text-embedding-3-small API and persists the resulting EmbeddingVector to the Supabase pgvector store. Also deletes vectors when a Post is unpublished. Depends on PostAggregate for content and on the EmbeddingVectorStore external boundary for persistence.",
+      "operatesOn": ["PostAggregate", "EmbeddingVectorStore"],
+      "methods": [
+        {
+          "name": "vectorize",
+          "description": "Concatenates Post title, excerpt text, and body into a single string, calls the OpenAI embeddings API with model text-embedding-3-small, and returns an EmbeddingVector. Raises EmbeddingApiError if the API call fails."
+        },
+        {
+          "name": "upsert_vector",
+          "description": "Accepts a post_id integer and an EmbeddingVector. Upserts the vector into the Supabase post_embeddings table keyed by post_id using raw psycopg2. Raises VectorStoreError if the database operation fails."
+        },
+        {
+          "name": "delete_vector",
+          "description": "Deletes the EmbeddingVector for the given post_id from the Supabase post_embeddings table. Called when a Post is unpublished. A missing vector row is treated as a no-op and does not raise an error."
+        }
+      ]
+    }
+  ]
+}
