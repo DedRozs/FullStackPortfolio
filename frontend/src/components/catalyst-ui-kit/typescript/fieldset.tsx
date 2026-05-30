@@ -1,6 +1,7 @@
 import * as Headless from '@headlessui/react'
 import clsx from 'clsx'
 import type React from 'react'
+import { twMerge } from 'tailwind-merge'
 
 export function Fieldset({
   className,
@@ -72,7 +73,7 @@ export function Description({
     <Headless.Description
       data-slot="description"
       {...props}
-      className={clsx(className, 'text-base/6 text-text-muted data-disabled:opacity-50 sm:text-sm/6')}
+      className={twMerge('text-base/6 text-text-muted data-disabled:opacity-50 sm:text-sm/6', className)}
     />
   )
 }
@@ -85,7 +86,7 @@ export function ErrorMessage({
     <Headless.Description
       data-slot="error"
       {...props}
-      className={clsx(className, 'text-base/6 text-red-600 data-disabled:opacity-50 sm:text-sm/6 dark:text-red-500')}
+      className={twMerge('text-base/6 text-red-600 data-disabled:opacity-50 sm:text-sm/6 dark:text-red-500', className)}
     />
   )
 }

@@ -1,5 +1,6 @@
 import clsx from 'clsx'
 import React from 'react'
+import { twMerge } from 'tailwind-merge'
 import { Link } from './link'
 
 const variants = {
@@ -99,7 +100,7 @@ export function CardTitle({ className, ...props }: React.ComponentPropsWithoutRe
   return (
     <h3
       {...props}
-      className={clsx(className, 'font-display text-sm font-bold tracking-widest text-text-primary uppercase')}
+      className={twMerge('font-display text-sm font-bold tracking-widest text-text-primary uppercase', className)}
     />
   )
 }
@@ -108,7 +109,7 @@ export function CardDescription({ className, ...props }: React.ComponentPropsWit
   return (
     <p
       {...props}
-      className={clsx(className, 'text-text-muted text-sm leading-relaxed')}
+      className={twMerge('text-text-muted text-sm leading-relaxed', className)}
     />
   )
 }

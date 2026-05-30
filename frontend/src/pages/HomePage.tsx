@@ -112,7 +112,7 @@ export default function HomePage() {
 
           <Heading
             level={1}
-            className="font-display text-5xl sm:text-7xl font-bold tracking-tight text-text-primary mb-2 animate-fade-in-up"
+            className="font-display text-6xl sm:text-7xl font-bold tracking-tight text-text-primary mb-2 animate-fade-in-up"
             style={{ animationDelay: '0.2s' }}
           >
             Joseph{' '}

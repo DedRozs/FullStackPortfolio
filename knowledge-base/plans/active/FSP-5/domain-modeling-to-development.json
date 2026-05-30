@@ -1,0 +1,840 @@
+{
+  "schemaVersion": "1.0",
+  "projectName": "FullStackPortfolio",
+  "ticketKey": "FSP-5",
+  "sessionPath": "knowledge-base/plans/active/FSP-5/",
+  "ubiquitousLanguage": [
+    {
+      "term": "AutomationRule",
+      "definition": "A named configuration that binds a trigger type, a set of conditions, and an ordered list of actions. The engine loads enabled rules matching an incoming trigger and evaluates them.",
+      "context": "workflow_automation",
+      "usageExamples": [
+        "AutomationRule.enable()",
+        "AutomationRuleRepository.find_by_trigger_type(TriggerType.DELIVERABLE_APPROVED)",
+        "POST /api/workflow_automation/rules/"
+      ]
+    },
+    {
+      "term": "Trigger",
+      "definition": "An external event that initiates the evaluation of matching AutomationRules. Identified by a TriggerType and carries contextual payload in a TriggerContext.",
+      "context": "workflow_automation",
+      "usageExamples": [
+        "TriggerType.DELIVERABLE_APPROVED fires when a client_portal deliverable is approved",
+        "check_triggers('deliverable.approved', payload)"
+      ]
+    },
+    {
+      "term": "Condition",
+      "definition": "A single boolean test applied to a TriggerContext field using a ConditionOperator. An AutomationRule passes only when all of its Conditions evaluate to true.",
+      "context": "workflow_automation",
+      "usageExamples": [
+        "AutomationCondition(field_name='organization_id', operator=ConditionOperator.EQ, expected_value='...')",
+        "RuleEvaluationService.evaluate(rule, context)"
+      ]
+    },
+    {
+      "term": "Action",
+      "definition": "A side-effect to be dispatched as a Django-Q2 task when an AutomationRule passes evaluation. Each Action has an ActionType and a parameters dict consumed by its ActionHandler.",
+      "context": "workflow_automation",
+      "usageExamples": [
+        "AutomationAction(action_type=ActionType.SEND_EMAIL, parameters={'to': 'user@example.com', 'subject': 'Approved'})",
+        "AutomationEngineService.execute(rule_id, context)"
+      ]
+    },
+    {
+      "term": "Run",
+      "definition": "A single execution record for an AutomationRule triggered by a specific event. Tracks the status lifecycle from pending through a terminal state (success, failure, or dry_run).",
+      "context": "workflow_automation",
+      "usageExamples": [
+        "AutomationRun.start()",
+        "AutomationRun.complete()",
+        "AutomationRunRepository.find_by_rule_id(rule_id)"
+      ]
+    },
+    {
+      "term": "RunLog",
+      "definition": "An immutable log entry appended to an AutomationRun. Records the outcome of each condition evaluation step and each action dispatch attempt.",
+      "context": "workflow_automation",
+      "usageExamples": [
+        "AutomationRunLog(run_id=run.id, message='Email sent to stakeholder', level='info', logged_at=now())",
+        "Expandable log entries rendered in the /automations/:id/runs page"
+      ]
+    },
+    {
+      "term": "TriggerContext",
+      "definition": "An immutable value object carrying the payload of a trigger event. Passed to RuleEvaluationService for condition evaluation and forwarded to ActionHandlers for parameterization.",
+      "context": "workflow_automation",
+      "usageExamples": [
+        "TriggerContext(trigger_type=TriggerType.DELIVERABLE_APPROVED, source_id=str(deliverable_id), source_type='Deliverable', payload={'project_id': '...', 'organization_id': '...'})",
+        "RuleEvaluationService.evaluate(rule, trigger_context)"
+      ]
+    },
+    {
+      "term": "DryRun",
+      "definition": "An execution mode where an AutomationRule is fully evaluated (all conditions checked) but no Actions are dispatched as Q2 tasks. Results are logged and the Run reaches RunStatus.DRY_RUN.",
+      "context": "workflow_automation",
+      "usageExamples": [
+        "AutomationRun(is_dry_run=True, status=RunStatus.PENDING)",
+        "AutomationEngineService.execute_dry_run(rule_id, context)"
+      ]
+    },
+    {
+      "term": "Registry",
+      "definition": "A decorator-based dictionary mapping TriggerType, ConditionOperator, and ActionType string keys to their handler callables. Allows new trigger types and action types to be registered without modifying the core engine.",
+      "context": "workflow_automation",
+      "usageExamples": [
+        "@trigger_registry.register('deliverable.approved')",
+        "@action_registry.register('send_email')",
+        "registry.py - canonical location for all registry decorators"
+      ]
+    },
+    {
+      "term": "Operator",
+      "definition": "A ConditionOperator value that defines how a Condition compares a TriggerContext field value against an expected value.",
+      "context": "workflow_automation",
+      "usageExamples": [
+        "ConditionOperator.GT - field value must be greater than expected_value",
+        "ConditionOperator.CONTAINS - field value must contain expected_value as a substring or list element"
+      ]
+    },
+    {
+      "term": "ActionHandler",
+      "definition": "A callable registered in the Registry that performs the side-effect for a given ActionType. Executed as a Django-Q2 task and writes its outcome to an AutomationRunLog.",
+      "context": "workflow_automation",
+      "usageExamples": [
+        "send_email_handler(parameters, context) - dispatches via SendGrid",
+        "send_sms_handler(parameters, context) - dispatches via Twilio",
+        "create_activity_event_handler(parameters, context) - appends to client_portal ActivityEvent log"
+      ]
+    }
+  ],
+  "entities": [
+    {
+      "name": "AutomationRule",
+      "boundedContext": "workflow_automation",
+      "identity": "UUID",
+      "invariants": [
+        "name must not be blank",
+        "trigger_type must be a valid TriggerType value",
+        "An enabled rule must have at least one AutomationAction",
+        "All AutomationAction.order values within a rule must be unique",
+        "conditions and actions are never null; empty list is valid for disabled rules"
+      ],
+      "stateTransitions": [
+        {
+          "from": "disabled",
+          "to": "enabled",
+          "trigger": "enable()",
+          "guard": "rule has at least one AutomationAction configured"
+        },
+        {
+          "from": "enabled",
+          "to": "disabled",
+          "trigger": "disable()",
+          "guard": "always allowed"
+        }
+      ],
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "description": "Surrogate identity; UUID v4 assigned at creation"
+        },
+        {
+          "name": "name",
+          "type": "str",
+          "description": "Human-readable rule name; must not be blank"
+        },
+        {
+          "name": "description",
+          "type": "str | None",
+          "description": "Optional long-form description of the rule purpose"
+        },
+        {
+          "name": "is_enabled",
+          "type": "bool",
+          "description": "Whether the engine will evaluate this rule on matching triggers"
+        },
+        {
+          "name": "trigger_type",
+          "type": "TriggerType",
+          "description": "The trigger category that activates this rule"
+        },
+        {
+          "name": "conditions",
+          "type": "list[AutomationCondition]",
+          "description": "Ordered list of conditions; all must pass for the rule to fire"
+        },
+        {
+          "name": "actions",
+          "type": "list[AutomationAction]",
+          "description": "Ordered list of actions to dispatch when the rule passes evaluation"
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "description": "UTC timestamp of rule creation"
+        }
+      ]
+    },
+    {
+      "name": "AutomationCondition",
+      "boundedContext": "workflow_automation",
+      "identity": "UUID",
+      "invariants": [
+        "field_name must not be blank",
+        "expected_value must not be blank",
+        "operator must be a valid ConditionOperator value",
+        "rule_id must reference an existing AutomationRule"
+      ],
+      "stateTransitions": [],
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "description": "Surrogate identity; UUID v4"
+        },
+        {
+          "name": "rule_id",
+          "type": "UUID",
+          "description": "Identity of the owning AutomationRule"
+        },
+        {
+          "name": "operator",
+          "type": "ConditionOperator",
+          "description": "Comparison operator applied to the extracted field value"
+        },
+        {
+          "name": "field_name",
+          "type": "str",
+          "description": "Dot-path key used to extract a value from the TriggerContext payload"
+        },
+        {
+          "name": "expected_value",
+          "type": "str",
+          "description": "The comparison target; coerced to the field type at evaluation time"
+        }
+      ]
+    },
+    {
+      "name": "AutomationAction",
+      "boundedContext": "workflow_automation",
+      "identity": "UUID",
+      "invariants": [
+        "action_type must be a valid ActionType value",
+        "parameters must not be None; empty dict is valid",
+        "order must be >= 0",
+        "rule_id must reference an existing AutomationRule"
+      ],
+      "stateTransitions": [],
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "description": "Surrogate identity; UUID v4"
+        },
+        {
+          "name": "rule_id",
+          "type": "UUID",
+          "description": "Identity of the owning AutomationRule"
+        },
+        {
+          "name": "action_type",
+          "type": "ActionType",
+          "description": "The category of side-effect this action dispatches"
+        },
+        {
+          "name": "parameters",
+          "type": "dict",
+          "description": "Action-type-specific configuration dict; validated by the ActionHandler at dispatch time"
+        },
+        {
+          "name": "order",
+          "type": "int",
+          "description": "Execution sequence within the rule; lower values execute first"
+        }
+      ]
+    },
+    {
+      "name": "AutomationRun",
+      "boundedContext": "workflow_automation",
+      "identity": "UUID",
+      "invariants": [
+        "rule_id must reference an existing AutomationRule",
+        "triggered_at must not be in the future",
+        "completed_at must be >= triggered_at when set",
+        "error_message must be set when status is FAILURE",
+        "status transitions must follow the defined lifecycle"
+      ],
+      "stateTransitions": [
+        {
+          "from": "PENDING",
+          "to": "RUNNING",
+          "trigger": "start()",
+          "guard": "status is PENDING and is_dry_run is False"
+        },
+        {
+          "from": "RUNNING",
+          "to": "SUCCESS",
+          "trigger": "complete()",
+          "guard": "status is RUNNING"
+        },
+        {
+          "from": "RUNNING",
+          "to": "FAILURE",
+          "trigger": "fail(error_message)",
+          "guard": "status is RUNNING and error_message is not blank"
+        },
+        {
+          "from": "PENDING",
+          "to": "DRY_RUN",
+          "trigger": "mark_dry_run_complete()",
+          "guard": "is_dry_run is True and status is PENDING"
+        }
+      ],
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "description": "Surrogate identity; UUID v4"
+        },
+        {
+          "name": "rule_id",
+          "type": "UUID",
+          "description": "Identity of the AutomationRule that was executed"
+        },
+        {
+          "name": "trigger_event",
+          "type": "str",
+          "description": "TriggerType string value that fired this run"
+        },
+        {
+          "name": "triggered_at",
+          "type": "datetime",
+          "description": "UTC timestamp when the trigger was received by the engine"
+        },
+        {
+          "name": "status",
+          "type": "RunStatus",
+          "description": "Current lifecycle state of the run"
+        },
+        {
+          "name": "is_dry_run",
+          "type": "bool",
+          "description": "True when actions are not dispatched; conditions are evaluated and all steps logged"
+        },
+        {
+          "name": "completed_at",
+          "type": "datetime | None",
+          "description": "UTC timestamp when the run reached a terminal status; None while running"
+        },
+        {
+          "name": "error_message",
+          "type": "str | None",
+          "description": "First unrecoverable error; set when status is FAILURE"
+        }
+      ]
+    },
+    {
+      "name": "AutomationRunLog",
+      "boundedContext": "workflow_automation",
+      "identity": "UUID",
+      "invariants": [
+        "run_id must reference an existing AutomationRun",
+        "message must not be blank",
+        "level must be one of: info, warning, error",
+        "logged_at must not be in the future"
+      ],
+      "stateTransitions": [],
+      "attributes": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "description": "Surrogate identity; UUID v4"
+        },
+        {
+          "name": "run_id",
+          "type": "UUID",
+          "description": "Identity of the owning AutomationRun"
+        },
+        {
+          "name": "message",
+          "type": "str",
+          "description": "Human-readable description of the log event"
+        },
+        {
+          "name": "level",
+          "type": "str",
+          "description": "Log severity: info, warning, or error"
+        },
+        {
+          "name": "logged_at",
+          "type": "datetime",
+          "description": "UTC timestamp when this entry was appended"
+        }
+      ]
+    }
+  ],
+  "valueObjects": [
+    {
+      "name": "TriggerType",
+      "boundedContext": "workflow_automation",
+      "properties": [
+        {
+          "name": "value",
+          "type": "str"
+        }
+      ],
+      "validationRules": [
+        "value must be one of: deliverable.approved, metric.threshold_crossed, invoice.overdue, file.uploaded"
+      ],
+      "equalityBasis": "value"
+    },
+    {
+      "name": "ConditionOperator",
+      "boundedContext": "workflow_automation",
+      "properties": [
+        {
+          "name": "value",
+          "type": "str"
+        }
+      ],
+      "validationRules": [
+        "value must be one of: gt, lt, eq, contains, assigned_to"
+      ],
+      "equalityBasis": "value"
+    },
+    {
+      "name": "ActionType",
+      "boundedContext": "workflow_automation",
+      "properties": [
+        {
+          "name": "value",
+          "type": "str"
+        }
+      ],
+      "validationRules": [
+        "value must be one of: send_email, create_activity_event, update_status, send_sms"
+      ],
+      "equalityBasis": "value"
+    },
+    {
+      "name": "RunStatus",
+      "boundedContext": "workflow_automation",
+      "properties": [
+        {
+          "name": "value",
+          "type": "str"
+        }
+      ],
+      "validationRules": [
+        "value must be one of: pending, running, success, failure, dry_run"
+      ],
+      "equalityBasis": "value"
+    },
+    {
+      "name": "TriggerContext",
+      "boundedContext": "workflow_automation",
+      "properties": [
+        {
+          "name": "trigger_type",
+          "type": "TriggerType"
+        },
+        {
+          "name": "source_id",
+          "type": "str"
+        },
+        {
+          "name": "source_type",
+          "type": "str"
+        },
+        {
+          "name": "payload",
+          "type": "dict"
+        }
+      ],
+      "validationRules": [
+        "trigger_type must be a valid TriggerType value",
+        "source_id must not be blank",
+        "source_type must not be blank",
+        "payload must not be None; empty dict is valid"
+      ],
+      "equalityBasis": "all properties"
+    }
+  ],
+  "aggregates": [
+    {
+      "name": "AutomationRuleAggregate",
+      "root": "AutomationRule",
+      "members": [
+        "AutomationRule",
+        "AutomationCondition",
+        "AutomationAction"
+      ],
+      "invariants": [
+        "An enabled AutomationRule must have at least one AutomationAction",
+        "AutomationCondition and AutomationAction instances must not outlive their owning AutomationRule",
+        "All AutomationAction.order values within a rule must be unique",
+        "AutomationConditions and AutomationActions are only accessible through the AutomationRule root"
+      ],
+      "crossAggregateReferences": [
+        {
+          "targetAggregate": "AutomationRunAggregate",
+          "referenceType": "by-id"
+        }
+      ]
+    },
+    {
+      "name": "AutomationRunAggregate",
+      "root": "AutomationRun",
+      "members": [
+        "AutomationRun",
+        "AutomationRunLog"
+      ],
+      "invariants": [
+        "AutomationRunLog entries are append-only and must never be deleted or mutated",
+        "AutomationRunLog instances are only accessible through the AutomationRun root",
+        "AutomationRun.status must follow the defined lifecycle: PENDING -> RUNNING -> SUCCESS|FAILURE, or PENDING -> DRY_RUN",
+        "error_message is required when status is FAILURE"
+      ],
+      "crossAggregateReferences": [
+        {
+          "targetAggregate": "AutomationRuleAggregate",
+          "referenceType": "by-id"
+        }
+      ]
+    }
+  ],
+  "domainEvents": [
+    {
+      "name": "AutomationRuleCreated",
+      "trigger": "A new AutomationRule is persisted for the first time via the CreateAutomationRule use case",
+      "payload": [
+        {
+          "field": "event_id",
+          "type": "UUID",
+          "description": "Unique event identity"
+        },
+        {
+          "field": "rule_id",
+          "type": "UUID",
+          "description": "Identity of the newly created rule"
+        },
+        {
+          "field": "rule_name",
+          "type": "str",
+          "description": "Name of the newly created rule"
+        },
+        {
+          "field": "trigger_type",
+          "type": "str",
+          "description": "TriggerType value of the new rule"
+        },
+        {
+          "field": "occurred_at",
+          "type": "datetime",
+          "description": "UTC timestamp of creation"
+        }
+      ],
+      "producers": [
+        "AutomationRule"
+      ],
+      "consumers": [
+        "AutomationEngineService"
+      ]
+    },
+    {
+      "name": "AutomationRuleEnabled",
+      "trigger": "AutomationRule.enable() is called on a rule where is_enabled is False",
+      "payload": [
+        {
+          "field": "event_id",
+          "type": "UUID",
+          "description": "Unique event identity"
+        },
+        {
+          "field": "rule_id",
+          "type": "UUID",
+          "description": "Identity of the rule that was enabled"
+        },
+        {
+          "field": "occurred_at",
+          "type": "datetime",
+          "description": "UTC timestamp of the transition"
+        }
+      ],
+      "producers": [
+        "AutomationRule"
+      ],
+      "consumers": []
+    },
+    {
+      "name": "AutomationRuleDisabled",
+      "trigger": "AutomationRule.disable() is called on a rule where is_enabled is True",
+      "payload": [
+        {
+          "field": "event_id",
+          "type": "UUID",
+          "description": "Unique event identity"
+        },
+        {
+          "field": "rule_id",
+          "type": "UUID",
+          "description": "Identity of the rule that was disabled"
+        },
+        {
+          "field": "occurred_at",
+          "type": "datetime",
+          "description": "UTC timestamp of the transition"
+        }
+      ],
+      "producers": [
+        "AutomationRule"
+      ],
+      "consumers": []
+    },
+    {
+      "name": "AutomationRunStarted",
+      "trigger": "AutomationRun.start() is called; the engine begins action dispatch",
+      "payload": [
+        {
+          "field": "event_id",
+          "type": "UUID",
+          "description": "Unique event identity"
+        },
+        {
+          "field": "run_id",
+          "type": "UUID",
+          "description": "Identity of the run that started"
+        },
+        {
+          "field": "rule_id",
+          "type": "UUID",
+          "description": "Identity of the rule being executed"
+        },
+        {
+          "field": "trigger_event",
+          "type": "str",
+          "description": "TriggerType string that fired this run"
+        },
+        {
+          "field": "is_dry_run",
+          "type": "bool",
+          "description": "Whether this run is in dry-run mode"
+        },
+        {
+          "field": "occurred_at",
+          "type": "datetime",
+          "description": "UTC timestamp when the run started"
+        }
+      ],
+      "producers": [
+        "AutomationRun"
+      ],
+      "consumers": [
+        "AutomationEngineService"
+      ]
+    },
+    {
+      "name": "AutomationRunCompleted",
+      "trigger": "AutomationRun.complete() or AutomationRun.mark_dry_run_complete() is called after all actions are dispatched successfully",
+      "payload": [
+        {
+          "field": "event_id",
+          "type": "UUID",
+          "description": "Unique event identity"
+        },
+        {
+          "field": "run_id",
+          "type": "UUID",
+          "description": "Identity of the completed run"
+        },
+        {
+          "field": "rule_id",
+          "type": "UUID",
+          "description": "Identity of the rule that was executed"
+        },
+        {
+          "field": "final_status",
+          "type": "str",
+          "description": "Terminal RunStatus value: success or dry_run"
+        },
+        {
+          "field": "occurred_at",
+          "type": "datetime",
+          "description": "UTC timestamp of completion"
+        }
+      ],
+      "producers": [
+        "AutomationRun"
+      ],
+      "consumers": []
+    },
+    {
+      "name": "AutomationRunFailed",
+      "trigger": "AutomationRun.fail(error_message) is called after an unrecoverable action dispatch error",
+      "payload": [
+        {
+          "field": "event_id",
+          "type": "UUID",
+          "description": "Unique event identity"
+        },
+        {
+          "field": "run_id",
+          "type": "UUID",
+          "description": "Identity of the failed run"
+        },
+        {
+          "field": "rule_id",
+          "type": "UUID",
+          "description": "Identity of the rule that failed"
+        },
+        {
+          "field": "error_message",
+          "type": "str",
+          "description": "First unrecoverable error that caused the failure"
+        },
+        {
+          "field": "occurred_at",
+          "type": "datetime",
+          "description": "UTC timestamp of failure"
+        }
+      ],
+      "producers": [
+        "AutomationRun"
+      ],
+      "consumers": []
+    }
+  ],
+  "repositoryInterfaces": [
+    {
+      "name": "AutomationRuleRepository",
+      "aggregateRoot": "AutomationRule",
+      "methods": [
+        {
+          "name": "find_by_id",
+          "parameters": [
+            {
+              "name": "rule_id",
+              "type": "UUID"
+            }
+          ],
+          "returnType": "AutomationRule | None",
+          "description": "Return the AutomationRule with the given identity, or None if not found. Hydrates the full conditions and actions collections."
+        },
+        {
+          "name": "find_by_trigger_type",
+          "parameters": [
+            {
+              "name": "trigger_type",
+              "type": "TriggerType"
+            }
+          ],
+          "returnType": "list[AutomationRule]",
+          "description": "Return all AutomationRules (enabled and disabled) matching the given TriggerType. Used by the engine to discover candidate rules for evaluation."
+        },
+        {
+          "name": "find_all_enabled",
+          "parameters": [],
+          "returnType": "list[AutomationRule]",
+          "description": "Return all AutomationRules where is_enabled is True. Used for admin listing."
+        },
+        {
+          "name": "save",
+          "parameters": [
+            {
+              "name": "rule",
+              "type": "AutomationRule"
+            }
+          ],
+          "returnType": "None",
+          "description": "Persist or update an AutomationRule together with its full conditions and actions collections. Upserts child records."
+        },
+        {
+          "name": "delete",
+          "parameters": [
+            {
+              "name": "rule_id",
+              "type": "UUID"
+            }
+          ],
+          "returnType": "None",
+          "description": "Remove the AutomationRule and cascade-delete all owned AutomationConditions and AutomationActions."
+        }
+      ]
+    },
+    {
+      "name": "AutomationRunRepository",
+      "aggregateRoot": "AutomationRun",
+      "methods": [
+        {
+          "name": "find_by_id",
+          "parameters": [
+            {
+              "name": "run_id",
+              "type": "UUID"
+            }
+          ],
+          "returnType": "AutomationRun | None",
+          "description": "Return the AutomationRun with the given identity including its RunLog entries, or None if not found."
+        },
+        {
+          "name": "find_by_rule_id",
+          "parameters": [
+            {
+              "name": "rule_id",
+              "type": "UUID"
+            }
+          ],
+          "returnType": "list[AutomationRun]",
+          "description": "Return all AutomationRuns for the given rule ordered by triggered_at descending. Used by the run history view."
+        },
+        {
+          "name": "save",
+          "parameters": [
+            {
+              "name": "run",
+              "type": "AutomationRun"
+            }
+          ],
+          "returnType": "None",
+          "description": "Persist or update an AutomationRun. Appends any new RunLog entries; existing entries are never modified (append-only)."
+        }
+      ]
+    }
+  ],
+  "domainServices": [
+    {
+      "name": "RuleEvaluationService",
+      "responsibility": "Evaluates all AutomationConditions of an AutomationRule against a TriggerContext. Returns True only when every condition passes. Stateless; contains no I/O or repository access.",
+      "operatesOn": [
+        "AutomationRule",
+        "AutomationRun"
+      ],
+      "methods": [
+        {
+          "name": "evaluate",
+          "description": "Evaluate every AutomationCondition on the rule against the TriggerContext payload using the ConditionOperator. Returns True if all conditions pass, False if any condition fails. Raises ValueError for unknown ConditionOperator values."
+        }
+      ]
+    },
+    {
+      "name": "AutomationEngineService",
+      "responsibility": "Orchestrates the full rule execution lifecycle: load the rule via AutomationRuleRepository, evaluate conditions via RuleEvaluationService, create and persist an AutomationRun, dispatch each AutomationAction as a Django-Q2 async_task (skipped in dry-run mode), append RunLog entries for each step, and transition the run to SUCCESS, FAILURE, or DRY_RUN.",
+      "operatesOn": [
+        "AutomationRule",
+        "AutomationRun"
+      ],
+      "methods": [
+        {
+          "name": "execute",
+          "description": "Load the AutomationRule by ID, evaluate conditions against the TriggerContext, create an AutomationRun record, dispatch each passing AutomationAction as async_task, append a RunLog entry per action, and transition the run to SUCCESS or FAILURE based on overall outcome."
+        },
+        {
+          "name": "execute_dry_run",
+          "description": "Same as execute but with is_dry_run=True. Evaluates conditions and logs what actions would fire without dispatching any Django-Q2 task. Transitions the run to DRY_RUN status and returns the log entries."
+        }
+      ]
+    }
+  ]
+}

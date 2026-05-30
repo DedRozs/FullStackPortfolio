@@ -1,6 +1,7 @@
 import * as Headless from '@headlessui/react'
 import clsx from 'clsx'
 import type React from 'react'
+import { twMerge } from 'tailwind-merge'
 import { Text } from './text'
 
 const sizes = {
@@ -57,7 +58,7 @@ export function DialogTitle({
   return (
     <Headless.DialogTitle
       {...props}
-      className={clsx(className, 'text-lg/6 font-semibold text-balance text-text-primary sm:text-base/6')}
+      className={twMerge('text-lg/6 font-semibold text-balance text-text-primary sm:text-base/6', className)}
     />
   )
 }

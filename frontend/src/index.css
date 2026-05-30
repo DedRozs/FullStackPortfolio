@@ -155,7 +155,7 @@ body {
 }
 
 .animate-glitch {
-  animation: glitch 6s infinite;
+  animation: glitch 3s infinite;
 }
 
 /* ---------------------------------------------------------------------------
