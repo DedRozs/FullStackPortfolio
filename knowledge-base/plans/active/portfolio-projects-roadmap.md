@@ -158,42 +158,42 @@ architectural showpiece - demonstrates senior-level thinking about systems, not 
 
 Design carefully before writing views. This is the part that differentiates the project.
 
-- [ ] Register `apps/workflow_automation` Django app
-- [ ] Define models:
+- [x] Register `apps/workflow_automation` Django app
+- [x] Define models:
   - `AutomationRule`
   - `AutomationTrigger`
   - `AutomationCondition`
   - `AutomationAction`
   - `AutomationRun`
   - `AutomationRunLog`
-- [ ] `registry.py` - decorator-based registry for trigger types, condition operators,
+- [x] `registry.py` - decorator-based registry for trigger types, condition operators,
       action handlers. Extensible without modifying core engine.
-- [ ] `engine.py` - executor: loads rule, evaluates conditions, dispatches actions,
+- [x] `engine.py` - executor: loads rule, evaluates conditions, dispatches actions,
       writes run log
 
 ### Phase 2 - Triggers, Conditions, Actions (Days 5-9)
 
-- [ ] Trigger types:
+- [x] Trigger types:
   - `deliverable.approved` (fires from client_portal)
   - `metric.threshold_crossed` (fires from ops_dashboard)
   - `invoice.overdue`
   - `file.uploaded`
-- [ ] Condition operators: `gt`, `lt`, `eq`, `contains`, `assigned_to`
-- [ ] Actions:
+- [x] Condition operators: `gt`, `lt`, `eq`, `contains`, `assigned_to`
+- [x] Actions:
   - `send_email` (SendGrid)
   - `create_activity_event`
   - `update_status`
   - `send_sms` (Twilio - already configured)
-- [ ] All actions execute as Q2 tasks
-- [ ] Dry-run mode: evaluates rule and logs what would happen without executing
+- [x] All actions execute as Q2 tasks
+- [x] Dry-run mode: evaluates rule and logs what would happen without executing
 
 ### Phase 3 - React UI (Days 10-16)
 
-- [ ] React routes: `/automations`, `/automations/new`, `/automations/:id/runs`
-- [ ] Rule builder: step-by-step form (trigger -> conditions -> actions)
-- [ ] Run history table with expandable log entries per run
-- [ ] Enable/disable toggle per rule
-- [ ] Dry-run button with results modal
+- [x] React routes: `/automations`, `/automations/new`, `/automations/:id/runs`
+- [x] Rule builder: step-by-step form (trigger -> conditions -> actions)
+- [x] Run history table with expandable log entries per run
+- [x] Enable/disable toggle per rule
+- [x] Dry-run button with results modal
 
 ### Phase 4 - Integration + Documentation (Days 17-21)
 

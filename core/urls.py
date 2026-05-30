@@ -24,6 +24,7 @@ urlpatterns = [
     path('api/auth/', include('dj_rest_auth.urls')),
     path('api/portal/', include('apps.client_portal.api_urls')),
     path('api/dashboard/', include('apps.ops_dashboard.api_urls')),
+    path('api/workflow/', include('apps.workflow_automation.api_urls')),
     # Catch-all: serve the React SPA for every non-API route.
     # React Router handles client-side navigation.
     re_path(r'^.*$', spa_index, name='spa'),

@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'apps.client_portal',
     'apps.blog',
     'apps.ops_dashboard',
+    'apps.workflow_automation',
 ]
 
 MIDDLEWARE = [

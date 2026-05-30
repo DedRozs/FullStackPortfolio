@@ -236,6 +236,23 @@ class ApprovalViewSet(ModelViewSet):
             )
         except ValueError as exc:
             return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        # Fire automation trigger
+        try:
+            from apps.workflow_automation.engine import fire_trigger
+            fire_trigger(
+                'deliverable.approved',
+                {
+                    'trigger_type': 'deliverable.approved',
+                    'source_id': str(pk),
+                    'source_type': 'Approval',
+                    'payload': {
+                        'reviewer_id': str(profile.id) if profile else None,
+                    },
+                },
+            )
+        except Exception:
+            import logging as _logging
+            _logging.getLogger(__name__).exception('fire_trigger failed for deliverable.approved')
         return Response({'status': dto.status, 'decided_at': dto.decided_at})
 
     @action(detail=True, methods=['post'], url_path='reject')
