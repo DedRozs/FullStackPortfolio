@@ -9,6 +9,7 @@ import Footer from './Footer'
 const NAV_LINKS = [
   { href: '/', label: 'Home', end: true },
   { href: '/projects', label: 'Projects' },
+  { href: '/blog', label: 'Blog' },
   { href: '/ai', label: 'AI Assistant' },
   { href: '/about', label: 'About' },
   { href: '/contact', label: 'Contact' },
