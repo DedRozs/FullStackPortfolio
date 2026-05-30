@@ -1,0 +1,1263 @@
+{
+  "schemaVersion": "1.0",
+  "projectName": "FullStackPortfolio",
+  "ticketKey": "FSP-1",
+  "sessionPath": "knowledge-base/plans/active/FSP-1/",
+  "ubiquitousLanguage": [
+    {
+      "term": "ClientOrganization",
+      "definition": "The named client company or individual entity that commissions Projects. Root of the portal organizational hierarchy; all Projects, InvoiceRecords, and Stakeholder memberships belong to a ClientOrganization.",
+      "context": "client_portal",
+      "usageExamples": [
+        "class ClientOrganization",
+        "ClientOrganization.objects.get(slug=slug)",
+        "class ClientOrganizationRepository(ABC)"
+      ]
+    },
+    {
+      "term": "UserProfile",
+      "definition": "A portal participant - either a staff member or a client Stakeholder - identified by email address. Wraps Django's built-in User to carry portal-specific attributes such as is_client and organization.",
+      "context": "client_portal",
+      "usageExamples": [
+        "class UserProfile",
+        "UserProfile.user_id",
+        "def get_profile(user_id: int) -> UserProfile"
+      ]
+    },
+    {
+      "term": "Stakeholder",
+      "definition": "A UserProfile whose is_client attribute is True, representing a member of the client team who reviews Deliverables and authorizes Approvals. Semantically distinct from a staff UserProfile. Not a separate model - a role classification on UserProfile.",
+      "context": "client_portal",
+      "usageExamples": [
+        "stakeholder: UserProfile",
+        "def notify_stakeholders(project: Project) -> None",
+        "if user_profile.is_client"
+      ]
+    },
+    {
+      "term": "Project",
+      "definition": "A scoped, time-bounded body of work commissioned by a ClientOrganization. Progresses through states defined by ProjectStatus. Contains Milestones, Messages, and InvoiceRecords.",
+      "context": "client_portal",
+      "usageExamples": [
+        "class Project",
+        "project.status",
+        "class ProjectRepository(ABC)",
+        "Project.objects.filter(status=ProjectStatus.ACTIVE)"
+      ]
+    },
+    {
+      "term": "ProjectStatus",
+      "definition": "Enumeration of valid Project lifecycle states. Values: DRAFT, ACTIVE, PENDING_APPROVAL, COMPLETE, ARCHIVED.",
+      "context": "client_portal",
+      "usageExamples": [
+        "class ProjectStatus(str, Enum)",
+        "project.status == ProjectStatus.COMPLETE",
+        "ProjectStatus.PENDING_APPROVAL"
+      ]
+    },
+    {
+      "term": "Milestone",
+      "definition": "A named checkpoint within a Project with a target completion date. Groups related Deliverables into reviewable phases. Progresses through states defined by MilestoneStatus.",
+      "context": "client_portal",
+      "usageExamples": [
+        "class Milestone",
+        "milestone.target_date",
+        "milestone.project_id",
+        "Milestone.objects.filter(project=project)"
+      ]
+    },
+    {
+      "term": "MilestoneStatus",
+      "definition": "Enumeration of valid Milestone completion states. Values: PENDING (not yet started), IN_PROGRESS (work underway), COMPLETE (all Deliverables in the Milestone approved).",
+      "context": "client_portal",
+      "usageExamples": [
+        "class MilestoneStatus(str, Enum)",
+        "milestone.status == MilestoneStatus.COMPLETE",
+        "MilestoneStatus.IN_PROGRESS"
+      ]
+    },
+    {
+      "term": "Deliverable",
+      "definition": "A concrete work product produced within a Milestone, submitted for Stakeholder review and formal Approval. Versioned through DeliverableVersion records each time a revision is submitted.",
+      "context": "client_portal",
+      "usageExamples": [
+        "class Deliverable",
+        "deliverable.milestone_id",
+        "class DeliverableService",
+        "Deliverable.objects.filter(milestone=milestone)"
+      ]
+    },
+    {
+      "term": "DeliverableVersion",
+      "definition": "An immutable, versioned snapshot of a Deliverable's content created each time a new revision is submitted for review. Preserves the full review history. version_number is a monotonically increasing integer per Deliverable.",
+      "context": "client_portal",
+      "usageExamples": [
+        "class DeliverableVersion",
+        "DeliverableVersion.version_number",
+        "class DeliverableVersionRepository(ABC)",
+        "DeliverableVersion.objects.filter(deliverable=deliverable)"
+      ]
+    },
+    {
+      "term": "Approval",
+      "definition": "A formal, immutable decision record created when a Stakeholder accepts or rejects a specific DeliverableVersion. Carries ApprovalStatus and an optional reviewer comment.",
+      "context": "client_portal",
+      "usageExamples": [
+        "class Approval",
+        "Approval.status",
+        "approval.reviewer_id",
+        "class ApprovalStatus(str, Enum)"
+      ]
+    },
+    {
+      "term": "ApprovalStatus",
+      "definition": "Enumeration of valid Approval decision states. Values: PENDING, APPROVED, REJECTED, REVISION_REQUESTED.",
+      "context": "client_portal",
+      "usageExamples": [
+        "class ApprovalStatus(str, Enum)",
+        "approval.status == ApprovalStatus.APPROVED",
+        "ApprovalStatus.REVISION_REQUESTED"
+      ]
+    },
+    {
+      "term": "FileRecord",
+      "definition": "Metadata describing a file asset attached to a Deliverable or Message. Stores filename, storage path, MIME type, and file size. Does not contain binary data; binary data resides in object storage.",
+      "context": "client_portal",
+      "usageExamples": [
+        "class FileRecord",
+        "FileRecord.storage_path",
+        "FileRecord.mime_type",
+        "class FileRecordModel"
+      ]
+    },
+    {
+      "term": "MessageThread",
+      "definition": "A named, ordered channel within a Project that groups related Messages by topic or Milestone. Provides context for asynchronous communication between portal participants.",
+      "context": "client_portal",
+      "usageExamples": [
+        "class MessageThread",
+        "MessageThread.project_id",
+        "MessageThread.subject",
+        "class MessageThreadModel"
+      ]
+    },
+    {
+      "term": "Message",
+      "definition": "A single communication from a portal participant addressed to a MessageThread within a Project. Contains the message body, sender reference, and creation timestamp. Messages are append-only; no editing or deletion.",
+      "context": "client_portal",
+      "usageExamples": [
+        "class Message",
+        "Message.thread_id",
+        "Message.sender_id",
+        "class MessageRepository(ABC)"
+      ]
+    },
+    {
+      "term": "InvoiceRecord",
+      "definition": "A billing document issued to a ClientOrganization itemizing charges for Project work. Tracks payment lifecycle via InvoiceStatus. Carries due_date, amount, and line items.",
+      "context": "client_portal",
+      "usageExamples": [
+        "class InvoiceRecord",
+        "InvoiceRecord.due_date",
+        "InvoiceRecord.amount",
+        "class InvoiceStatus(str, Enum)"
+      ]
+    },
+    {
+      "term": "InvoiceStatus",
+      "definition": "Enumeration of valid InvoiceRecord payment states. Values: DRAFT (not yet sent), SENT (delivered to client), PAID (payment confirmed), OVERDUE (past due date without payment), CANCELLED (voided).",
+      "context": "client_portal",
+      "usageExamples": [
+        "class InvoiceStatus(str, Enum)",
+        "invoice.status == InvoiceStatus.OVERDUE",
+        "InvoiceStatus.PAID"
+      ]
+    },
+    {
+      "term": "ActivityEvent",
+      "definition": "An immutable, append-only log entry capturing a significant domain action within the portal. Event type is expressed in past tense per DDD convention. Never updated or deleted after creation.",
+      "context": "client_portal",
+      "usageExamples": [
+        "class ActivityEvent",
+        "ActivityEvent.event_type",
+        "class ActivityEventRepository(ABC)",
+        "ActivityEvent.objects.filter(project=project).order_by('occurred_at')"
+      ]
+    },
+    {
+      "term": "Portal",
+      "definition": "The bounded context itself - the secure, role-gated web application through which ClientOrganization Stakeholders collaborate with the service provider on Projects.",
+      "context": "client_portal",
+      "usageExamples": [
+        "apps.client_portal",
+        "from apps.client_portal.domain.model import Project"
+      ]
+    }
+  ],
+  "entities": [
+    {
+      "name": "ClientOrganization",
+      "boundedContext": "client_portal",
+      "identity": "UUID",
+      "invariants": [
+        "name must not be blank",
+        "slug must be non-empty, URL-safe (alphanumeric and hyphens only), and unique across all ClientOrganization records",
+        "A ClientOrganization may not be the target of an InvoiceRecord unless it has at least one Stakeholder (UserProfile with is_client=True)",
+        "created_at is set once at construction and is immutable"
+      ],
+      "stateTransitions": [],
+      "attributes": [
+        { "name": "id", "type": "UUID", "description": "Unique identity, assigned at construction via uuid4()" },
+        { "name": "name", "type": "str", "description": "Human-readable display name of the client company or individual" },
+        { "name": "slug", "type": "str", "description": "URL-safe identifier used in portal routes; unique per portal instance" },
+        { "name": "created_at", "type": "datetime", "description": "UTC timestamp set at construction; immutable thereafter" }
+      ]
+    },
+    {
+      "name": "UserProfile",
+      "boundedContext": "client_portal",
+      "identity": "UUID",
+      "invariants": [
+        "email must be a non-empty, syntactically valid email address",
+        "user_id must uniquely reference a Django User; no two UserProfiles may share the same user_id",
+        "If is_client is True, organization_id must not be null - a Stakeholder must belong to a ClientOrganization",
+        "A staff UserProfile (is_client=False) must have organization_id set to null"
+      ],
+      "stateTransitions": [],
+      "attributes": [
+        { "name": "id", "type": "UUID", "description": "Unique identity, assigned at construction via uuid4()" },
+        { "name": "user_id", "type": "int", "description": "Foreign key to Django's built-in User; one-to-one" },
+        { "name": "email", "type": "str", "description": "Contact email address; mirrors User.email" },
+        { "name": "is_client", "type": "bool", "description": "True if this UserProfile is a Stakeholder; False for staff" },
+        { "name": "organization_id", "type": "UUID | None", "description": "References the ClientOrganization this Stakeholder belongs to; null for staff" },
+        { "name": "created_at", "type": "datetime", "description": "UTC timestamp set at construction; immutable thereafter" }
+      ]
+    },
+    {
+      "name": "Project",
+      "boundedContext": "client_portal",
+      "identity": "UUID",
+      "invariants": [
+        "name must not be blank",
+        "organization_id must reference an existing ClientOrganization and is immutable after creation",
+        "status must follow valid ProjectStatus transitions; direct field mutation from outside the entity is prohibited",
+        "target_date, when set, must be a date in the future relative to created_at"
+      ],
+      "stateTransitions": [
+        {
+          "from": "ACTIVE",
+          "to": "PENDING_APPROVAL",
+          "trigger": "submit_for_approval()",
+          "guard": "Project has at least one Milestone with at least one Deliverable"
+        },
+        {
+          "from": "PENDING_APPROVAL",
+          "to": "ACTIVE",
+          "trigger": "return_to_active()",
+          "guard": "At least one Approval on the current review cycle is REJECTED or REVISION_REQUESTED"
+        },
+        {
+          "from": "PENDING_APPROVAL",
+          "to": "COMPLETE",
+          "trigger": "mark_complete()",
+          "guard": "All Deliverables across all Milestones have an APPROVED Approval on their current DeliverableVersion"
+        }
+      ],
+      "attributes": [
+        { "name": "id", "type": "UUID", "description": "Unique identity, assigned at construction via uuid4()" },
+        { "name": "name", "type": "str", "description": "Human-readable Project name" },
+        { "name": "organization_id", "type": "UUID", "description": "References the ClientOrganization that commissioned this Project; immutable" },
+        { "name": "status", "type": "ProjectStatus", "description": "Current lifecycle state; defaults to ACTIVE at construction" },
+        { "name": "description", "type": "str | None", "description": "Optional narrative description of the Project scope" },
+        { "name": "target_date", "type": "date | None", "description": "Expected completion date; null if not yet scheduled" },
+        { "name": "created_at", "type": "datetime", "description": "UTC timestamp set at construction; immutable thereafter" }
+      ]
+    },
+    {
+      "name": "Milestone",
+      "boundedContext": "client_portal",
+      "identity": "UUID",
+      "invariants": [
+        "name must not be blank",
+        "project_id must reference an existing Project and is immutable after creation",
+        "target_date must be set before the Milestone can transition to IN_PROGRESS",
+        "status must follow valid MilestoneStatus transitions; direct field mutation from outside the entity is prohibited"
+      ],
+      "stateTransitions": [
+        {
+          "from": "PENDING",
+          "to": "IN_PROGRESS",
+          "trigger": "begin()",
+          "guard": "Parent Project status is ACTIVE; target_date is not null"
+        },
+        {
+          "from": "IN_PROGRESS",
+          "to": "COMPLETE",
+          "trigger": "complete()",
+          "guard": "All Deliverables within this Milestone have an APPROVED Approval on their current DeliverableVersion"
+        }
+      ],
+      "attributes": [
+        { "name": "id", "type": "UUID", "description": "Unique identity, assigned at construction via uuid4()" },
+        { "name": "name", "type": "str", "description": "Human-readable checkpoint name" },
+        { "name": "project_id", "type": "UUID", "description": "References the parent Project; immutable" },
+        { "name": "status", "type": "MilestoneStatus", "description": "Current completion state; defaults to PENDING at construction" },
+        { "name": "target_date", "type": "date | None", "description": "Expected completion date for this checkpoint" },
+        { "name": "created_at", "type": "datetime", "description": "UTC timestamp set at construction; immutable thereafter" }
+      ]
+    },
+    {
+      "name": "Deliverable",
+      "boundedContext": "client_portal",
+      "identity": "UUID",
+      "invariants": [
+        "name must not be blank",
+        "milestone_id must reference an existing Milestone and is immutable after creation",
+        "current_version_number must be a positive integer; it increments monotonically with each submit_revision() call and never decrements",
+        "A new revision must not be submitted while the current DeliverableVersion has a PENDING Approval"
+      ],
+      "stateTransitions": [],
+      "attributes": [
+        { "name": "id", "type": "UUID", "description": "Unique identity, assigned at construction via uuid4()" },
+        { "name": "name", "type": "str", "description": "Human-readable name of the work product" },
+        { "name": "milestone_id", "type": "UUID", "description": "References the parent Milestone; immutable" },
+        { "name": "description", "type": "str | None", "description": "Optional narrative description of the deliverable content" },
+        { "name": "current_version_number", "type": "int", "description": "Monotonically increasing version counter; starts at 1 on first submission. Initialized to 0 before the first submit_revision() call" },
+        { "name": "created_at", "type": "datetime", "description": "UTC timestamp set at construction; immutable thereafter" }
+      ]
+    },
+    {
+      "name": "Approval",
+      "boundedContext": "client_portal",
+      "identity": "UUID",
+      "invariants": [
+        "deliverable_version_id must be set at construction and is immutable; an Approval is permanently bound to one DeliverableVersion",
+        "reviewer_id must reference a UserProfile with is_client=True (a Stakeholder); staff members may not create Approvals",
+        "At most one Approval may exist per DeliverableVersion; a second Approval for the same version is a domain violation",
+        "status is immutable once it reaches APPROVED, REJECTED, or REVISION_REQUESTED"
+      ],
+      "stateTransitions": [
+        {
+          "from": "PENDING",
+          "to": "APPROVED",
+          "trigger": "approve(comment: str | None)",
+          "guard": "Caller is a Stakeholder (reviewer_id references a UserProfile with is_client=True)"
+        },
+        {
+          "from": "PENDING",
+          "to": "REJECTED",
+          "trigger": "reject(comment: str)",
+          "guard": "comment must not be blank; caller is a Stakeholder"
+        },
+        {
+          "from": "PENDING",
+          "to": "REVISION_REQUESTED",
+          "trigger": "request_revision(comment: str)",
+          "guard": "comment must not be blank; caller is a Stakeholder"
+        }
+      ],
+      "attributes": [
+        { "name": "id", "type": "UUID", "description": "Unique identity, assigned at construction via uuid4()" },
+        { "name": "deliverable_version_id", "type": "UUID", "description": "References the specific DeliverableVersion under review; immutable" },
+        { "name": "reviewer_id", "type": "UUID", "description": "References the Stakeholder UserProfile who owns this Approval" },
+        { "name": "status", "type": "ApprovalStatus", "description": "Current decision state; defaults to PENDING at construction" },
+        { "name": "comment", "type": "str | None", "description": "Reviewer rationale; required when status is REJECTED or REVISION_REQUESTED" },
+        { "name": "decided_at", "type": "datetime | None", "description": "UTC timestamp when a terminal decision was recorded; null while PENDING" },
+        { "name": "created_at", "type": "datetime", "description": "UTC timestamp set at construction; immutable thereafter" }
+      ]
+    },
+    {
+      "name": "FileRecord",
+      "boundedContext": "client_portal",
+      "identity": "UUID",
+      "invariants": [
+        "filename must not be blank",
+        "storage_path must not be blank; it is set at construction and is immutable",
+        "file_size_bytes must be a positive integer",
+        "mime_type must not be blank",
+        "Exactly one of deliverable_version_id or message_id must be set; a FileRecord cannot be simultaneously attached to both, nor detached from both"
+      ],
+      "stateTransitions": [],
+      "attributes": [
+        { "name": "id", "type": "UUID", "description": "Unique identity, assigned at construction via uuid4()" },
+        { "name": "filename", "type": "str", "description": "Original filename as provided by the uploader" },
+        { "name": "storage_path", "type": "str", "description": "Absolute path or object-storage key where the binary resides; immutable" },
+        { "name": "mime_type", "type": "str", "description": "MIME type of the file (e.g., application/pdf, image/png)" },
+        { "name": "file_size_bytes", "type": "int", "description": "Size of the stored binary in bytes; must be positive" },
+        { "name": "deliverable_version_id", "type": "UUID | None", "description": "References the DeliverableVersion this file is attached to; mutually exclusive with message_id" },
+        { "name": "message_id", "type": "UUID | None", "description": "References the Message this file is attached to; mutually exclusive with deliverable_version_id" },
+        { "name": "uploaded_by_id", "type": "UUID", "description": "References the UserProfile who uploaded this file" },
+        { "name": "created_at", "type": "datetime", "description": "UTC timestamp set at construction; immutable thereafter" }
+      ]
+    },
+    {
+      "name": "MessageThread",
+      "boundedContext": "client_portal",
+      "identity": "UUID",
+      "invariants": [
+        "subject must not be blank",
+        "project_id must reference an existing Project and is immutable after creation"
+      ],
+      "stateTransitions": [],
+      "attributes": [
+        { "name": "id", "type": "UUID", "description": "Unique identity, assigned at construction via uuid4()" },
+        { "name": "subject", "type": "str", "description": "Human-readable thread subject" },
+        { "name": "project_id", "type": "UUID", "description": "References the Project this thread belongs to; immutable" },
+        { "name": "created_at", "type": "datetime", "description": "UTC timestamp set at construction; immutable thereafter" }
+      ]
+    },
+    {
+      "name": "Message",
+      "boundedContext": "client_portal",
+      "identity": "UUID",
+      "invariants": [
+        "body must not be blank",
+        "thread_id must reference an existing MessageThread and is immutable after creation",
+        "sender_id must reference an existing UserProfile and is immutable after creation",
+        "A Message is append-only and immutable after creation; no editing or deletion is permitted"
+      ],
+      "stateTransitions": [],
+      "attributes": [
+        { "name": "id", "type": "UUID", "description": "Unique identity, assigned at construction via uuid4()" },
+        { "name": "thread_id", "type": "UUID", "description": "References the MessageThread this Message belongs to; immutable" },
+        { "name": "sender_id", "type": "UUID", "description": "References the UserProfile who authored this Message; immutable" },
+        { "name": "body", "type": "str", "description": "Full text content of the Message; must not be blank" },
+        { "name": "created_at", "type": "datetime", "description": "UTC timestamp set at construction; immutable thereafter" }
+      ]
+    },
+    {
+      "name": "InvoiceRecord",
+      "boundedContext": "client_portal",
+      "identity": "UUID",
+      "invariants": [
+        "amount must be a positive Decimal value; zero and negative amounts are prohibited",
+        "organization_id must reference an existing ClientOrganization and is immutable after creation",
+        "due_date must be set before the InvoiceRecord can transition out of DRAFT",
+        "status may not transition from PAID or OVERDUE to any other state; both are terminal"
+      ],
+      "stateTransitions": [
+        {
+          "from": "DRAFT",
+          "to": "SENT",
+          "trigger": "send()",
+          "guard": "amount is positive; due_date is not null"
+        },
+        {
+          "from": "SENT",
+          "to": "PAID",
+          "trigger": "mark_paid()",
+          "guard": "None beyond valid current status"
+        },
+        {
+          "from": "SENT",
+          "to": "OVERDUE",
+          "trigger": "mark_overdue()",
+          "guard": "Current date is strictly after due_date"
+        }
+      ],
+      "attributes": [
+        { "name": "id", "type": "UUID", "description": "Unique identity, assigned at construction via uuid4()" },
+        { "name": "organization_id", "type": "UUID", "description": "References the ClientOrganization being billed; immutable" },
+        { "name": "project_id", "type": "UUID | None", "description": "References the Project this invoice relates to; optional" },
+        { "name": "status", "type": "InvoiceStatus", "description": "Current payment lifecycle state; defaults to DRAFT at construction" },
+        { "name": "amount", "type": "Decimal", "description": "Total billed amount; must be positive. Use Decimal, not float" },
+        { "name": "due_date", "type": "date | None", "description": "Date by which payment is expected; null in DRAFT state until explicitly set" },
+        { "name": "issued_at", "type": "datetime | None", "description": "UTC timestamp when the invoice was sent; null while in DRAFT" },
+        { "name": "created_at", "type": "datetime", "description": "UTC timestamp set at construction; immutable thereafter" }
+      ]
+    },
+    {
+      "name": "ActivityEvent",
+      "boundedContext": "client_portal",
+      "identity": "UUID",
+      "invariants": [
+        "event_type must not be blank and must be expressed in past tense per DDD naming convention (e.g., ProjectStatusChanged, ApprovalDecisionRecorded)",
+        "occurred_at is set at construction to the current UTC time and is immutable thereafter",
+        "actor_id must reference an existing UserProfile",
+        "An ActivityEvent is immutable after creation; it is never updated or deleted"
+      ],
+      "stateTransitions": [],
+      "attributes": [
+        { "name": "id", "type": "UUID", "description": "Unique identity, assigned at construction via uuid4()" },
+        { "name": "event_type", "type": "str", "description": "Past-tense name of the domain action recorded (e.g., ProjectStatusChanged)" },
+        { "name": "actor_id", "type": "UUID", "description": "References the UserProfile whose action triggered this event" },
+        { "name": "project_id", "type": "UUID | None", "description": "References the Project this event relates to; null for organization-level events" },
+        { "name": "organization_id", "type": "UUID | None", "description": "References the ClientOrganization this event relates to; null for project-scoped events" },
+        { "name": "payload", "type": "dict", "description": "Structured key-value data capturing the event details" },
+        { "name": "occurred_at", "type": "datetime", "description": "UTC timestamp set at construction; immutable thereafter" }
+      ]
+    }
+  ],
+  "valueObjects": [
+    {
+      "name": "Money",
+      "boundedContext": "client_portal",
+      "properties": [
+        { "name": "amount", "type": "Decimal" },
+        { "name": "currency", "type": "str" }
+      ],
+      "validationRules": [
+        "amount must be >= 0",
+        "currency must be a 3-letter alphabetic ISO 4217 code (e.g., USD, EUR, GBP)"
+      ],
+      "equalityBasis": "All properties (amount and currency)"
+    },
+    {
+      "name": "ProjectStatus",
+      "boundedContext": "client_portal",
+      "properties": [
+        { "name": "value", "type": "str" }
+      ],
+      "validationRules": [
+        "Value must be one of: DRAFT, ACTIVE, PENDING_APPROVAL, COMPLETE, ARCHIVED; enforced by Python enum assignment"
+      ],
+      "equalityBasis": "By value (enum member identity)"
+    },
+    {
+      "name": "MilestoneStatus",
+      "boundedContext": "client_portal",
+      "properties": [
+        { "name": "value", "type": "str" }
+      ],
+      "validationRules": [
+        "Value must be one of: PENDING, IN_PROGRESS, COMPLETE; enforced by Python enum assignment"
+      ],
+      "equalityBasis": "By value (enum member identity)"
+    },
+    {
+      "name": "ApprovalStatus",
+      "boundedContext": "client_portal",
+      "properties": [
+        { "name": "value", "type": "str" }
+      ],
+      "validationRules": [
+        "Value must be one of: PENDING, APPROVED, REJECTED, REVISION_REQUESTED; enforced by Python enum assignment"
+      ],
+      "equalityBasis": "By value (enum member identity)"
+    },
+    {
+      "name": "InvoiceStatus",
+      "boundedContext": "client_portal",
+      "properties": [
+        { "name": "value", "type": "str" }
+      ],
+      "validationRules": [
+        "Value must be one of: DRAFT, SENT, PAID, OVERDUE, CANCELLED; enforced by Python enum assignment"
+      ],
+      "equalityBasis": "By value (enum member identity)"
+    },
+    {
+      "name": "StakeholderRole",
+      "boundedContext": "client_portal",
+      "properties": [
+        { "name": "value", "type": "str" }
+      ],
+      "validationRules": [
+        "Value must be one of: CLIENT, STAFF, ADMIN; enforced by Python enum assignment"
+      ],
+      "equalityBasis": "By value (enum member identity)"
+    },
+    {
+      "name": "FileMetadata",
+      "boundedContext": "client_portal",
+      "properties": [
+        { "name": "content_type", "type": "str" },
+        { "name": "size_bytes", "type": "int" },
+        { "name": "storage_key", "type": "str" }
+      ],
+      "validationRules": [
+        "content_type must not be blank",
+        "size_bytes must be a positive integer (> 0)",
+        "storage_key must not be blank"
+      ],
+      "equalityBasis": "All properties (content_type, size_bytes, and storage_key)"
+    },
+    {
+      "name": "VersionNumber",
+      "boundedContext": "client_portal",
+      "properties": [
+        { "name": "value", "type": "int" }
+      ],
+      "validationRules": [
+        "value must be a positive integer (>= 1); zero and negative values are prohibited"
+      ],
+      "equalityBasis": "All properties (value)"
+    }
+  ],
+  "aggregates": [
+    {
+      "name": "ClientOrganizationAggregate",
+      "root": "ClientOrganization",
+      "members": ["ClientOrganization"],
+      "invariants": [
+        "name must not be blank",
+        "slug must be non-empty, URL-safe (alphanumeric and hyphens only), and unique across all ClientOrganization records",
+        "created_at is set once at construction and is immutable"
+      ],
+      "crossAggregateReferences": []
+    },
+    {
+      "name": "UserProfileAggregate",
+      "root": "UserProfile",
+      "members": ["UserProfile"],
+      "invariants": [
+        "email must be a non-empty, syntactically valid email address",
+        "user_id must uniquely reference a Django User; no two UserProfiles may share the same user_id",
+        "If is_client is True, organization_id must not be null",
+        "If is_client is False, organization_id must be null"
+      ],
+      "crossAggregateReferences": [
+        { "targetAggregate": "ClientOrganizationAggregate", "referenceType": "by-id" }
+      ]
+    },
+    {
+      "name": "ProjectAggregate",
+      "root": "Project",
+      "members": ["Project", "Milestone"],
+      "invariants": [
+        "Project.name must not be blank",
+        "Project.organization_id is immutable after creation",
+        "Project status must follow the defined ProjectStatus transition rules",
+        "Milestone.project_id is immutable and must equal the aggregate root's id",
+        "Milestone.target_date must be set before a Milestone can transition to IN_PROGRESS",
+        "Milestone status must follow the defined MilestoneStatus transition rules",
+        "All Milestones within the aggregate belong to the same Project root"
+      ],
+      "crossAggregateReferences": [
+        { "targetAggregate": "ClientOrganizationAggregate", "referenceType": "by-id" }
+      ]
+    },
+    {
+      "name": "DeliverableAggregate",
+      "root": "Deliverable",
+      "members": ["Deliverable", "DeliverableVersion", "Approval"],
+      "invariants": [
+        "Deliverable.name must not be blank",
+        "Deliverable.milestone_id is immutable after creation",
+        "Deliverable.current_version_number increments monotonically with each submit_revision() call and never decrements",
+        "A new revision must not be submitted while the current DeliverableVersion has a PENDING Approval",
+        "At most one Approval may exist per DeliverableVersion",
+        "Approval.deliverable_version_id is immutable and must reference a DeliverableVersion that is a member of this aggregate",
+        "Approval.status is immutable once it reaches APPROVED, REJECTED, or REVISION_REQUESTED"
+      ],
+      "crossAggregateReferences": [
+        { "targetAggregate": "ProjectAggregate", "referenceType": "by-id" },
+        { "targetAggregate": "UserProfileAggregate", "referenceType": "by-id" }
+      ]
+    },
+    {
+      "name": "FileRecordAggregate",
+      "root": "FileRecord",
+      "members": ["FileRecord"],
+      "invariants": [
+        "filename, storage_path, and mime_type must not be blank",
+        "storage_path is immutable after construction",
+        "file_size_bytes must be a positive integer",
+        "Exactly one of deliverable_version_id or message_id must be set"
+      ],
+      "crossAggregateReferences": [
+        { "targetAggregate": "DeliverableAggregate", "referenceType": "by-id" },
+        { "targetAggregate": "MessageThreadAggregate", "referenceType": "by-id" },
+        { "targetAggregate": "UserProfileAggregate", "referenceType": "by-id" }
+      ]
+    },
+    {
+      "name": "MessageThreadAggregate",
+      "root": "MessageThread",
+      "members": ["MessageThread", "Message"],
+      "invariants": [
+        "MessageThread.subject must not be blank",
+        "MessageThread.project_id is immutable after creation",
+        "Message.thread_id is immutable and must equal the aggregate root's id",
+        "Message.body must not be blank",
+        "Messages are append-only; no editing or deletion is permitted after creation"
+      ],
+      "crossAggregateReferences": [
+        { "targetAggregate": "ProjectAggregate", "referenceType": "by-id" },
+        { "targetAggregate": "UserProfileAggregate", "referenceType": "by-id" }
+      ]
+    },
+    {
+      "name": "InvoiceRecordAggregate",
+      "root": "InvoiceRecord",
+      "members": ["InvoiceRecord"],
+      "invariants": [
+        "amount must be a positive Decimal value; zero and negative amounts are prohibited",
+        "organization_id is immutable after creation",
+        "due_date must be set before the InvoiceRecord can transition out of DRAFT",
+        "PAID and OVERDUE are terminal states; no further status transitions are permitted"
+      ],
+      "crossAggregateReferences": [
+        { "targetAggregate": "ClientOrganizationAggregate", "referenceType": "by-id" },
+        { "targetAggregate": "ProjectAggregate", "referenceType": "by-id" }
+      ]
+    },
+    {
+      "name": "ActivityEventAggregate",
+      "root": "ActivityEvent",
+      "members": ["ActivityEvent"],
+      "invariants": [
+        "event_type must not be blank and must be expressed in past tense",
+        "occurred_at is set at construction to the current UTC time and is immutable thereafter",
+        "An ActivityEvent is immutable after creation; it is never updated or deleted"
+      ],
+      "crossAggregateReferences": [
+        { "targetAggregate": "UserProfileAggregate", "referenceType": "by-id" },
+        { "targetAggregate": "ProjectAggregate", "referenceType": "by-id" },
+        { "targetAggregate": "ClientOrganizationAggregate", "referenceType": "by-id" }
+      ]
+    }
+  ],
+  "domainEvents": [
+    {
+      "name": "ClientOrganizationRegistered",
+      "trigger": "ClientOrganization.__init__() - new ClientOrganization constructed and persisted",
+      "payload": [
+        { "field": "organization_id", "type": "UUID", "description": "Identity of the newly registered ClientOrganization" },
+        { "field": "name", "type": "str", "description": "Display name of the ClientOrganization" },
+        { "field": "slug", "type": "str", "description": "URL-safe identifier" },
+        { "field": "occurred_at", "type": "datetime", "description": "When the event occurred" }
+      ],
+      "producers": ["ClientOrganizationAggregate"],
+      "consumers": ["ActivityEventLogger", "NotificationService"]
+    },
+    {
+      "name": "UserProfileCreated",
+      "trigger": "UserProfile.__init__() - new UserProfile constructed and persisted",
+      "payload": [
+        { "field": "user_profile_id", "type": "UUID", "description": "Identity of the new UserProfile" },
+        { "field": "is_client", "type": "bool", "description": "True if this is a Stakeholder profile" },
+        { "field": "organization_id", "type": "UUID | None", "description": "ClientOrganization the Stakeholder belongs to; None for staff" },
+        { "field": "occurred_at", "type": "datetime", "description": "When the event occurred" }
+      ],
+      "producers": ["UserProfileAggregate"],
+      "consumers": ["ActivityEventLogger", "NotificationService"]
+    },
+    {
+      "name": "ProjectActivated",
+      "trigger": "Project.activate() - state transition DRAFT -> ACTIVE",
+      "payload": [
+        { "field": "project_id", "type": "UUID", "description": "Identity of the activated Project" },
+        { "field": "organization_id", "type": "UUID", "description": "Owning ClientOrganization" },
+        { "field": "name", "type": "str", "description": "Project name at activation time" },
+        { "field": "occurred_at", "type": "datetime", "description": "When the event occurred" }
+      ],
+      "producers": ["ProjectAggregate"],
+      "consumers": ["ActivityEventLogger", "NotificationService"]
+    },
+    {
+      "name": "ProjectSubmittedForApproval",
+      "trigger": "Project.submit_for_approval() - state transition ACTIVE -> PENDING_APPROVAL",
+      "payload": [
+        { "field": "project_id", "type": "UUID", "description": "Identity of the Project submitted for approval" },
+        { "field": "organization_id", "type": "UUID", "description": "Owning ClientOrganization" },
+        { "field": "occurred_at", "type": "datetime", "description": "When the event occurred" }
+      ],
+      "producers": ["ProjectAggregate"],
+      "consumers": ["ActivityEventLogger", "NotificationService"]
+    },
+    {
+      "name": "ProjectReturnedToActive",
+      "trigger": "Project.return_to_active() - state transition PENDING_APPROVAL -> ACTIVE",
+      "payload": [
+        { "field": "project_id", "type": "UUID", "description": "Identity of the Project returned to active work" },
+        { "field": "organization_id", "type": "UUID", "description": "Owning ClientOrganization" },
+        { "field": "occurred_at", "type": "datetime", "description": "When the event occurred" }
+      ],
+      "producers": ["ProjectAggregate"],
+      "consumers": ["ActivityEventLogger", "NotificationService"]
+    },
+    {
+      "name": "ProjectCompleted",
+      "trigger": "Project.mark_complete() - state transition PENDING_APPROVAL -> COMPLETE",
+      "payload": [
+        { "field": "project_id", "type": "UUID", "description": "Identity of the completed Project" },
+        { "field": "organization_id", "type": "UUID", "description": "Owning ClientOrganization" },
+        { "field": "occurred_at", "type": "datetime", "description": "When the event occurred" }
+      ],
+      "producers": ["ProjectAggregate"],
+      "consumers": ["ActivityEventLogger", "NotificationService"]
+    },
+    {
+      "name": "ProjectArchived",
+      "trigger": "Project.archive() - state transition ACTIVE -> ARCHIVED",
+      "payload": [
+        { "field": "project_id", "type": "UUID", "description": "Identity of the archived Project" },
+        { "field": "organization_id", "type": "UUID", "description": "Owning ClientOrganization" },
+        { "field": "occurred_at", "type": "datetime", "description": "When the event occurred" }
+      ],
+      "producers": ["ProjectAggregate"],
+      "consumers": ["ActivityEventLogger"]
+    },
+    {
+      "name": "MilestoneStarted",
+      "trigger": "Milestone.begin() - state transition PENDING -> IN_PROGRESS",
+      "payload": [
+        { "field": "milestone_id", "type": "UUID", "description": "Identity of the started Milestone" },
+        { "field": "project_id", "type": "UUID", "description": "Parent Project" },
+        { "field": "organization_id", "type": "UUID", "description": "Owning ClientOrganization (denormalized for consumer convenience)" },
+        { "field": "name", "type": "str", "description": "Milestone name" },
+        { "field": "target_date", "type": "date", "description": "Expected completion date" },
+        { "field": "occurred_at", "type": "datetime", "description": "When the event occurred" }
+      ],
+      "producers": ["ProjectAggregate"],
+      "consumers": ["ActivityEventLogger", "NotificationService"]
+    },
+    {
+      "name": "MilestoneCompleted",
+      "trigger": "Milestone.complete() - state transition IN_PROGRESS -> COMPLETE",
+      "payload": [
+        { "field": "milestone_id", "type": "UUID", "description": "Identity of the completed Milestone" },
+        { "field": "project_id", "type": "UUID", "description": "Parent Project" },
+        { "field": "organization_id", "type": "UUID", "description": "Owning ClientOrganization (denormalized for consumer convenience)" },
+        { "field": "name", "type": "str", "description": "Milestone name" },
+        { "field": "occurred_at", "type": "datetime", "description": "When the event occurred" }
+      ],
+      "producers": ["ProjectAggregate"],
+      "consumers": ["ActivityEventLogger", "NotificationService"]
+    },
+    {
+      "name": "DeliverableRevisionSubmitted",
+      "trigger": "Deliverable.submit_revision() - new DeliverableVersion created; current_version_number incremented",
+      "payload": [
+        { "field": "deliverable_id", "type": "UUID", "description": "Identity of the Deliverable" },
+        { "field": "deliverable_version_id", "type": "UUID", "description": "Identity of the newly created DeliverableVersion" },
+        { "field": "version_number", "type": "int", "description": "New monotonically increasing version counter value" },
+        { "field": "milestone_id", "type": "UUID", "description": "Parent Milestone" },
+        { "field": "project_id", "type": "UUID", "description": "Parent Project (denormalized for consumer convenience)" },
+        { "field": "occurred_at", "type": "datetime", "description": "When the event occurred" }
+      ],
+      "producers": ["DeliverableAggregate"],
+      "consumers": ["ActivityEventLogger", "NotificationService"]
+    },
+    {
+      "name": "DeliverableApproved",
+      "trigger": "Approval.approve() on DeliverableAggregate - Approval state transition PENDING -> APPROVED",
+      "payload": [
+        { "field": "deliverable_id", "type": "UUID", "description": "Identity of the approved Deliverable" },
+        { "field": "deliverable_version_id", "type": "UUID", "description": "The specific DeliverableVersion that was approved" },
+        { "field": "approval_id", "type": "UUID", "description": "Identity of the Approval record" },
+        { "field": "reviewer_id", "type": "UUID", "description": "Stakeholder UserProfile who approved" },
+        { "field": "comment", "type": "str | None", "description": "Optional reviewer comment" },
+        { "field": "milestone_id", "type": "UUID", "description": "Parent Milestone" },
+        { "field": "project_id", "type": "UUID", "description": "Parent Project (denormalized for consumer convenience)" },
+        { "field": "occurred_at", "type": "datetime", "description": "When the event occurred" }
+      ],
+      "producers": ["DeliverableAggregate"],
+      "consumers": ["ActivityEventLogger", "NotificationService", "DeliverableApprovalCoordinator"]
+    },
+    {
+      "name": "DeliverableRejected",
+      "trigger": "Approval.reject() on DeliverableAggregate - Approval state transition PENDING -> REJECTED",
+      "payload": [
+        { "field": "deliverable_id", "type": "UUID", "description": "Identity of the rejected Deliverable" },
+        { "field": "deliverable_version_id", "type": "UUID", "description": "The specific DeliverableVersion that was rejected" },
+        { "field": "approval_id", "type": "UUID", "description": "Identity of the Approval record" },
+        { "field": "reviewer_id", "type": "UUID", "description": "Stakeholder UserProfile who rejected" },
+        { "field": "comment", "type": "str", "description": "Mandatory rejection reason" },
+        { "field": "milestone_id", "type": "UUID", "description": "Parent Milestone" },
+        { "field": "project_id", "type": "UUID", "description": "Parent Project (denormalized for consumer convenience)" },
+        { "field": "occurred_at", "type": "datetime", "description": "When the event occurred" }
+      ],
+      "producers": ["DeliverableAggregate"],
+      "consumers": ["ActivityEventLogger", "NotificationService"]
+    },
+    {
+      "name": "DeliverableRevisionRequested",
+      "trigger": "Approval.request_revision() on DeliverableAggregate - Approval state transition PENDING -> REVISION_REQUESTED",
+      "payload": [
+        { "field": "deliverable_id", "type": "UUID", "description": "Identity of the Deliverable requiring revision" },
+        { "field": "deliverable_version_id", "type": "UUID", "description": "The specific DeliverableVersion under review" },
+        { "field": "approval_id", "type": "UUID", "description": "Identity of the Approval record" },
+        { "field": "reviewer_id", "type": "UUID", "description": "Stakeholder UserProfile who requested the revision" },
+        { "field": "comment", "type": "str", "description": "Mandatory revision instructions" },
+        { "field": "milestone_id", "type": "UUID", "description": "Parent Milestone" },
+        { "field": "project_id", "type": "UUID", "description": "Parent Project (denormalized for consumer convenience)" },
+        { "field": "occurred_at", "type": "datetime", "description": "When the event occurred" }
+      ],
+      "producers": ["DeliverableAggregate"],
+      "consumers": ["ActivityEventLogger", "NotificationService"]
+    },
+    {
+      "name": "FileRecordUploaded",
+      "trigger": "FileRecord.__init__() - binary asset stored in object storage and FileRecord metadata persisted",
+      "payload": [
+        { "field": "file_record_id", "type": "UUID", "description": "Identity of the uploaded FileRecord" },
+        { "field": "filename", "type": "str", "description": "Original filename" },
+        { "field": "mime_type", "type": "str", "description": "MIME type of the uploaded file" },
+        { "field": "file_size_bytes", "type": "int", "description": "File size in bytes" },
+        { "field": "uploaded_by_id", "type": "UUID", "description": "UserProfile who performed the upload" },
+        { "field": "deliverable_version_id", "type": "UUID | None", "description": "DeliverableVersion this file is attached to; None if a message attachment" },
+        { "field": "message_id", "type": "UUID | None", "description": "Message this file is attached to; None if a deliverable attachment" },
+        { "field": "occurred_at", "type": "datetime", "description": "When the event occurred" }
+      ],
+      "producers": ["FileRecordAggregate"],
+      "consumers": ["ActivityEventLogger", "NotificationService"]
+    },
+    {
+      "name": "MessagePosted",
+      "trigger": "MessageThread.append_message() - a new Message appended to a MessageThread",
+      "payload": [
+        { "field": "message_id", "type": "UUID", "description": "Identity of the new Message" },
+        { "field": "thread_id", "type": "UUID", "description": "Parent MessageThread" },
+        { "field": "project_id", "type": "UUID", "description": "Project this thread belongs to" },
+        { "field": "sender_id", "type": "UUID", "description": "UserProfile who posted the message" },
+        { "field": "occurred_at", "type": "datetime", "description": "When the event occurred" }
+      ],
+      "producers": ["MessageThreadAggregate"],
+      "consumers": ["ActivityEventLogger", "NotificationService"]
+    },
+    {
+      "name": "InvoiceSent",
+      "trigger": "InvoiceRecord.send() - state transition DRAFT -> SENT",
+      "payload": [
+        { "field": "invoice_id", "type": "UUID", "description": "Identity of the InvoiceRecord" },
+        { "field": "organization_id", "type": "UUID", "description": "Billed ClientOrganization" },
+        { "field": "project_id", "type": "UUID | None", "description": "Related Project; None if not project-linked" },
+        { "field": "amount", "type": "Decimal", "description": "Total billed amount" },
+        { "field": "due_date", "type": "date", "description": "Payment due date" },
+        { "field": "occurred_at", "type": "datetime", "description": "When the event occurred" }
+      ],
+      "producers": ["InvoiceRecordAggregate"],
+      "consumers": ["ActivityEventLogger", "NotificationService"]
+    },
+    {
+      "name": "InvoicePaid",
+      "trigger": "InvoiceRecord.mark_paid() - state transition SENT -> PAID",
+      "payload": [
+        { "field": "invoice_id", "type": "UUID", "description": "Identity of the InvoiceRecord" },
+        { "field": "organization_id", "type": "UUID", "description": "Billed ClientOrganization" },
+        { "field": "project_id", "type": "UUID | None", "description": "Related Project; None if not project-linked" },
+        { "field": "amount", "type": "Decimal", "description": "Amount paid" },
+        { "field": "occurred_at", "type": "datetime", "description": "When the event occurred" }
+      ],
+      "producers": ["InvoiceRecordAggregate"],
+      "consumers": ["ActivityEventLogger", "NotificationService"]
+    },
+    {
+      "name": "InvoiceMarkedOverdue",
+      "trigger": "InvoiceRecord.mark_overdue() - state transition SENT -> OVERDUE",
+      "payload": [
+        { "field": "invoice_id", "type": "UUID", "description": "Identity of the InvoiceRecord" },
+        { "field": "organization_id", "type": "UUID", "description": "Billed ClientOrganization" },
+        { "field": "project_id", "type": "UUID | None", "description": "Related Project; None if not project-linked" },
+        { "field": "amount", "type": "Decimal", "description": "Overdue amount" },
+        { "field": "due_date", "type": "date", "description": "Payment due date that was missed" },
+        { "field": "occurred_at", "type": "datetime", "description": "When the event occurred" }
+      ],
+      "producers": ["InvoiceRecordAggregate"],
+      "consumers": ["ActivityEventLogger", "NotificationService"]
+    },
+    {
+      "name": "InvoiceCancelled",
+      "trigger": "InvoiceRecord.cancel() - transition from DRAFT or SENT to CANCELLED",
+      "payload": [
+        { "field": "invoice_id", "type": "UUID", "description": "Identity of the InvoiceRecord" },
+        { "field": "organization_id", "type": "UUID", "description": "Billed ClientOrganization" },
+        { "field": "project_id", "type": "UUID | None", "description": "Related Project; None if not project-linked" },
+        { "field": "amount", "type": "Decimal", "description": "Amount on the cancelled invoice" },
+        { "field": "previous_status", "type": "str", "description": "Status before cancellation (DRAFT or SENT)" },
+        { "field": "occurred_at", "type": "datetime", "description": "When the event occurred" }
+      ],
+      "producers": ["InvoiceRecordAggregate"],
+      "consumers": ["ActivityEventLogger", "NotificationService"]
+    }
+  ],
+  "repositoryInterfaces": [
+    {
+      "name": "ClientOrganizationRepository",
+      "aggregateRoot": "ClientOrganization",
+      "methods": [
+        {
+          "name": "save",
+          "parameters": [{ "name": "organization", "type": "ClientOrganization" }],
+          "returnType": "None",
+          "description": "Persist a new or updated ClientOrganization aggregate."
+        },
+        {
+          "name": "find_by_id",
+          "parameters": [{ "name": "organization_id", "type": "UUID" }],
+          "returnType": "Optional[ClientOrganization]",
+          "description": "Retrieve a ClientOrganization by its domain identity."
+        },
+        {
+          "name": "find_by_slug",
+          "parameters": [{ "name": "slug", "type": "str" }],
+          "returnType": "Optional[ClientOrganization]",
+          "description": "Retrieve by unique URL-safe slug; used in portal route resolution."
+        }
+      ]
+    },
+    {
+      "name": "UserProfileRepository",
+      "aggregateRoot": "UserProfile",
+      "methods": [
+        {
+          "name": "save",
+          "parameters": [{ "name": "profile", "type": "UserProfile" }],
+          "returnType": "None",
+          "description": "Persist a new or updated UserProfile aggregate."
+        },
+        {
+          "name": "find_by_id",
+          "parameters": [{ "name": "profile_id", "type": "UUID" }],
+          "returnType": "Optional[UserProfile]",
+          "description": "Retrieve a UserProfile by its domain identity."
+        },
+        {
+          "name": "find_by_user_id",
+          "parameters": [{ "name": "user_id", "type": "int" }],
+          "returnType": "Optional[UserProfile]",
+          "description": "Retrieve by Django User FK; used during authentication to resolve the domain profile from the framework user."
+        },
+        {
+          "name": "find_by_email",
+          "parameters": [{ "name": "email", "type": "str" }],
+          "returnType": "Optional[UserProfile]",
+          "description": "Retrieve by email address; used for login and invitation lookups."
+        },
+        {
+          "name": "find_stakeholders_by_organization",
+          "parameters": [{ "name": "organization_id", "type": "UUID" }],
+          "returnType": "List[UserProfile]",
+          "description": "Return all Stakeholders (is_client=True) belonging to a ClientOrganization; used by NotificationService to dispatch approval requests."
+        }
+      ]
+    },
+    {
+      "name": "ProjectRepository",
+      "aggregateRoot": "Project",
+      "methods": [
+        {
+          "name": "save",
+          "parameters": [{ "name": "project", "type": "Project" }],
+          "returnType": "None",
+          "description": "Persist a new or updated ProjectAggregate (Project and its Milestones within one transaction boundary)."
+        },
+        {
+          "name": "find_by_id",
+          "parameters": [{ "name": "project_id", "type": "UUID" }],
+          "returnType": "Optional[Project]",
+          "description": "Retrieve a Project with its Milestones by identity."
+        },
+        {
+          "name": "find_by_organization",
+          "parameters": [{ "name": "organization_id", "type": "UUID" }],
+          "returnType": "List[Project]",
+          "description": "Return all Projects commissioned by a ClientOrganization, ordered by creation date descending."
+        },
+        {
+          "name": "find_active_by_organization",
+          "parameters": [{ "name": "organization_id", "type": "UUID" }],
+          "returnType": "List[Project]",
+          "description": "Return Projects in ACTIVE status for a ClientOrganization; used in portal dashboard views."
+        },
+        {
+          "name": "find_pending_approval_by_organization",
+          "parameters": [{ "name": "organization_id", "type": "UUID" }],
+          "returnType": "List[Project]",
+          "description": "Return Projects in PENDING_APPROVAL status; used by NotificationService after ProjectSubmittedForApproval."
+        },
+        {
+          "name": "find_by_status",
+          "parameters": [{ "name": "status", "type": "ProjectStatus" }],
+          "returnType": "List[Project]",
+          "description": "Return all Projects matching a given ProjectStatus across all organizations; used by administrative views."
+        }
+      ]
+    },
+    {
+      "name": "DeliverableRepository",
+      "aggregateRoot": "Deliverable",
+      "methods": [
+        {
+          "name": "save",
+          "parameters": [{ "name": "deliverable", "type": "Deliverable" }],
+          "returnType": "None",
+          "description": "Persist a new or updated DeliverableAggregate (Deliverable, DeliverableVersions, and Approvals within one transaction boundary)."
+        },
+        {
+          "name": "find_by_id",
+          "parameters": [{ "name": "deliverable_id", "type": "UUID" }],
+          "returnType": "Optional[Deliverable]",
+          "description": "Retrieve a Deliverable with its full version and approval history by identity."
+        },
+        {
+          "name": "find_by_milestone",
+          "parameters": [{ "name": "milestone_id", "type": "UUID" }],
+          "returnType": "List[Deliverable]",
+          "description": "Return all Deliverables belonging to a Milestone, ordered by creation date."
+        },
+        {
+          "name": "find_by_project",
+          "parameters": [{ "name": "project_id", "type": "UUID" }],
+          "returnType": "List[Deliverable]",
+          "description": "Return all Deliverables across all Milestones for a Project; used when evaluating project completion readiness."
+        },
+        {
+          "name": "find_pending_approval_by_milestone",
+          "parameters": [{ "name": "milestone_id", "type": "UUID" }],
+          "returnType": "List[Deliverable]",
+          "description": "Return Deliverables whose current DeliverableVersion has a PENDING Approval; used to guard the MilestoneCompleted transition."
+        }
+      ]
+    },
+    {
+      "name": "FileRecordRepository",
+      "aggregateRoot": "FileRecord",
+      "methods": [
+        {
+          "name": "save",
+          "parameters": [{ "name": "file_record", "type": "FileRecord" }],
+          "returnType": "None",
+          "description": "Persist a new FileRecord aggregate. Storage path is immutable; records are never updated after creation."
+        },
+        {
+          "name": "find_by_id",
+          "parameters": [{ "name": "file_record_id", "type": "UUID" }],
+          "returnType": "Optional[FileRecord]",
+          "description": "Retrieve a FileRecord by its identity."
+        },
+        {
+          "name": "find_by_deliverable_version",
+          "parameters": [{ "name": "deliverable_version_id", "type": "UUID" }],
+          "returnType": "List[FileRecord]",
+          "description": "Return all FileRecords attached to a DeliverableVersion; used by FileRecordUploaded event consumers."
+        },
+        {
+          "name": "find_by_message",
+          "parameters": [{ "name": "message_id", "type": "UUID" }],
+          "returnType": "List[FileRecord]",
+          "description": "Return all FileRecords attached to a Message; used when rendering message content with its attachments."
+        }
+      ]
+    },
+    {
+      "name": "MessageThreadRepository",
+      "aggregateRoot": "MessageThread",
+      "methods": [
+        {
+          "name": "save",
+          "parameters": [{ "name": "thread", "type": "MessageThread" }],
+          "returnType": "None",
+          "description": "Persist a new or updated MessageThreadAggregate (MessageThread and appended Messages within one transaction boundary)."
+        },
+        {
+          "name": "find_by_id",
+          "parameters": [{ "name": "thread_id", "type": "UUID" }],
+          "returnType": "Optional[MessageThread]",
+          "description": "Retrieve a MessageThread with its Messages by identity."
+        },
+        {
+          "name": "find_by_project",
+          "parameters": [{ "name": "project_id", "type": "UUID" }],
+          "returnType": "List[MessageThread]",
+          "description": "Return all MessageThreads belonging to a Project, ordered by most recent message activity descending."
+        }
+      ]
+    },
+    {
+      "name": "InvoiceRecordRepository",
+      "aggregateRoot": "InvoiceRecord",
+      "methods": [
+        {
+          "name": "save",
+          "parameters": [{ "name": "invoice", "type": "InvoiceRecord" }],
+          "returnType": "None",
+          "description": "Persist a new or updated InvoiceRecord aggregate."
+        },
+        {
+          "name": "find_by_id",
+          "parameters": [{ "name": "invoice_id", "type": "UUID" }],
+          "returnType": "Optional[InvoiceRecord]",
+          "description": "Retrieve an InvoiceRecord by its identity."
+        },
+        {
+          "name": "find_by_organization",
+          "parameters": [{ "name": "organization_id", "type": "UUID" }],
+          "returnType": "List[InvoiceRecord]",
+          "description": "Return all InvoiceRecords issued to a ClientOrganization, ordered by creation date descending."
+        },
+        {
+          "name": "find_by_project",
+          "parameters": [{ "name": "project_id", "type": "UUID" }],
+          "returnType": "List[InvoiceRecord]",
+          "description": "Return all InvoiceRecords associated with a specific Project."
+        },
+        {
+          "name": "find_overdue_invoices",
+          "parameters": [],
+          "returnType": "List[InvoiceRecord]",
+          "description": "Return all InvoiceRecords with OVERDUE status; used by scheduled overdue-detection tasks and seed data validation."
+        },
+        {
+          "name": "find_unpaid_by_organization",
+          "parameters": [{ "name": "organization_id", "type": "UUID" }],
+          "returnType": "List[InvoiceRecord]",
+          "description": "Return InvoiceRecords in SENT status for a ClientOrganization; used to display outstanding balance to Stakeholders."
+        }
+      ]
+    },
+    {
+      "name": "ActivityEventRepository",
+      "aggregateRoot": "ActivityEvent",
+      "methods": [
+        {
+          "name": "save",
+          "parameters": [{ "name": "event", "type": "ActivityEvent" }],
+          "returnType": "None",
+          "description": "Append a new immutable ActivityEvent to the log. Never updates or deletes an existing record."
+        },
+        {
+          "name": "find_by_id",
+          "parameters": [{ "name": "event_id", "type": "UUID" }],
+          "returnType": "Optional[ActivityEvent]",
+          "description": "Retrieve an ActivityEvent by its identity."
+        },
+        {
+          "name": "find_by_project",
+          "parameters": [
+            { "name": "project_id", "type": "UUID" },
+            { "name": "page", "type": "int" },
+            { "name": "page_size", "type": "int" }
+          ],
+          "returnType": "List[ActivityEvent]",
+          "description": "Return paginated ActivityEvents for a Project ordered by occurred_at descending; used for the project activity feed."
+        },
+        {
+          "name": "find_by_organization",
+          "parameters": [
+            { "name": "organization_id", "type": "UUID" },
+            { "name": "page", "type": "int" },
+            { "name": "page_size", "type": "int" }
+          ],
+          "returnType": "List[ActivityEvent]",
+          "description": "Return paginated organization-level ActivityEvents ordered by occurred_at descending."
+        },
+        {
+          "name": "find_by_actor",
+          "parameters": [
+            { "name": "actor_id", "type": "UUID" },
+            { "name": "page", "type": "int" },
+            { "name": "page_size", "type": "int" }
+          ],
+          "returnType": "List[ActivityEvent]",
+          "description": "Return paginated ActivityEvents triggered by a specific UserProfile; used for per-user audit trail views."
+        }
+      ]
+    }
+  ],
+  "domainServices": [
+    {
+      "name": "DeliverableApprovalCoordinator",
+      "responsibility": "When a Deliverable is approved, checks whether all Deliverables within the parent Milestone are now approved and, if so, triggers Milestone completion on the ProjectAggregate.",
+      "operatesOn": ["DeliverableAggregate", "ProjectAggregate"],
+      "methods": [
+        {
+          "name": "coordinate_post_approval",
+          "description": "Inspects the current approval state of every Deliverable in milestone_deliverables; calls project.complete_milestone(deliverable.milestone_id) when every member has an APPROVED Approval on its current DeliverableVersion. Raises MilestoneCompletionNotAllowed if milestone_deliverables is empty."
+        }
+      ]
+    }
+  ]
+}

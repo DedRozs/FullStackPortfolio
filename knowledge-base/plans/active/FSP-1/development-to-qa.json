@@ -1,0 +1,107 @@
+{
+  "schemaVersion": "1.0",
+  "projectName": "FullStackPortfolio",
+  "ticketKey": "FSP-1",
+  "sessionPath": "knowledge-base/plans/active/FSP-1/",
+  "sourceCodeManifest": [
+    {
+      "path": "apps/client_portal/__init__.py",
+      "layer": "app-registration",
+      "description": "Empty package init for the client_portal Django app"
+    },
+    {
+      "path": "apps/client_portal/apps.py",
+      "layer": "app-registration",
+      "description": "Django AppConfig: name='apps.client_portal', label='client_portal', default_auto_field='django.db.models.BigAutoField'"
+    },
+    {
+      "path": "apps/client_portal/domain/__init__.py",
+      "layer": "domain",
+      "description": "Empty package init for the domain sub-package"
+    },
+    {
+      "path": "apps/client_portal/domain/value_objects.py",
+      "layer": "domain",
+      "description": "Pure Python enums and frozen dataclasses: ProjectStatus, MilestoneStatus, ApprovalStatus, InvoiceStatus, StakeholderRole, Money, FileMetadata, VersionNumber. Zero external dependencies."
+    },
+    {
+      "path": "apps/client_portal/domain/model.py",
+      "layer": "domain",
+      "description": "Pure Python dataclass entities with invariant enforcement: ClientOrganization, UserProfile, Project (with state transition methods), Milestone, Deliverable, DeliverableVersion, Approval, FileRecord, MessageThread, Message, InvoiceRecord, ActivityEvent. No Django imports."
+    },
+    {
+      "path": "apps/client_portal/domain/events.py",
+      "layer": "domain",
+      "description": "Frozen dataclass domain events (past-tense, immutable): ClientOrganizationRegistered, UserProfileCreated, ProjectActivated, ProjectSubmittedForApproval, ProjectReturnedToActive, ProjectCompleted, ProjectArchived, MilestoneStarted, MilestoneCompleted, DeliverableRevisionSubmitted, DeliverableApproved, DeliverableRejected, DeliverableRevisionRequested, FileRecordUploaded, MessagePosted, InvoiceSent, InvoicePaid, InvoiceMarkedOverdue."
+    },
+    {
+      "path": "apps/client_portal/domain/repositories.py",
+      "layer": "domain",
+      "description": "Abstract repository interfaces (abc.ABC + abstractmethod) for all aggregates: ClientOrganizationRepository, UserProfileRepository, ProjectRepository, MilestoneRepository, DeliverableRepository, DeliverableVersionRepository, ApprovalRepository, FileRecordRepository, MessageThreadRepository, MessageRepository, InvoiceRecordRepository, ActivityEventRepository."
+    },
+    {
+      "path": "apps/client_portal/models.py",
+      "layer": "infrastructure",
+      "description": "Django ORM persistence models (12 models): ClientOrganization, UserProfile, Project, Milestone, Deliverable, DeliverableVersion (supporting FK target for Approval/FileRecord), Approval, MessageThread (supporting FK target for Message), Message, FileRecord, InvoiceRecord, ActivityEvent. All fields use ubiquitous language. UUID primary keys throughout."
+    },
+    {
+      "path": "apps/client_portal/migrations/0001_initial.py",
+      "layer": "infrastructure",
+      "description": "Auto-generated initial migration creating all 12 client_portal tables in the database."
+    },
+    {
+      "path": "core/settings.py",
+      "layer": "infrastructure",
+      "description": "Modified: added 'apps.client_portal' to INSTALLED_APPS."
+    },
+    {
+      "path": "knowledge-base/scripts/seed_client_portal.py",
+      "layer": "tooling",
+      "description": "Seed script: creates 2 ClientOrganization records, 3 Project records (ACTIVE/PENDING_APPROVAL/COMPLETE), and 1 OVERDUE InvoiceRecord. Idempotent via get_or_create."
+    }
+  ],
+  "testCoverageSummary": {
+    "unit": {
+      "count": 0,
+      "notes": "Domain entity invariant logic (value_objects.py, model.py) is unit-testable without infrastructure. Unit tests are deferred to the QA phase per the pipeline design."
+    },
+    "integration": {
+      "count": 0,
+      "notes": "ORM model field definitions and FK relationships were verified by successful makemigrations and migrate execution. Formal integration test suite deferred to QA phase."
+    },
+    "e2e": {
+      "count": 0,
+      "notes": "No views or URL routes exist yet for client_portal in Phase 1. E2E tests deferred to subsequent phases."
+    },
+    "manualVerification": "Seed script executed successfully: 2 ClientOrganization, 3 Project, and 1 InvoiceRecord (OVERDUE) created in the local SQLite database."
+  },
+  "dependencyList": [],
+  "layerComplianceSummary": {
+    "domain": {
+      "status": "COMPLIANT",
+      "notes": "apps/client_portal/domain/ contains zero Django or third-party imports. All entities are pure Python dataclasses. Enums implemented as str+Enum per DDD conventions. Repository interfaces are pure ABCs."
+    },
+    "infrastructure": {
+      "status": "COMPLIANT",
+      "notes": "apps/client_portal/models.py contains only Django ORM models with no business logic in model methods. Status choices are defined as class-level constants, not inline strings. All FKs use named related_name values following the ubiquitous language."
+    },
+    "dependencyDirection": "Infrastructure (models.py) -> Domain layer boundary enforced: ORM models do not import from domain/. Domain layer does not import from Django. Clean Architecture dependency rule satisfied."
+  },
+  "knownIssues": [
+    {
+      "id": "KI-1",
+      "description": "No admin.py registered for client_portal models. Django admin site will not surface these models until admin registration is added in a subsequent task.",
+      "severity": "low"
+    },
+    {
+      "id": "KI-2",
+      "description": "No views.py or urls.py exist for client_portal. The app is registered and persisted but has no HTTP interface. URL routing is deferred to Phase 2.",
+      "severity": "low"
+    },
+    {
+      "id": "KI-3",
+      "description": "DeliverableVersion and MessageThread are included as supporting ORM models (12 total instead of 10) because Approval and Message hold ForeignKeys to them. They are required for referential integrity.",
+      "severity": "info"
+    }
+  ]
+}
