@@ -37,22 +37,34 @@ class DemoReadOnlyMixin:
         block = self._demo_block()
         if block is not None:
             return block
-        return super().create(request, *args, **kwargs)
+        parent = super()
+        if not hasattr(parent, 'create'):
+            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        return parent.create(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
         block = self._demo_block()
         if block is not None:
             return block
-        return super().update(request, *args, **kwargs)
+        parent = super()
+        if not hasattr(parent, 'update'):
+            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        return parent.update(request, *args, **kwargs)
 
     def partial_update(self, request, *args, **kwargs):
         block = self._demo_block()
         if block is not None:
             return block
-        return super().partial_update(request, *args, **kwargs)
+        parent = super()
+        if not hasattr(parent, 'partial_update'):
+            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        return parent.partial_update(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
         block = self._demo_block()
         if block is not None:
             return block
-        return super().destroy(request, *args, **kwargs)
+        parent = super()
+        if not hasattr(parent, 'destroy'):
+            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        return parent.destroy(request, *args, **kwargs)
