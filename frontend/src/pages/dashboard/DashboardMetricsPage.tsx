@@ -38,6 +38,15 @@ interface RevenueSnapshot {
   period_end: string
 }
 
+interface GrowthSnapshot {
+  id: string
+  new_customers: number
+  churned_customers: number
+  net_customers: number
+  period_start: string
+  period_end: string
+}
+
 function authHeaders(): HeadersInit {
   const token = localStorage.getItem('auth_token')
   return token ? { Authorization: `Token ${token}` } : {}
@@ -53,6 +62,7 @@ export default function DashboardMetricsPage() {
   const [metrics, setMetrics] = useState<Metric[]>([])
   const [selectedMetric, setSelectedMetric] = useState<Metric | null>(null)
   const [snapshots, setSnapshots] = useState<RevenueSnapshot[]>([])
+  const [growthSnapshots, setGrowthSnapshots] = useState<GrowthSnapshot[]>([])
   const [startDate, setStartDate] = useState(defaultStartDate())
   const [endDate, setEndDate] = useState(new Date().toISOString().slice(0, 10))
   const [loading, setLoading] = useState(true)
@@ -78,6 +88,8 @@ export default function DashboardMetricsPage() {
   function loadSeries(metric: Metric) {
     setSelectedMetric(metric)
     setSeriesLoading(true)
+    setSnapshots([])
+    setGrowthSnapshots([])
     fetch(
       `/api/dashboard/metrics/${metric.id}/series/?start_date=${startDate}&end_date=${endDate}`,
       { headers: authHeaders() },
@@ -85,6 +97,7 @@ export default function DashboardMetricsPage() {
       .then((r) => r.json())
       .then((data) => {
         setSnapshots(data.revenue_snapshots ?? [])
+        setGrowthSnapshots(data.growth_snapshots ?? [])
         setSeriesLoading(false)
       })
       .catch(() => setSeriesLoading(false))
@@ -96,10 +109,11 @@ export default function DashboardMetricsPage() {
     window.open(url, '_blank')
   }
 
-  const chartData = snapshots.map((s) => ({
-    period: s.period_start,
-    amount: Number(s.amount),
-  }))
+  const chartData = selectedMetric?.metric_type === 'customer_growth'
+    ? growthSnapshots.map((s) => ({ period: s.period_start, amount: s.net_customers }))
+    : snapshots.map((s) => ({ period: s.period_start, amount: Number(s.amount) }))
+
+  const hasData = chartData.length > 0
 
   return (
     <div className="flex flex-col gap-10">
@@ -169,7 +183,7 @@ export default function DashboardMetricsPage() {
 
               {seriesLoading && <Text className="animate-pulse">Loading series...</Text>}
 
-              {!seriesLoading && chartData.length > 0 && (
+              {!seriesLoading && hasData && (
                 <ChartContainer height={280}>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={chartData}>
@@ -184,7 +198,7 @@ export default function DashboardMetricsPage() {
                 </ChartContainer>
               )}
 
-              {!seriesLoading && snapshots.length === 0 && (
+              {!seriesLoading && !hasData && (
                 <Text>No snapshots found for this period.</Text>
               )}
             </PageSection>

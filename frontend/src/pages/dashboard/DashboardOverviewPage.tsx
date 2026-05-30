@@ -85,7 +85,9 @@ export default function DashboardOverviewPage() {
         const revenueMetric = metricList.find((m) => m.metric_type === 'revenue')
         if (revenueMetric) {
           const end = new Date().toISOString().slice(0, 10)
-          const start = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10)
+          const startDate = new Date()
+          startDate.setMonth(startDate.getMonth() - 12)
+          const start = startDate.toISOString().slice(0, 10)
           return fetch(
             `/api/dashboard/metrics/${revenueMetric.id}/series/?start_date=${start}&end_date=${end}`,
             { headers },
@@ -146,7 +148,7 @@ export default function DashboardOverviewPage() {
           </PageSection>
 
           {chartData.length > 0 && (
-            <PageSection heading="30-Day Revenue Trend">
+            <PageSection heading="12-Month Revenue Trend">
               <ChartContainer height={280}>
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData}>

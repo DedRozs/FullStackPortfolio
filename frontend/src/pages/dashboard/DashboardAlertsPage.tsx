@@ -78,12 +78,14 @@ function ruleDescription(metricName: string, operator: string, threshold: string
   const value = Number(threshold).toLocaleString('en-US', { maximumFractionDigits: 2 })
   return `${metricName} ${op} $${value}`
 }
+
+function authHeaders(): HeadersInit {
   const token = localStorage.getItem('auth_token')
   return token ? { Authorization: `Token ${token}`, 'Content-Type': 'application/json' } : {}
 }
 
-function authHeaders(): HeadersInit {
 export default function DashboardAlertsPage() {
+  const [rules, setRules] = useState<AlertRule[]>([])
   const [alerts, setAlerts] = useState<DashboardAlert[]>([])
   const [metrics, setMetrics] = useState<Metric[]>([])
   const [loading, setLoading] = useState(true)
@@ -194,6 +196,11 @@ export default function DashboardAlertsPage() {
                         <span className="font-mono text-xs text-text-muted">
                           {ruleDescription(rule.metric_name, rule.operator, rule.threshold_value)}
                         </span>
+                      </TableCell>
+                      <TableCell>
+                        <Badge color={SEVERITY_COLOR[rule.severity] ?? 'zinc'}>
+                          {rule.severity}
+                        </Badge>
                       </TableCell>
                       <TableCell>
                         <Badge color={RULE_STATUS_COLOR[rule.status] ?? 'zinc'}>
