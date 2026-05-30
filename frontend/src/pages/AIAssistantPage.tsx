@@ -23,7 +23,7 @@ const MODELS: ModelOption[] = [
   { key: 'claude-sonnet-4-6', label: 'Claude Sonnet 4.6', provider: 'anthropic' },
 ]
 
-const DEFAULT_MODEL: ModelKey = 'gpt-4o'
+const DEFAULT_MODEL: ModelKey = 'claude-sonnet-4-6'
 
 const INTRO: Message = {
   role: 'assistant',
