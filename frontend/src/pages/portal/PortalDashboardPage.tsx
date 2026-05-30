@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Badge } from '../../components/catalyst-ui-kit/typescript/badge'
+import { Card, CardBody, CardHeader, CardTitle, CardDescription } from '../../components/catalyst-ui-kit/typescript/card'
+import { Heading } from '../../components/catalyst-ui-kit/typescript/heading'
+import { Text } from '../../components/catalyst-ui-kit/typescript/text'
 
 interface Project {
   id: string
@@ -9,12 +12,12 @@ interface Project {
   target_date: string | null
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  ACTIVE: 'text-neon-cyan border-neon-cyan',
-  PENDING_APPROVAL: 'text-yellow-400 border-yellow-400',
-  COMPLETE: 'text-green-400 border-green-400',
-  DRAFT: 'text-zinc-400 border-zinc-400',
-  ARCHIVED: 'text-zinc-600 border-zinc-600',
+const STATUS_COLOR: Record<string, 'cyan' | 'yellow' | 'green' | 'zinc'> = {
+  ACTIVE: 'cyan',
+  PENDING_APPROVAL: 'yellow',
+  COMPLETE: 'green',
+  DRAFT: 'zinc',
+  ARCHIVED: 'zinc',
 }
 
 export default function PortalDashboardPage() {
@@ -42,49 +45,42 @@ export default function PortalDashboardPage() {
   }, [])
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-12">
-      <h1 className="font-display text-3xl font-bold tracking-wider uppercase text-neon-cyan mb-2">
+    <div>
+      <Heading level={1} className="font-display tracking-wider uppercase text-neon-cyan mb-2">
         Project Dashboard
-      </h1>
-      <p className="text-zinc-400 mb-10">Your active and recent projects.</p>
+      </Heading>
+      <Text className="mb-10">Your active and recent projects.</Text>
 
-      {loading && (
-        <p className="text-zinc-400 animate-pulse">Loading projects...</p>
-      )}
-      {error && (
-        <p className="text-red-400">Failed to load projects: {error}</p>
-      )}
-
-      {!loading && !error && projects.length === 0 && (
-        <p className="text-zinc-400">No projects found.</p>
-      )}
+      {loading && <Text className="animate-pulse">Loading projects...</Text>}
+      {error && <Text className="text-red-400">Failed to load projects: {error}</Text>}
+      {!loading && !error && projects.length === 0 && <Text>No projects found.</Text>}
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {projects.map((project) => {
-          const colorClass = STATUS_COLORS[project.status] ?? 'text-zinc-400 border-zinc-400'
-          return (
-            <Link
-              key={project.id}
-              to={`/portal/projects/${project.id}`}
-              className="group block rounded-lg border border-zinc-700 bg-zinc-900 p-6 transition-all duration-200 hover:border-neon-cyan hover:shadow-[0_0_16px_rgba(0,255,255,0.15)]"
-            >
-              <div className={`mb-3 inline-block rounded border px-2 py-0.5 text-xs font-mono tracking-wider uppercase ${colorClass}`}>
+        {projects.map((project) => (
+          <Card
+            key={project.id}
+            href={`/portal/projects/${project.id}`}
+            flush
+            accent="cyan"
+          >
+            <CardHeader>
+              <Badge color={STATUS_COLOR[project.status] ?? 'zinc'}>
                 {project.status.replace('_', ' ')}
-              </div>
-              <h2 className="font-display text-lg font-semibold text-white group-hover:text-neon-cyan transition-colors">
-                {project.name}
-              </h2>
+              </Badge>
+              <CardTitle>{project.name}</CardTitle>
+            </CardHeader>
+            <CardBody>
               {project.description && (
-                <p className="mt-2 text-sm text-zinc-400 line-clamp-2">{project.description}</p>
+                <CardDescription className="line-clamp-2">{project.description}</CardDescription>
               )}
               {project.target_date && (
-                <p className="mt-3 text-xs text-zinc-500">
-                  Target: <span className="text-zinc-300">{project.target_date}</span>
-                </p>
+                <Text className="text-xs">
+                  Target: <span className="text-text-primary">{project.target_date}</span>
+                </Text>
               )}
-            </Link>
-          )
-        })}
+            </CardBody>
+          </Card>
+        ))}
       </div>
     </div>
   )

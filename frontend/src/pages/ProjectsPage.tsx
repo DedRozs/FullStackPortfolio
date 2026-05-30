@@ -1,5 +1,8 @@
 import { useEffect, useRef } from 'react'
+import { Badge } from '../components/catalyst-ui-kit/typescript/badge'
 import { Card, CardBody, CardFooter, CardHeader, CardTitle } from '../components/catalyst-ui-kit/typescript/card'
+import { Heading } from '../components/catalyst-ui-kit/typescript/heading'
+import { Text } from '../components/catalyst-ui-kit/typescript/text'
 
 const PROJECTS = [
   {
@@ -90,26 +93,27 @@ export default function ProjectsPage() {
               'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(59,27,114,0.4) 0%, transparent 70%)',
           }}
         />
-        <p
+        <Text
           className="text-neon-magenta text-xs font-display tracking-[0.4em] uppercase mb-3 animate-fade-in-up"
           style={{ animationDelay: '0s' }}
         >
           Full-Stack Portfolio
-        </p>
-        <h1
+        </Text>
+        <Heading
+          level={1}
           className="font-display text-4xl sm:text-5xl font-bold text-neon-cyan glow-cyan tracking-widest uppercase mb-6 animate-fade-in-up"
           style={{ animationDelay: '0.1s' }}
         >
           Projects
-        </h1>
-        <p
-          className="text-text-muted text-lg max-w-2xl leading-relaxed animate-fade-in-up"
+        </Heading>
+        <Text
+          className="text-lg max-w-2xl leading-relaxed animate-fade-in-up"
           style={{ animationDelay: '0.2s' }}
         >
           Three interconnected Django + React applications built to demonstrate
           production-grade architecture - permissioned APIs, background task processing,
           domain-driven design, and a shared automation layer that ties them together.
-        </p>
+        </Text>
 
         <div
           className="flex items-center gap-3 mt-8 animate-fade-in-up"
@@ -146,9 +150,9 @@ export default function ProjectsPage() {
                 <span className="font-display text-3xl font-bold text-cyber-border select-none">
                   {project.number}
                 </span>
-                <span className="px-3 py-1 text-[10px] font-display tracking-widest uppercase border border-neon-magenta/50 text-neon-magenta/70 rounded">
+                <Badge color="neon-magenta" className="font-display text-[10px] tracking-widest uppercase">
                   In Development
-                </span>
+                </Badge>
               </div>
 
               <CardHeader>
@@ -156,16 +160,16 @@ export default function ProjectsPage() {
               </CardHeader>
 
               <CardBody>
-                <p className="text-text-muted text-sm leading-relaxed">{project.pitch}</p>
+                <Text className="text-sm leading-relaxed">{project.pitch}</Text>
 
                 {/* Architecture callout */}
                 <div className="mt-2 border-l-2 border-neon-cyan/40 pl-4">
-                  <p className="text-[10px] font-display tracking-widest uppercase text-neon-cyan/60 mb-1">
+                  <Text className="text-[10px] font-display tracking-widest uppercase text-neon-cyan/60 mb-1">
                     Architecture Highlight
-                  </p>
-                  <p className="text-text-muted text-sm leading-relaxed">
+                  </Text>
+                  <Text className="text-sm leading-relaxed">
                     {project.architectureHighlight}
-                  </p>
+                  </Text>
                 </div>
               </CardBody>
 
@@ -196,17 +200,17 @@ export default function ProjectsPage() {
         />
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-12">
-            <p className="text-neon-magenta text-xs font-display tracking-[0.4em] uppercase mb-3">
+            <Text className="text-neon-magenta text-xs font-display tracking-[0.4em] uppercase mb-3">
               Connected by Design
-            </p>
-            <h2 className="font-display text-2xl font-bold text-neon-cyan glow-cyan tracking-widest uppercase">
+            </Text>
+            <Heading level={2} className="font-display text-2xl font-bold text-neon-cyan glow-cyan tracking-widest uppercase">
               The Ecosystem
-            </h2>
-            <p className="text-text-muted text-sm max-w-2xl mx-auto mt-4 leading-relaxed">
+            </Heading>
+            <Text className="text-sm max-w-2xl mx-auto mt-4 leading-relaxed">
               The three applications are not isolated demos - they share a common automation
               layer. Events fired in the portal and dashboard are consumed by the workflow
               engine, closing the loop between user action and automated response.
-            </p>
+            </Text>
           </div>
 
           <div className="flex flex-col gap-4" ref={ecosystemRef}>
@@ -218,10 +222,10 @@ export default function ProjectsPage() {
               >
                 {/* Source */}
                 <div className="bg-cyber-elevated border border-cyber-border rounded-xl px-5 py-4 text-center">
-                  <p className="text-[10px] font-display tracking-widest uppercase text-text-muted mb-1">
+                  <Text className="text-[10px] font-display tracking-widest uppercase mb-1">
                     Source
-                  </p>
-                  <p className="font-display text-sm font-bold text-text-primary">{step.from}</p>
+                  </Text>
+                  <Text className="font-display text-sm font-bold text-text-primary">{step.from}</Text>
                 </div>
 
                 {/* Connector: arrow → event label → engine → arrow */}
@@ -240,10 +244,10 @@ export default function ProjectsPage() {
 
                 {/* Result */}
                 <div className="bg-cyber-elevated border border-cyber-border rounded-xl px-5 py-4 text-center">
-                  <p className="text-[10px] font-display tracking-widest uppercase text-text-muted mb-1">
+                  <Text className="text-[10px] font-display tracking-widest uppercase mb-1">
                     Result
-                  </p>
-                  <p className="font-display text-sm font-bold text-neon-green">{step.result}</p>
+                  </Text>
+                  <Text className="font-display text-sm font-bold text-neon-green">{step.result}</Text>
                 </div>
               </div>
             ))}

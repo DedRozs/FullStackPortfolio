@@ -87,16 +87,20 @@ def run() -> None:
     # ------------------------------------------------------------------
     staff_profile, _ = UserProfile.objects.get_or_create(
         user=staff_user,
-        defaults={'email': staff_user.email, 'is_client': False, 'organization': None},
+        defaults={'email': staff_user.email, 'is_client': False, 'is_demo': False, 'organization': None},
     )
     acme_profile, _ = UserProfile.objects.get_or_create(
         user=acme_user,
-        defaults={'email': acme_user.email, 'is_client': True, 'organization': acme},
+        defaults={'email': acme_user.email, 'is_client': True, 'is_demo': True, 'organization': acme},
     )
     nova_profile, _ = UserProfile.objects.get_or_create(
         user=nova_user,
-        defaults={'email': nova_user.email, 'is_client': True, 'organization': nova},
+        defaults={'email': nova_user.email, 'is_client': True, 'is_demo': True, 'organization': nova},
     )
+    # Ensure is_demo is set correctly even on existing profiles.
+    UserProfile.objects.filter(pk=acme_profile.pk).update(is_demo=True)
+    UserProfile.objects.filter(pk=nova_profile.pk).update(is_demo=True)
+    UserProfile.objects.filter(pk=staff_profile.pk).update(is_demo=False)
     print(f"  Profiles: {acme_profile.email}, {nova_profile.email}, {staff_profile.email}")
 
     # ------------------------------------------------------------------
@@ -138,58 +142,67 @@ def run() -> None:
     # ------------------------------------------------------------------
     # Milestones
     # ------------------------------------------------------------------
-    ms_discovery = Milestone.objects.create(
+    ms_discovery, _ = Milestone.objects.get_or_create(
         name='Discovery & Wireframes',
         project=active_project,
-        status='COMPLETE',
-        target_date=TODAY - datetime.timedelta(days=14),
+        defaults={
+            'status': 'COMPLETE',
+            'target_date': TODAY - datetime.timedelta(days=14),
+        },
     )
-    ms_design = Milestone.objects.create(
+    ms_design, _ = Milestone.objects.get_or_create(
         name='Visual Design',
         project=active_project,
-        status='IN_PROGRESS',
-        target_date=TODAY + datetime.timedelta(days=14),
+        defaults={
+            'status': 'IN_PROGRESS',
+            'target_date': TODAY + datetime.timedelta(days=14),
+        },
     )
-    ms_mobile = Milestone.objects.create(
+    ms_mobile, _ = Milestone.objects.get_or_create(
         name='Core Feature Set',
         project=pending_project,
-        status='COMPLETE',
-        target_date=TODAY - datetime.timedelta(days=5),
+        defaults={
+            'status': 'COMPLETE',
+            'target_date': TODAY - datetime.timedelta(days=5),
+        },
     )
     print(f"  Milestones: {ms_discovery.name}, {ms_design.name}, {ms_mobile.name}")
 
     # ------------------------------------------------------------------
     # Deliverables, Versions, Approvals
     # ------------------------------------------------------------------
-    deliv_logo = Deliverable.objects.create(
+    deliv_logo, deliv_created = Deliverable.objects.get_or_create(
         name='Logo Concepts',
         milestone=ms_design,
-        description='Three logo concept directions for client review.',
-        current_version_number=2,
+        defaults={
+            'description': 'Three logo concept directions for client review.',
+            'current_version_number': 2,
+        },
     )
-    dv1 = DeliverableVersion.objects.create(
-        deliverable=deliv_logo,
-        version_number=1,
-        notes='Initial three concepts.',
-    )
-    Approval.objects.create(
-        deliverable_version=dv1,
-        reviewer=acme_profile,
-        status='REVISION_REQUESTED',
-        comment='Please revise Concept B - the font feels dated.',
-    )
-    dv2 = DeliverableVersion.objects.create(
-        deliverable=deliv_logo,
-        version_number=2,
-        notes='Revised Concept B with modern typeface.',
-    )
-    Approval.objects.create(
-        deliverable_version=dv2,
-        reviewer=acme_profile,
-        status='APPROVED',
-        comment='Love the new direction. Approved!',
-    )
-    print(f"  Deliverable '{deliv_logo.name}': v1 REVISION_REQUESTED, v2 APPROVED")
+    if deliv_created:
+        dv1 = DeliverableVersion.objects.create(
+            deliverable=deliv_logo,
+            version_number=1,
+            notes='Initial three concepts.',
+        )
+        Approval.objects.create(
+            deliverable_version=dv1,
+            reviewer=acme_profile,
+            status='REVISION_REQUESTED',
+            comment='Please revise Concept B - the font feels dated.',
+        )
+        dv2 = DeliverableVersion.objects.create(
+            deliverable=deliv_logo,
+            version_number=2,
+            notes='Revised Concept B with modern typeface.',
+        )
+        Approval.objects.create(
+            deliverable_version=dv2,
+            reviewer=acme_profile,
+            status='APPROVED',
+            comment='Love the new direction. Approved!',
+        )
+    print(f"  Deliverable '{deliv_logo.name}': v1 REVISION_REQUESTED, v2 APPROVED ({'created' if deliv_created else 'exists'})")
 
     # ------------------------------------------------------------------
     # InvoiceRecord - OVERDUE
@@ -212,21 +225,22 @@ def run() -> None:
     # ------------------------------------------------------------------
     # MessageThread + Messages
     # ------------------------------------------------------------------
-    thread = MessageThread.objects.create(
+    thread, thread_created = MessageThread.objects.get_or_create(
         subject='Brand guidelines feedback',
         project=active_project,
     )
-    Message.objects.create(
-        thread=thread,
-        sender=acme_profile,
-        body='Hi team, the initial mockups look great. Can we add more negative space?',
-    )
-    Message.objects.create(
-        thread=thread,
-        sender=staff_profile,
-        body='Absolutely - we will update the layouts and share revised files shortly.',
-    )
-    print(f"  MessageThread '{thread.subject}' with 2 messages created")
+    if thread_created:
+        Message.objects.create(
+            thread=thread,
+            sender=acme_profile,
+            body='Hi team, the initial mockups look great. Can we add more negative space?',
+        )
+        Message.objects.create(
+            thread=thread,
+            sender=staff_profile,
+            body='Absolutely - we will update the layouts and share revised files shortly.',
+        )
+    print(f"  MessageThread '{thread.subject}' with 2 messages ({'created' if thread_created else 'exists'})")
 
     print("\nSeed complete.")
 

@@ -3,7 +3,9 @@ import type { FormEvent } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { Button } from '../components/catalyst-ui-kit/typescript/button'
+import { Heading } from '../components/catalyst-ui-kit/typescript/heading'
 import { Input } from '../components/catalyst-ui-kit/typescript/input'
+import { Text } from '../components/catalyst-ui-kit/typescript/text'
 
 interface Message {
   role: 'assistant' | 'user'
@@ -105,25 +107,26 @@ export default function AIAssistantPage() {
               'radial-gradient(ellipse 80% 120% at 50% 0%, rgba(59,27,114,0.5) 0%, transparent 70%)',
           }}
         />
-        <p
+        <Text
           className="text-neon-magenta text-xs font-display tracking-[0.4em] uppercase mb-2 animate-fade-in-up"
           style={{ animationDelay: '0s' }}
         >
           Powered by OpenAI &amp; Anthropic
-        </p>
-        <h1
+        </Text>
+        <Heading
+          level={1}
           className="font-display text-3xl sm:text-4xl font-bold text-neon-cyan glow-cyan tracking-widest uppercase mb-3 animate-fade-in-up"
           style={{ animationDelay: '0.1s' }}
         >
           AI Assistant
-        </h1>
-        <p
-          className="text-text-muted text-sm max-w-lg leading-relaxed animate-fade-in-up"
+        </Heading>
+        <Text
+          className="text-sm max-w-lg leading-relaxed animate-fade-in-up"
           style={{ animationDelay: '0.2s' }}
         >
           Ask me anything about Joseph's experience, tech stack, projects, or availability.
           I have full context on his background and work.
-        </p>
+        </Text>
       </section>
 
       {/* Chat panel - flex-1 fills remaining viewport */}
@@ -250,14 +253,15 @@ export default function AIAssistantPage() {
               {showSuggestions && (
                 <div className="flex flex-wrap gap-2">
                   {SUGGESTED_PROMPTS.map((prompt) => (
-                    <button
+                    <Button
                       key={prompt}
                       type="button"
+                      color="neon-cyan-outline"
                       onClick={() => handleSuggestedPrompt(prompt)}
-                      className="px-3 py-1.5 text-xs font-display tracking-wide text-neon-cyan/80 border border-neon-cyan/30 rounded-lg hover:border-neon-cyan/70 hover:text-neon-cyan hover:bg-neon-cyan/5 transition-colors"
+                      className="text-xs font-display tracking-wide"
                     >
                       {prompt}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               )}

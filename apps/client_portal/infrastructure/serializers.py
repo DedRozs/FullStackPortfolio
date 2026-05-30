@@ -71,10 +71,12 @@ class MessageThreadSerializer(serializers.ModelSerializer):
 
 
 class MessageSerializer(serializers.ModelSerializer):
+    sender_email = serializers.ReadOnlyField(source='sender.email')
+
     class Meta:
         model = orm.Message
-        fields = ['id', 'thread', 'sender', 'body', 'created_at']
-        read_only_fields = ['id', 'created_at']
+        fields = ['id', 'thread', 'sender', 'sender_email', 'body', 'created_at']
+        read_only_fields = ['id', 'sender_email', 'created_at']
 
 
 class FileRecordSerializer(serializers.ModelSerializer):

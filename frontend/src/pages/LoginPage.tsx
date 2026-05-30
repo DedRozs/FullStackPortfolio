@@ -1,5 +1,9 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Button } from '../components/catalyst-ui-kit/typescript/button'
+import { Field, FieldGroup, Label, ErrorMessage } from '../components/catalyst-ui-kit/typescript/fieldset'
+import { Input } from '../components/catalyst-ui-kit/typescript/input'
+import { getCsrfToken } from '../lib/csrf'
 
 const DEMO_ACCOUNTS = [
   { label: 'Acme Corp (client)', email: 'alice@acme-corp.example.com' },
@@ -29,7 +33,10 @@ export default function LoginPage() {
     try {
       const res = await fetch('/api/auth/login/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCsrfToken(),
+        },
         body: JSON.stringify({ email, password }),
       })
       const data = await res.json()
@@ -44,7 +51,7 @@ export default function LoginPage() {
       }
       localStorage.setItem('auth_token', token)
       navigate('/portal')
-    } catch (err) {
+    } catch {
       setError('Network error - please try again')
     } finally {
       setLoading(false)
@@ -57,69 +64,65 @@ export default function LoginPage() {
         <h1 className="mb-2 font-display text-3xl font-bold tracking-wider uppercase text-neon-cyan">
           Client Portal
         </h1>
-        <p className="mb-6 text-sm text-zinc-400">Sign in to access your projects.</p>
+        <p className="mb-6 text-sm text-text-muted">Sign in to access your projects.</p>
 
-        <div className="mb-8 rounded border border-zinc-700 bg-zinc-900/60 p-4">
-          <p className="mb-3 text-xs font-mono uppercase tracking-wider text-zinc-500">Demo accounts</p>
+        <div className="mb-8 rounded-xl border border-cyber-border bg-cyber-surface p-4">
+          <p className="mb-3 text-xs font-mono uppercase tracking-wider text-text-muted">Demo accounts</p>
           <div className="flex flex-col gap-2">
             {DEMO_ACCOUNTS.map((a) => (
-              <button
+              <Button
                 key={a.email}
                 type="button"
+                color="neon-cyan-outline"
                 onClick={() => fillDemo(a.email)}
-                className="flex items-center justify-between rounded border border-zinc-700 px-3 py-2 text-left text-xs text-zinc-300 transition hover:border-neon-cyan/60 hover:bg-neon-cyan/5 hover:text-neon-cyan"
+                className="flex items-center justify-between text-left text-xs"
               >
                 <span className="font-mono">{a.label}</span>
-                <span className="text-zinc-500">{a.email}</span>
-              </button>
+                <span className="opacity-60">{a.email}</span>
+              </Button>
             ))}
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label className="block mb-1.5 text-xs font-mono uppercase tracking-wider text-zinc-400">
-              Email
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoComplete="email"
-              className="w-full rounded border border-zinc-600 bg-zinc-900 px-4 py-2.5 text-sm text-zinc-200 placeholder-zinc-500 focus:border-neon-cyan focus:outline-none"
-              placeholder="you@example.com"
-            />
-          </div>
+        <form onSubmit={handleSubmit}>
+          <FieldGroup>
+            <Field>
+              <Label className="text-xs font-mono uppercase tracking-wider">Email</Label>
+              <Input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoComplete="email"
+                placeholder="you@example.com"
+              />
+            </Field>
 
-          <div>
-            <label className="block mb-1.5 text-xs font-mono uppercase tracking-wider text-zinc-400">
-              Password
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              autoComplete="current-password"
-              className="w-full rounded border border-zinc-600 bg-zinc-900 px-4 py-2.5 text-sm text-zinc-200 placeholder-zinc-500 focus:border-neon-cyan focus:outline-none"
-              placeholder="Password"
-            />
-          </div>
+            <Field>
+              <Label className="text-xs font-mono uppercase tracking-wider">Password</Label>
+              <Input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                autoComplete="current-password"
+                placeholder="Password"
+              />
+            </Field>
+          </FieldGroup>
 
           {error && (
-            <p className="rounded border border-red-600 bg-red-950/40 px-3 py-2 text-xs text-red-300">
-              {error}
-            </p>
+            <ErrorMessage className="mt-4">{error}</ErrorMessage>
           )}
 
-          <button
+          <Button
             type="submit"
             disabled={loading}
-            className="w-full rounded border border-neon-cyan py-2.5 text-sm font-mono uppercase tracking-wider text-neon-cyan transition hover:bg-neon-cyan/10 disabled:opacity-40"
+            color="neon-cyan"
+            className="mt-6 w-full"
           >
             {loading ? 'Signing in...' : 'Sign In'}
-          </button>
+          </Button>
         </form>
       </div>
     </div>

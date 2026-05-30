@@ -18,14 +18,14 @@ targeting consulting clients and senior engineering roles.
 
 Before Week 1 starts.
 
-- [ ] Install `djangorestframework`, `django-allauth`, `dj-rest-auth`
-- [ ] Add to `INSTALLED_APPS`: `rest_framework`, `allauth`, `allauth.account`, `dj_rest_auth`
-- [ ] Configure DRF default authentication classes in settings
-- [ ] Add protected route wrapper component in React SPA for authenticated pages
+- [x] Install `djangorestframework`, `django-allauth`, `dj-rest-auth`
+- [x] Add to `INSTALLED_APPS`: `rest_framework`, `allauth`, `allauth.account`, `dj_rest_auth`
+- [x] Configure DRF default authentication classes in settings
+- [x] Add protected route wrapper component in React SPA for authenticated pages
 
 ---
 
-## Project 1: `client_portal` - Secure Client Project Portal
+## Project 1: `client_portal` - Secure Client Project Portal ✓ COMPLETE
 
 **Elevator pitch:** A full-stack client portal where companies manage projects, files,
 deliverables, invoices, messages, and approvals. Shows secure permissioned multi-user
@@ -33,56 +33,63 @@ workflows - the kind of software companies actually pay developers to build.
 
 **Portfolio title:** "Secure Client Portal with Project Approvals and File Management"
 
-**Weeks 1-4**
+**Shipped:** May 2026
 
-### Phase 1 - Foundation (Days 1-3)
+**What was actually built (beyond the original plan):**
+- Clean Architecture + DDD throughout: `domain/`, `application/`, `infrastructure/` layers with zero cross-layer leakage
+- 12 domain entities, 5 aggregates, 18 domain events, 20 use cases (constructor-injected, no framework deps in domain)
+- ASGI migration: Django Channels 4 + Daphne + Redis - WebSocket infrastructure ready for workflow_automation triggers
+- Dual authentication: TokenAuthentication (REST) + AuthMiddlewareStack/SessionAuthentication (WebSocket)
+- `is_demo` flag on UserProfile - demo accounts are read-only for files; real clients are not affected
+- DRF throttling: 10/hour login, 200/hour per user, 20/hour anon
+- File upload security: MIME whitelist, 10 MB cap, filename sanitization, demo account block
+- Message thread ownership enforcement: cross-org message injection prevented at the viewset
+- CSRF cookie always set via `@ensure_csrf_cookie` on SPA entrypoint
+- 66 unit tests, all passing
+- ADRs: 0005 (dual auth), 0006 (ASGI migration)
 
-- [ ] Register `apps/client_portal` Django app
-- [ ] Define models:
-  - `ClientOrganization`
-  - `ClientUserProfile`
-  - `Project`
-  - `Milestone`
-  - `Deliverable`
-  - `DeliverableApproval`
-  - `ProjectFile`
-  - `ClientMessage`
-  - `InvoiceRecord`
-  - `ActivityEvent`
-- [ ] Write and run migrations
-- [ ] Seed script: 2 demo orgs, 3 projects (active / pending approval / complete), 1 overdue invoice
+### Phase 1 - Foundation
 
-### Phase 2 - Backend API (Days 4-8)
+- [x] Register `apps/client_portal` Django app
+- [x] Define models (12 ORM models matching domain entities)
+- [x] Write and run migrations (0001 initial, 0002 actor nullable, 0003 is_demo)
+- [x] Seed script: 2 demo orgs, 3 projects, milestones, deliverables, 1 overdue invoice, message thread
 
-- [ ] DRF viewsets for all models
-- [ ] Object-level permissions: clients see only their org's data; staff see all
-- [ ] `services/approvals.py` - approval state machine (pending -> approved/rejected + audit trail)
-- [ ] `services/files.py` - file upload to GCS via django-storages
-- [ ] `services/notifications.py` - SendGrid email on approval state change (Q2 background task)
-- [ ] Test module: approval workflow service unit tests
+### Phase 2 - Backend API
 
-### Phase 3 - React UI (Days 9-16)
+- [x] DRF viewsets for all models (12 viewsets, all registered in api_urls.py)
+- [x] Object-level permissions: `IsClientOfOrganization`, `IsStaffOrClientOfOrganization`, `IsApprover`
+- [x] Approval state machine (use case layer: GrantApproval, RejectApproval, RequestRevision)
+- [x] File upload to GCS via django-storages + GCSFileStorageAdapter
+- [x] SendGrid email on approval state change (Django-Q2 background task in tasks.py)
+- [x] 66 unit tests passing
 
-- [ ] React routes: `/portal`, `/portal/projects/:id`, `/portal/files`, `/portal/messages`
-- [ ] Auth flow: login page -> dashboard (allauth token exchange with DRF)
-- [ ] Project dashboard: status cards, milestone list, deliverable table with approve/reject actions
-- [ ] File upload component with progress indicator
-- [ ] Activity timeline component (read-only feed of `ActivityEvent`)
-- [ ] Invoice status panel (mockup - no real payment processing)
+### Phase 3 - React UI
 
-### Phase 4 - Polish + Documentation (Days 17-21)
+- [x] React routes: `/portal`, `/portal/projects/:id`, `/portal/files`, `/portal/messages`
+- [x] Auth flow: demo account quick-fill buttons + login page + token stored in localStorage
+- [x] Project dashboard: status cards per project
+- [x] File upload component with progress indicator (demo accounts see 403, not crash)
+- [x] Message threads with send form
+- [x] Invoice status visible in dashboard
+- [x] `SidebarLayout` used for portal - consistent with rest of UI kit
+- [x] Portal nav link added to main site navbar
 
-- [ ] Cyberpunk design system applied consistently throughout
-- [ ] Seed data polished to tell a realistic story
-- [ ] Projects page writeup:
-  - Problem it solves
-  - Why object-level permissions (not just `IsAuthenticated`)
-  - One tradeoff made during build
+### Phase 4 - Polish + Documentation
 
-### New dependencies
-- `djangorestframework`
-- `django-allauth`
-- `dj-rest-auth`
+- [x] Cyberpunk design system applied consistently
+- [x] Seed data tells a realistic story (active redesign, pending brand identity, complete phase 0)
+- [x] Component reference: `knowledge-base/content/components/client-portal.md`
+- [x] Developer runbook: `knowledge-base/content/development/client-portal-runbook.md`
+- [ ] Projects page writeup (to do when all three projects are complete)
+
+### New dependencies installed
+- `djangorestframework` 3.17.1
+- `django-allauth` 65.18.0
+- `dj-rest-auth` 7.2.0
+- `django-channels` 4.3.2
+- `daphne` 4.2.1
+- `channels-redis` 4.3.0
 
 ---
 
@@ -98,32 +105,32 @@ software, not just CRUD screens.
 
 ### Phase 1 - Foundation (Days 1-2)
 
-- [ ] Register `apps/ops_dashboard` Django app
-- [ ] Define models:
+- [x] Register `apps/ops_dashboard` Django app
+- [x] Define models:
   - `CompanyMetric`
   - `RevenueSnapshot`
   - `CustomerGrowthSnapshot`
   - `DashboardAlert`
   - `AlertRule`
   - `AuditLogEntry`
-- [ ] Seed script: 12 months of synthetic metric snapshots, 3 alert rules (one triggered)
+- [x] Seed script: 12 months of synthetic metric snapshots, 3 alert rules (one triggered)
 
 ### Phase 2 - Backend (Days 3-7)
 
-- [ ] DRF endpoints: metric series (date-range filtered), alert rules, audit log
-- [ ] `services/metrics.py` - aggregation logic (period-over-period delta, rolling averages)
-- [ ] `services/alerts.py` - rule evaluator; Q2 scheduled task running every 15 minutes
-- [ ] `services/imports.py` - CSV import: validates, parses, queues Q2 job for processing
-- [ ] CSV export endpoint (streaming response)
+- [x] DRF endpoints: metric series (date-range filtered), alert rules, audit log
+- [x] `services/metrics.py` - aggregation logic (period-over-period delta, rolling averages)
+- [x] `services/alerts.py` - rule evaluator; Q2 scheduled task running every 15 minutes
+- [x] `services/imports.py` - CSV import: validates, parses, queues Q2 job for processing
+- [x] CSV export endpoint (streaming response)
 
 ### Phase 3 - React UI (Days 8-14)
 
-- [ ] React routes: `/dashboard`, `/dashboard/metrics`, `/dashboard/alerts`
-- [ ] KPI cards with delta indicators (up/down vs prior period)
-- [ ] Line/bar charts via `recharts`
-- [ ] Sortable/filterable data table (reusable component for all three projects)
-- [ ] Date range picker for all metric views
-- [ ] Alert rule builder form
+- [x] React routes: `/dashboard`, `/dashboard/metrics`, `/dashboard/alerts`
+- [x] KPI cards with delta indicators (up/down vs prior period)
+- [x] Line/bar charts via `recharts`
+- [x] Sortable/filterable data table (reusable component for all three projects)
+- [x] Date range picker for all metric views
+- [x] Alert rule builder form
 
 ### Phase 4 - Polish + Documentation (Days 15-21)
 
@@ -208,10 +215,13 @@ This is the "ecosystem" moment - one action in the portal visibly changes the da
 
 | Package | Layer | Status |
 |---------|-------|--------|
-| `djangorestframework` | Backend | Not installed |
-| `django-allauth` | Backend | Not installed |
-| `dj-rest-auth` | Backend | Not installed |
-| `recharts` | Frontend | Not installed |
+| `djangorestframework` | Backend | Installed (3.17.1) |
+| `django-allauth` | Backend | Installed (65.18.0) |
+| `dj-rest-auth` | Backend | Installed (7.2.0) |
+| `django-channels` | Backend | Installed (4.3.2) |
+| `daphne` | Backend | Installed (4.2.1) |
+| `channels-redis` | Backend | Installed (4.3.0) |
+| `recharts` | Frontend | Installed (npm) |
 | `django-q2` | Backend | Installed + configured |
 | `django-storages` | Backend | Installed + configured |
 | `sendgrid` | Backend | Installed + configured |

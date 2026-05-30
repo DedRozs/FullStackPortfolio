@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { Button } from '../components/catalyst-ui-kit/typescript/button'
+import { Heading } from '../components/catalyst-ui-kit/typescript/heading'
+import { Text } from '../components/catalyst-ui-kit/typescript/text'
 import { SKILLS } from '../data/skills'
 import headshot from '../assets/Headshot.png'
 
@@ -98,25 +100,26 @@ export default function AboutPage() {
               'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(59,27,114,0.4) 0%, transparent 70%)',
           }}
         />
-        <p
+        <Text
           className="text-neon-magenta text-xs font-display tracking-[0.4em] uppercase mb-3 animate-fade-in-up"
           style={{ animationDelay: '0s' }}
         >
           CTO &amp; Full-Stack Developer
-        </p>
-        <h1
+        </Text>
+        <Heading
+          level={1}
           className="font-display text-4xl sm:text-5xl font-bold text-neon-cyan glow-cyan tracking-widest uppercase mb-6 animate-fade-in-up"
           style={{ animationDelay: '0.1s' }}
         >
           About
-        </h1>
-        <p
-          className="text-text-muted text-lg max-w-2xl leading-relaxed animate-fade-in-up"
+        </Heading>
+        <Text
+          className="text-lg max-w-2xl leading-relaxed animate-fade-in-up"
           style={{ animationDelay: '0.2s' }}
         >
           Over four years at Sports Thread - from Marketing Manager to Chief Technical Officer,
           hands-on throughout, writing production code while owning architecture, scalability, and security.
-        </p>
+        </Text>
       </section>
 
       {/* Bio */}
@@ -149,23 +152,23 @@ export default function AboutPage() {
 
             {/* Bio text */}
             <div className="space-y-6 text-text-muted leading-relaxed">
-              <p>
+              <Text>
                 Joseph Prince is the Chief Technical Officer at Sports Thread, where he leads
                 technology strategy, platform development, and engineering execution. Over 4+
                 years he has grown from Marketing Manager to Director to VP to CTO - hands-on
                 throughout, writing and reviewing production code while owning architecture,
                 scalability, and security.
-              </p>
-              <p>
+              </Text>
+              <Text>
                 Proficient in Python and Django on the backend, React and TypeScript on the
                 frontend, and Google Cloud Platform for deployment. Holds a B.S. in Computer
                 Science from Colorado Technical University and certifications in
                 Scrum (CSM, CSPO, CSD).
-              </p>
-              <p>
+              </Text>
+              <Text>
                 Available for consulting engagements. Focused on clean architecture,
                 maintainable code, and AI integration.
-              </p>
+              </Text>
             </div>
           </div>
         </div>
@@ -183,12 +186,12 @@ export default function AboutPage() {
         />
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-12">
-            <p className="text-neon-magenta text-xs font-display tracking-[0.4em] uppercase mb-3">
+            <Text className="text-neon-magenta text-xs font-display tracking-[0.4em] uppercase mb-3">
               Experience
-            </p>
-            <h2 className="font-display text-2xl font-bold text-neon-cyan glow-cyan tracking-widest uppercase">
+            </Text>
+            <Heading level={2} className="font-display text-2xl font-bold text-neon-cyan glow-cyan tracking-widest uppercase">
               Career
-            </h2>
+            </Heading>
           </div>
 
           <div className="flex flex-col gap-6" ref={careerRef}>
@@ -199,20 +202,20 @@ export default function AboutPage() {
                 className="reveal grid sm:grid-cols-[200px_1fr] gap-4 sm:gap-8 items-start"
               >
                 <div className="sm:text-right">
-                  <p className="font-display text-sm font-bold text-neon-cyan tracking-wide">
+                  <Text className="font-display text-sm font-bold text-neon-cyan tracking-wide">
                     {milestone.period}
-                  </p>
-                  <p className="text-text-muted text-xs font-display tracking-widest uppercase mt-1">
+                  </Text>
+                  <Text className="text-xs font-display tracking-widest uppercase mt-1">
                     {milestone.org}
-                  </p>
+                  </Text>
                 </div>
                 <div className="bg-cyber-elevated border border-cyber-border rounded-xl px-6 py-5 hover:border-neon-cyan/50 transition-colors">
-                  <h3 className="font-display text-base font-bold text-text-primary tracking-wide mb-2">
+                  <Heading level={3} className="font-display text-base font-bold text-text-primary tracking-wide mb-2">
                     {milestone.title}
-                  </h3>
-                  <p className="text-text-muted text-sm leading-relaxed">
+                  </Heading>
+                  <Text className="text-sm leading-relaxed">
                     {milestone.description}
-                  </p>
+                  </Text>
                 </div>
               </div>
             ))}
@@ -232,12 +235,12 @@ export default function AboutPage() {
         />
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-12">
-            <p className="text-neon-magenta text-xs font-display tracking-[0.4em] uppercase mb-3">
+            <Text className="text-neon-magenta text-xs font-display tracking-[0.4em] uppercase mb-3">
               Technologies
-            </p>
-            <h2 className="font-display text-2xl font-bold text-neon-cyan glow-cyan tracking-widest uppercase">
+            </Text>
+            <Heading level={2} className="font-display text-2xl font-bold text-neon-cyan glow-cyan tracking-widest uppercase">
               Skills
-            </h2>
+            </Heading>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4" ref={skillsRef}>
@@ -268,12 +271,12 @@ export default function AboutPage() {
         />
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-12">
-            <p className="text-neon-magenta text-xs font-display tracking-[0.4em] uppercase mb-3">
+            <Text className="text-neon-magenta text-xs font-display tracking-[0.4em] uppercase mb-3">
               Credentials
-            </p>
-            <h2 className="font-display text-2xl font-bold text-neon-cyan glow-cyan tracking-widest uppercase">
+            </Text>
+            <Heading level={2} className="font-display text-2xl font-bold text-neon-cyan glow-cyan tracking-widest uppercase">
               Education
-            </h2>
+            </Heading>
           </div>
 
           <div className="grid sm:grid-cols-2 gap-4 max-w-3xl mx-auto">
@@ -282,12 +285,12 @@ export default function AboutPage() {
                 key={item.credential}
                 className="bg-cyber-elevated border border-cyber-border rounded-xl px-6 py-5 hover:border-neon-cyan/50 transition-colors"
               >
-                <p className="font-display text-sm font-bold text-text-primary tracking-wide mb-1">
+                <Text className="font-display text-sm font-bold text-text-primary tracking-wide mb-1">
                   {item.credential}
-                </p>
-                <p className="text-text-muted text-xs font-display tracking-widest uppercase">
+                </Text>
+                <Text className="text-xs font-display tracking-widest uppercase">
                   {item.institution}
-                </p>
+                </Text>
               </div>
             ))}
           </div>
@@ -305,16 +308,16 @@ export default function AboutPage() {
           }}
         />
         <div className="max-w-xl mx-auto px-6">
-          <p className="text-neon-magenta text-xs font-display tracking-[0.4em] uppercase mb-3">
+          <Text className="text-neon-magenta text-xs font-display tracking-[0.4em] uppercase mb-3">
             Available Now
-          </p>
-          <h2 className="font-display text-2xl font-bold text-neon-cyan glow-cyan tracking-widest uppercase mb-6">
+          </Text>
+          <Heading level={2} className="font-display text-2xl font-bold text-neon-cyan glow-cyan tracking-widest uppercase mb-6">
             Get In Touch
-          </h2>
-          <p className="text-text-muted text-base leading-relaxed mb-8">
+          </Heading>
+          <Text className="text-base leading-relaxed mb-8">
             Open to consulting engagements and senior engineering roles. If you have
             something interesting to build, let's talk.
-          </p>
+          </Text>
           <div className="flex flex-wrap gap-4 justify-center">
             <Button color="neon-cyan" href="/contact" className="font-display tracking-widest uppercase">
               Contact Me

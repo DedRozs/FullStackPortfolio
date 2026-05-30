@@ -1,4 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
+import { Button } from '../../components/catalyst-ui-kit/typescript/button'
+import { ErrorMessage } from '../../components/catalyst-ui-kit/typescript/fieldset'
+import { Heading } from '../../components/catalyst-ui-kit/typescript/heading'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/catalyst-ui-kit/typescript/table'
+import { Text } from '../../components/catalyst-ui-kit/typescript/text'
 
 interface FileRecord {
   id: string
@@ -94,64 +99,64 @@ export default function PortalFilesPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-12">
-      <h1 className="font-display text-3xl font-bold tracking-wider uppercase text-neon-cyan mb-2">
+    <div>
+      <Heading level={1} className="font-display tracking-wider uppercase text-neon-cyan mb-2">
         Files
-      </h1>
-      <p className="text-zinc-400 mb-8">Upload and manage project files.</p>
+      </Heading>
+      <Text className="mb-8">Upload and manage project files.</Text>
 
-      <div className="mb-8 rounded border border-zinc-700 bg-zinc-900 p-6">
-        <p className="mb-4 text-sm text-zinc-300 font-medium">Upload a file</p>
-        <input
-          ref={fileInputRef}
-          type="file"
-          onChange={handleFileChange}
-          disabled={uploading}
-          className="block w-full text-sm text-zinc-300 file:mr-4 file:rounded file:border file:border-neon-cyan file:bg-transparent file:px-3 file:py-1 file:text-xs file:font-mono file:uppercase file:text-neon-cyan file:tracking-wider hover:file:bg-neon-cyan/10 disabled:opacity-50"
-        />
+      <div className="mb-8 rounded-xl border border-cyber-border bg-cyber-surface p-6">
+        <Text className="mb-4 font-medium">Upload a file</Text>
+        <div className="flex items-center gap-4">
+          <input
+            ref={fileInputRef}
+            type="file"
+            onChange={handleFileChange}
+            disabled={uploading}
+            className="block text-sm text-text-muted file:mr-4 file:rounded file:border file:border-neon-cyan file:bg-transparent file:px-3 file:py-1 file:text-xs file:font-mono file:uppercase file:text-neon-cyan file:tracking-wider hover:file:bg-neon-cyan/10 disabled:opacity-50"
+          />
+          {uploading && (
+            <Button disabled color="neon-cyan-outline">
+              {progress}% uploading...
+            </Button>
+          )}
+        </div>
         {uploading && (
-          <div className="mt-4">
-            <div className="h-1.5 w-full rounded bg-zinc-700 overflow-hidden">
-              <div
-                className="h-full rounded bg-neon-cyan transition-all duration-200"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-            <p className="mt-1 text-xs text-zinc-400">{progress}% uploaded</p>
+          <div className="mt-3 h-1.5 w-full rounded bg-cyber-border overflow-hidden">
+            <div
+              className="h-full rounded bg-neon-cyan transition-all duration-200"
+              style={{ width: `${progress}%` }}
+            />
           </div>
         )}
-        {error && (
-          <p className="mt-3 text-xs text-red-400">{error}</p>
-        )}
+        {error && <ErrorMessage className="mt-3">{error}</ErrorMessage>}
       </div>
 
       {loading ? (
-        <p className="text-zinc-400 animate-pulse">Loading files...</p>
+        <Text className="animate-pulse">Loading files...</Text>
       ) : files.length === 0 ? (
-        <p className="text-zinc-500 text-sm">No files uploaded yet.</p>
+        <Text>No files uploaded yet.</Text>
       ) : (
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-zinc-700 text-left text-zinc-400">
-              <th className="pb-2 pr-4">Name</th>
-              <th className="pb-2 pr-4">Type</th>
-              <th className="pb-2 pr-4">Size</th>
-              <th className="pb-2">Uploaded</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableHeader>Name</TableHeader>
+              <TableHeader>Type</TableHeader>
+              <TableHeader>Size</TableHeader>
+              <TableHeader>Uploaded</TableHeader>
+            </TableRow>
+          </TableHead>
+          <TableBody>
             {files.map((f) => (
-              <tr key={f.id} className="border-b border-zinc-800 hover:bg-zinc-800/40 transition">
-                <td className="py-2 pr-4 text-zinc-200">{f.filename}</td>
-                <td className="py-2 pr-4 font-mono text-xs text-zinc-400">{f.mime_type}</td>
-                <td className="py-2 pr-4 text-zinc-400">{formatBytes(f.file_size_bytes)}</td>
-                <td className="py-2 text-zinc-500 text-xs">
-                  {new Date(f.created_at).toLocaleDateString()}
-                </td>
-              </tr>
+              <TableRow key={f.id}>
+                <TableCell className="font-medium">{f.filename}</TableCell>
+                <TableCell className="font-mono text-xs">{f.mime_type}</TableCell>
+                <TableCell>{formatBytes(f.file_size_bytes)}</TableCell>
+                <TableCell>{new Date(f.created_at).toLocaleDateString()}</TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       )}
     </div>
   )
