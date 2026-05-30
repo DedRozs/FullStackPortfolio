@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'apps.ai_assistant',
     'apps.react_app',
     'apps.client_portal',
+    'apps.blog',
 ]
 
 MIDDLEWARE = [
@@ -142,6 +143,14 @@ if GS_BUCKET_NAME:
 
 OPENAI_API_KEY = env('OPENAI_API_KEY', default='')
 ANTHROPIC_API_KEY = env('ANTHROPIC_API_KEY', default='')
+
+# ---------------------------------------------------------------------------
+# Supabase (pgvector - blog post embeddings)
+# ---------------------------------------------------------------------------
+
+# Full PostgreSQL connection URL, e.g.:
+# postgresql://postgres:PASSWORD@db.<ref>.supabase.co:5432/postgres
+SUPABASE_DB_URL = env('SUPABASE_DB_URL', default='')
 
 # ---------------------------------------------------------------------------
 # Email (Gmail SMTP)
