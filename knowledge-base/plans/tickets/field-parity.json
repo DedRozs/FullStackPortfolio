@@ -1,0 +1,104 @@
+[
+  {
+    "internal_field": "key",
+    "jira_field": "key",
+    "parity_status": "full",
+    "notes": "Issue key in PROJECT-N format. Generated internally; matches Jira key on import."
+  },
+  {
+    "internal_field": "project_key",
+    "jira_field": "fields.project.key",
+    "parity_status": "full",
+    "notes": "Parent project identifier. Stored flat internally; nested under fields.project in Jira."
+  },
+  {
+    "internal_field": "issue_type",
+    "jira_field": "fields.issuetype.name",
+    "parity_status": "full",
+    "notes": "One of: Bug, Chore, Epic, Spike, Story. Stored as a string; Jira nests under issuetype."
+  },
+  {
+    "internal_field": "summary",
+    "jira_field": "fields.summary",
+    "parity_status": "full",
+    "notes": "One-line title of the issue."
+  },
+  {
+    "internal_field": "description",
+    "jira_field": "fields.description",
+    "parity_status": "full",
+    "notes": "Free-text body. Jira uses Atlassian Document Format (ADF); internal stores plain text."
+  },
+  {
+    "internal_field": "status",
+    "jira_field": "fields.status.name",
+    "parity_status": "full",
+    "notes": "Workflow status string. Jira nests under status.name; internal stores the name directly."
+  },
+  {
+    "internal_field": "assignee",
+    "jira_field": "fields.assignee.accountId",
+    "parity_status": "partial",
+    "notes": "Internal stores a display name or email string; Jira uses an opaque accountId UUID."
+  },
+  {
+    "internal_field": "priority",
+    "jira_field": "fields.priority.name",
+    "parity_status": "full",
+    "notes": "One of: Highest, High, Medium, Low, Lowest. Jira nests under priority.name."
+  },
+  {
+    "internal_field": "labels",
+    "jira_field": "fields.labels",
+    "parity_status": "full",
+    "notes": "Array of label strings. Same structure in both internal and Jira."
+  },
+  {
+    "internal_field": "created_at",
+    "jira_field": "fields.created",
+    "parity_status": "full",
+    "notes": "ISO 8601 timestamp. Field name differs; value format is equivalent."
+  },
+  {
+    "internal_field": "updated_at",
+    "jira_field": "fields.updated",
+    "parity_status": "full",
+    "notes": "ISO 8601 timestamp. Field name differs; value format is equivalent."
+  },
+  {
+    "internal_field": "epic_link",
+    "jira_field": "fields.customfield_10014",
+    "parity_status": "partial",
+    "notes": "Internal stores the Epic key string; Jira uses a custom field ID that varies per instance."
+  },
+  {
+    "internal_field": "links",
+    "jira_field": "fields.issuelinks",
+    "parity_status": "partial",
+    "notes": "Internal uses a simplified {type, target} structure; Jira issuelinks include inward/outward direction objects."
+  },
+  {
+    "internal_field": "comments",
+    "jira_field": "fields.comment.comments",
+    "parity_status": "partial",
+    "notes": "Internal stores comment objects inline; Jira nests under comment.comments with author accountId references."
+  },
+  {
+    "internal_field": "worklogs",
+    "jira_field": "fields.worklog.worklogs",
+    "parity_status": "partial",
+    "notes": "Internal stores worklog objects inline; Jira nests under worklog.worklogs with author accountId references."
+  },
+  {
+    "internal_field": "transition_history",
+    "jira_field": null,
+    "parity_status": "missing",
+    "notes": "Internal-only audit trail of status transitions. Jira exposes changelog via a separate REST endpoint, not in the issue body."
+  },
+  {
+    "internal_field": "import_source",
+    "jira_field": null,
+    "parity_status": "missing",
+    "notes": "Internal-only field that records which external system an issue was imported from. No Jira equivalent."
+  }
+]
