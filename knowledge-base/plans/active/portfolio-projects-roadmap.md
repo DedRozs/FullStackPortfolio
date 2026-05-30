@@ -81,7 +81,7 @@ workflows - the kind of software companies actually pay developers to build.
 - [x] Seed data tells a realistic story (active redesign, pending brand identity, complete phase 0)
 - [x] Component reference: `knowledge-base/content/components/client-portal.md`
 - [x] Developer runbook: `knowledge-base/content/development/client-portal-runbook.md`
-- [ ] Projects page writeup (to do when all three projects are complete)
+- [x] Projects page writeup (complete)
 
 ### New dependencies installed
 - `djangorestframework` 3.17.1
@@ -134,10 +134,7 @@ software, not just CRUD screens.
 
 ### Phase 4 - Polish + Documentation (Days 15-21)
 
-- [ ] Projects page writeup:
-  - The scheduling architecture for alert evaluation
-  - Why the alert evaluator is a service, not a model method
-  - What you would add next
+- [x] Projects page writeup
 
 ### New dependencies
 - `recharts` (frontend only)
@@ -201,10 +198,7 @@ This is the "ecosystem" moment - one action in the portal visibly changes the da
 
 - [x] Wire cross-project trigger: portal deliverable approved -> automation fires ->
       activity event appears in dashboard
-- [ ] Projects page writeup:
-  - The registry pattern and why it matters for extensibility
-  - Why dry-run mode exists and what it prevents in production
-  - What you would add next (webhook triggers, conditional branching)
+- [x] Projects page writeup
 
 ### New dependencies
 - None

@@ -8,21 +8,24 @@ import heroVideo from '../assets/11041434-hd_1920_1080_30fps.mp4'
 
 const HERO_VIDEO_SRC = heroVideo
 
-const PROJECTS_IN_DEVELOPMENT = [
+const LIVE_PROJECTS = [
   {
     title: 'Secure Client Portal',
     pitch: 'Full-stack portal for managing projects, files, deliverables, invoices, and approvals across multiple client organizations.',
     tags: ['Django', 'DRF', 'React', 'GCS', 'SendGrid'],
+    demoPath: '/portal',
   },
   {
     title: 'Operations Dashboard',
     pitch: 'Internal analytics dashboard with KPI cards, time-series charts, alert rules, and scheduled metric evaluation.',
     tags: ['Django', 'DRF', 'React', 'Recharts', 'Django-Q2'],
+    demoPath: '/dashboard',
   },
   {
     title: 'Workflow Automation Engine',
     pitch: 'Trigger-condition-action rule builder that connects the portal and dashboard into an event-driven automation ecosystem.',
     tags: ['Django', 'DRF', 'React', 'Twilio', 'SendGrid'],
+    demoPath: '/automations',
   },
 ]
 
@@ -211,20 +214,28 @@ export default function HomePage() {
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-12">
             <Text className="text-neon-magenta text-xs font-display tracking-[0.4em] uppercase mb-3">
-              In Development
+              Portfolio
             </Text>
             <Heading level={2} className="font-display text-2xl font-bold text-neon-cyan glow-cyan tracking-widest uppercase">
-              What I&apos;m Building
+              What I&apos;ve Built
             </Heading>
           </div>
 
           <div className="grid sm:grid-cols-3 gap-6" ref={projectsCardsRef}>
-            {PROJECTS_IN_DEVELOPMENT.map((project, i) => (
+            {LIVE_PROJECTS.map((project, i) => (
               <Card key={project.title} flush data-delay={i * 120} className="reveal cursor-default">
                 <CardHeader className="items-center text-center">
-                  <Badge color="neon-magenta" className="mb-2 font-display text-[10px] tracking-widest uppercase self-center">
-                    In Development
-                  </Badge>
+                  <div className="flex items-center gap-3 self-center mb-2">
+                    <Badge color="green" className="font-display text-[10px] tracking-widest uppercase">
+                      Live
+                    </Badge>
+                    <a
+                      href={project.demoPath}
+                      className="text-xs font-display tracking-widest uppercase text-neon-cyan hover:opacity-70 transition-opacity"
+                    >
+                      Try Demo &rarr;
+                    </a>
+                  </div>
                   <CardTitle className="text-text-primary">{project.title}</CardTitle>
                 </CardHeader>
                 <CardBody className="items-center text-center">
