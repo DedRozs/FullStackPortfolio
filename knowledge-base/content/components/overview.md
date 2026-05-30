@@ -98,6 +98,34 @@ Django apps under `apps/` and documented here once defined. See
 
 ---
 
+### client_portal
+
+**Location:** `apps/client_portal/`
+**Status:** Complete - domain layer, REST API, React frontend, WebSocket infrastructure
+**Responsibility:** Secure multi-tenant client portal for project delivery management
+
+Key capabilities:
+- Multi-tenant organization isolation with object-level DRF permissions
+- Project lifecycle state machine (DRAFT -> ACTIVE -> PENDING_APPROVAL -> COMPLETE)
+- Deliverable approval workflow (PENDING -> APPROVED | REJECTED | REVISION_REQUESTED)
+- GCS file storage via `FileStoragePort` abstraction
+- Django Channels + Redis WebSocket infrastructure (Daphne ASGI server)
+- Django Q2 approval notification email background tasks
+- React frontend at `/portal/*` with token-based authentication
+
+Architecture: DDD domain layer (domain/model.py, domain/repositories.py), application
+layer (use_cases.py, dtos.py, ports.py), DRF infrastructure layer (viewsets.py,
+repositories.py, serializers.py, permissions.py), and 12 ORM models in models.py.
+
+**External integrations:** Google Cloud Storage, SendGrid, Redis
+**Required environment variables:** `REDIS_URL`, `GS_BUCKET_NAME`,
+`GOOGLE_APPLICATION_CREDENTIALS`, `SENDGRID_API_KEY`
+
+See [components/client-portal.md](client-portal.md) and
+[development/client-portal-runbook.md](../development/client-portal-runbook.md).
+
+---
+
 ## Background Worker
 
 **Location:** `Dockerfile.worker`

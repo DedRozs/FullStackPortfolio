@@ -284,7 +284,11 @@ class ActivityEvent(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     event_type = models.CharField(max_length=200)
     actor = models.ForeignKey(
-        UserProfile, on_delete=models.PROTECT, related_name='activity_events'
+        UserProfile,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='activity_events',
     )
     project = models.ForeignKey(
         Project,
