@@ -37,7 +37,7 @@ def _model_to_post_entity(post: PostModel) -> PostEntity:
         status=PostStatus(post.status),
         published_at=post.published_at,
         featured_image_path=featured,
-        tag_ids=list(post.tags.values_list('id', flat=True)),
+        tag_ids=[t.pk for t in post.tags.all()],
         created_at=post.created_at,
         updated_at=post.updated_at,
     )

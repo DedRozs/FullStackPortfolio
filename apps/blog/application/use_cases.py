@@ -13,23 +13,22 @@ from .dtos import PostDetailDTO, PostFeedItemDTO, PostListItemDTO, TagDTO
 logger = logging.getLogger(__name__)
 
 
-def _build_tag_dtos(tag_repo: ITagRepository, tag_ids: list) -> tuple:
-    if not tag_ids:
-        return ()
-    tags = tag_repo.find_by_ids(tag_ids)
-    return tuple(TagDTO(id=t.id, name=t.name, slug=str(t.slug)) for t in tags)
-
-
-def _resolve_author_name(author_id: int) -> str:
+def _resolve_author_names(author_ids: list) -> dict:
+    """Returns {author_id: display_name} for all given IDs in one query."""
     User = get_user_model()
-    try:
-        user = User.objects.get(pk=author_id)
-        return user.get_full_name() or user.username
-    except User.DoesNotExist:
-        return 'Unknown Author'
+    users = User.objects.filter(pk__in=set(author_ids))
+    return {u.pk: (u.get_full_name() or u.username) for u in users}
 
 
-def _post_to_list_dto(post, tag_repo: ITagRepository) -> PostListItemDTO:
+def _build_tag_dto_map(tag_repo: ITagRepository, all_tag_ids: list) -> dict:
+    """Returns {tag_id: TagDTO} for all given IDs in one query."""
+    if not all_tag_ids:
+        return {}
+    tags = tag_repo.find_by_ids(list(set(all_tag_ids)))
+    return {t.id: TagDTO(id=t.id, name=t.name, slug=str(t.slug)) for t in tags}
+
+
+def _post_to_list_dto(post, author_name: str, tag_dto_map: dict) -> PostListItemDTO:
     image_url = str(post.featured_image_path) if post.featured_image_path else None
     return PostListItemDTO(
         id=post.id,
@@ -38,9 +37,9 @@ def _post_to_list_dto(post, tag_repo: ITagRepository) -> PostListItemDTO:
         excerpt=post.excerpt.text,
         reading_time_minutes=post.reading_time.minutes,
         published_at=post.published_at,
-        author_display_name=_resolve_author_name(post.author_id),
+        author_display_name=author_name,
         featured_image_url=image_url,
-        tags=_build_tag_dtos(tag_repo, post.tag_ids),
+        tags=tuple(tag_dto_map[tid] for tid in post.tag_ids if tid in tag_dto_map),
     )
 
 
@@ -51,7 +50,14 @@ class ListPublishedPosts:
 
     def execute(self, page: int, page_size: int) -> list:
         posts = self._posts.find_published(page=page, page_size=page_size)
-        return [_post_to_list_dto(p, self._tags) for p in posts]
+        if not posts:
+            return []
+        author_name_map = _resolve_author_names([p.author_id for p in posts])
+        tag_dto_map = _build_tag_dto_map(self._tags, [tid for p in posts for tid in p.tag_ids])
+        return [
+            _post_to_list_dto(p, author_name_map.get(p.author_id, 'Unknown Author'), tag_dto_map)
+            for p in posts
+        ]
 
 
 class GetPostBySlug:
@@ -67,7 +73,14 @@ class GetPostBySlug:
         if post.status != PostStatus.PUBLISHED and not request_user_is_staff:
             raise PostNotFoundError(f'Post {slug!r} is not published.')
         related = self._related_finder.find_related(post, limit=3)
-        related_dtos = tuple(_post_to_list_dto(r, self._tags) for r in related)
+        all_posts = [post, *related]
+        author_name_map = _resolve_author_names([p.author_id for p in all_posts])
+        all_tag_ids = [tid for p in all_posts for tid in p.tag_ids]
+        tag_dto_map = _build_tag_dto_map(self._tags, all_tag_ids)
+        related_dtos = tuple(
+            _post_to_list_dto(r, author_name_map.get(r.author_id, 'Unknown Author'), tag_dto_map)
+            for r in related
+        )
         image_url = str(post.featured_image_path) if post.featured_image_path else None
         return PostDetailDTO(
             id=post.id,
@@ -77,9 +90,9 @@ class GetPostBySlug:
             body=post.body,
             reading_time_minutes=post.reading_time.minutes,
             published_at=post.published_at,
-            author_display_name=_resolve_author_name(post.author_id),
+            author_display_name=author_name_map.get(post.author_id, 'Unknown Author'),
             featured_image_url=image_url,
-            tags=_build_tag_dtos(self._tags, post.tag_ids),
+            tags=tuple(tag_dto_map[tid] for tid in post.tag_ids if tid in tag_dto_map),
             related_posts=related_dtos,
         )
 
