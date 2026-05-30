@@ -33,6 +33,7 @@ from apps.client_portal.application.use_cases import (
     UploadFile,
 )
 from apps.client_portal.infrastructure.permissions import IsStaffOrClientOfOrganization
+from core.demo_guard import DemoReadOnlyMixin
 from apps.client_portal.infrastructure.repositories import (
     DjangoActivityEventRepository,
     DjangoApprovalRepository,
@@ -99,7 +100,7 @@ def _profile_for(request: Request) -> orm.UserProfile | None:
 _CACHE_MISS = object()
 
 
-class ClientOrganizationViewSet(ModelViewSet):
+class ClientOrganizationViewSet(DemoReadOnlyMixin, ModelViewSet):
     serializer_class = ClientOrganizationSerializer
     permission_classes = [IsStaffOrClientOfOrganization]
 
@@ -112,7 +113,7 @@ class ClientOrganizationViewSet(ModelViewSet):
         return orm.ClientOrganization.objects.none()
 
 
-class UserProfileViewSet(ModelViewSet):
+class UserProfileViewSet(DemoReadOnlyMixin, ModelViewSet):
     serializer_class = UserProfileSerializer
     permission_classes = [IsStaffOrClientOfOrganization]
 
@@ -125,7 +126,7 @@ class UserProfileViewSet(ModelViewSet):
         return orm.UserProfile.objects.none()
 
 
-class ProjectViewSet(ModelViewSet):
+class ProjectViewSet(DemoReadOnlyMixin, ModelViewSet):
     serializer_class = ProjectSerializer
     permission_classes = [IsStaffOrClientOfOrganization]
 
@@ -139,6 +140,8 @@ class ProjectViewSet(ModelViewSet):
 
     @action(detail=True, methods=['post'], url_path='submit-for-approval')
     def submit_for_approval(self, request: Request, pk: str = None) -> Response:
+        if (block := self._demo_block()) is not None:
+            return block
         profile = _profile_for(request)
         if profile is None:
             return Response({'detail': 'Profile not found.'}, status=status.HTTP_403_FORBIDDEN)
@@ -158,7 +161,7 @@ class ProjectViewSet(ModelViewSet):
         return Response({'status': dto.status})
 
 
-class MilestoneViewSet(ModelViewSet):
+class MilestoneViewSet(DemoReadOnlyMixin, ModelViewSet):
     serializer_class = MilestoneSerializer
     permission_classes = [IsStaffOrClientOfOrganization]
 
@@ -173,7 +176,7 @@ class MilestoneViewSet(ModelViewSet):
         return orm.Milestone.objects.none()
 
 
-class DeliverableViewSet(ModelViewSet):
+class DeliverableViewSet(DemoReadOnlyMixin, ModelViewSet):
     serializer_class = DeliverableSerializer
     permission_classes = [IsStaffOrClientOfOrganization]
 
@@ -188,7 +191,7 @@ class DeliverableViewSet(ModelViewSet):
         return orm.Deliverable.objects.none()
 
 
-class DeliverableVersionViewSet(ModelViewSet):
+class DeliverableVersionViewSet(DemoReadOnlyMixin, ModelViewSet):
     serializer_class = DeliverableVersionSerializer
     permission_classes = [IsStaffOrClientOfOrganization]
 
@@ -203,7 +206,7 @@ class DeliverableVersionViewSet(ModelViewSet):
         return orm.DeliverableVersion.objects.none()
 
 
-class ApprovalViewSet(ModelViewSet):
+class ApprovalViewSet(DemoReadOnlyMixin, ModelViewSet):
     serializer_class = ApprovalSerializer
     permission_classes = [IsStaffOrClientOfOrganization]
 
@@ -219,6 +222,8 @@ class ApprovalViewSet(ModelViewSet):
 
     @action(detail=True, methods=['post'], url_path='grant')
     def grant(self, request: Request, pk: str = None) -> Response:
+        if (block := self._demo_block()) is not None:
+            return block
         profile = _profile_for(request)
         if profile is None:
             return Response({'detail': 'Profile not found.'}, status=status.HTTP_403_FORBIDDEN)
@@ -257,6 +262,8 @@ class ApprovalViewSet(ModelViewSet):
 
     @action(detail=True, methods=['post'], url_path='reject')
     def reject(self, request: Request, pk: str = None) -> Response:
+        if (block := self._demo_block()) is not None:
+            return block
         profile = _profile_for(request)
         if profile is None:
             return Response({'detail': 'Profile not found.'}, status=status.HTTP_403_FORBIDDEN)
@@ -278,6 +285,8 @@ class ApprovalViewSet(ModelViewSet):
 
     @action(detail=True, methods=['post'], url_path='request-revision')
     def request_revision(self, request: Request, pk: str = None) -> Response:
+        if (block := self._demo_block()) is not None:
+            return block
         profile = _profile_for(request)
         if profile is None:
             return Response({'detail': 'Profile not found.'}, status=status.HTTP_403_FORBIDDEN)
@@ -298,7 +307,7 @@ class ApprovalViewSet(ModelViewSet):
         return Response({'status': dto.status, 'decided_at': dto.decided_at})
 
 
-class MessageThreadViewSet(ModelViewSet):
+class MessageThreadViewSet(DemoReadOnlyMixin, ModelViewSet):
     serializer_class = MessageThreadSerializer
     permission_classes = [IsStaffOrClientOfOrganization]
 
@@ -313,7 +322,7 @@ class MessageThreadViewSet(ModelViewSet):
         return orm.MessageThread.objects.none()
 
 
-class MessageViewSet(ModelViewSet):
+class MessageViewSet(DemoReadOnlyMixin, ModelViewSet):
     serializer_class = MessageSerializer
     permission_classes = [IsStaffOrClientOfOrganization]
 
@@ -329,6 +338,8 @@ class MessageViewSet(ModelViewSet):
 
     @action(detail=False, methods=['post'], url_path='send')
     def send(self, request: Request) -> Response:
+        if (block := self._demo_block()) is not None:
+            return block
         profile = _profile_for(request)
         if profile is None:
             return Response({'detail': 'Profile not found.'}, status=status.HTTP_403_FORBIDDEN)
@@ -375,7 +386,7 @@ class MessageViewSet(ModelViewSet):
         })
 
 
-class FileRecordViewSet(ModelViewSet):
+class FileRecordViewSet(DemoReadOnlyMixin, ModelViewSet):
     serializer_class = FileRecordSerializer
     permission_classes = [IsStaffOrClientOfOrganization]
 
@@ -463,7 +474,7 @@ class FileRecordViewSet(ModelViewSet):
         )
 
 
-class InvoiceRecordViewSet(ModelViewSet):
+class InvoiceRecordViewSet(DemoReadOnlyMixin, ModelViewSet):
     serializer_class = InvoiceRecordSerializer
     permission_classes = [IsStaffOrClientOfOrganization]
 

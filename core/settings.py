@@ -269,6 +269,10 @@ Q_CLUSTER = {
 # Django REST Framework
 # ---------------------------------------------------------------------------
 
+REST_AUTH = {
+    'USER_DETAILS_SERIALIZER': 'core.serializers.UserDetailsSerializer',
+}
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',

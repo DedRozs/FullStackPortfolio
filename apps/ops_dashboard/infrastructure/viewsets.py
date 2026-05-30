@@ -58,6 +58,7 @@ from apps.ops_dashboard.application.use_cases import (
 )
 from apps.ops_dashboard.domain.services import MetricAggregationService
 from apps.ops_dashboard.infrastructure.permissions import IsStaffUser
+from core.demo_guard import DemoReadOnlyMixin
 from apps.ops_dashboard.infrastructure.repositories import (
     DjangoAlertRuleRepository,
     DjangoDashboardAlertRepository,
@@ -83,7 +84,7 @@ class _EchoWriter:
         return value
 
 
-class CompanyMetricViewSet(ModelViewSet):
+class CompanyMetricViewSet(DemoReadOnlyMixin, ModelViewSet):
     serializer_class = CompanyMetricSerializer
     permission_classes = [IsStaffUser]
 
@@ -91,6 +92,8 @@ class CompanyMetricViewSet(ModelViewSet):
         return orm.CompanyMetric.objects.all()
 
     def create(self, request: Request, *args, **kwargs) -> Response:
+        if (block := self._demo_block()) is not None:
+            return block
         try:
             use_case = CreateCompanyMetric(
                 metric_repo=DjangoMetricRepository(),
@@ -109,6 +112,8 @@ class CompanyMetricViewSet(ModelViewSet):
         return Response({'id': str(dto.id)}, status=status.HTTP_201_CREATED)
 
     def update(self, request: Request, pk: str = None, *args, **kwargs) -> Response:
+        if (block := self._demo_block()) is not None:
+            return block
         try:
             use_case = UpdateCompanyMetric(
                 metric_repo=DjangoMetricRepository(),
@@ -234,7 +239,7 @@ class CompanyMetricViewSet(ModelViewSet):
 
 
 class RevenueSnapshotViewSet(
-    ListModelMixin, RetrieveModelMixin, CreateModelMixin, GenericViewSet
+    DemoReadOnlyMixin, ListModelMixin, RetrieveModelMixin, CreateModelMixin, GenericViewSet
 ):
     serializer_class = RevenueSnapshotSerializer
     permission_classes = [IsStaffUser]
@@ -247,6 +252,8 @@ class RevenueSnapshotViewSet(
         return qs
 
     def create(self, request: Request, *args, **kwargs) -> Response:
+        if (block := self._demo_block()) is not None:
+            return block
         try:
             use_case = RecordRevenueSnapshot(
                 metric_repo=DjangoMetricRepository(),
@@ -268,7 +275,7 @@ class RevenueSnapshotViewSet(
 
 
 class CustomerGrowthSnapshotViewSet(
-    ListModelMixin, RetrieveModelMixin, CreateModelMixin, GenericViewSet
+    DemoReadOnlyMixin, ListModelMixin, RetrieveModelMixin, CreateModelMixin, GenericViewSet
 ):
     serializer_class = CustomerGrowthSnapshotSerializer
     permission_classes = [IsStaffUser]
@@ -281,6 +288,8 @@ class CustomerGrowthSnapshotViewSet(
         return qs
 
     def create(self, request: Request, *args, **kwargs) -> Response:
+        if (block := self._demo_block()) is not None:
+            return block
         try:
             new_customers = int(request.data['new_customers'])
             churned_customers = int(request.data['churned_customers'])
@@ -303,7 +312,7 @@ class CustomerGrowthSnapshotViewSet(
         return Response({'id': str(dto.id)}, status=status.HTTP_201_CREATED)
 
 
-class AlertRuleViewSet(ModelViewSet):
+class AlertRuleViewSet(DemoReadOnlyMixin, ModelViewSet):
     serializer_class = AlertRuleSerializer
     permission_classes = [IsStaffUser]
 
@@ -311,6 +320,8 @@ class AlertRuleViewSet(ModelViewSet):
         return orm.AlertRule.objects.all()
 
     def create(self, request: Request, *args, **kwargs) -> Response:
+        if (block := self._demo_block()) is not None:
+            return block
         try:
             use_case = CreateAlertRule(
                 rule_repo=DjangoAlertRuleRepository(),
@@ -331,6 +342,8 @@ class AlertRuleViewSet(ModelViewSet):
         return Response({'id': str(dto.id)}, status=status.HTTP_201_CREATED)
 
     def update(self, request: Request, pk: str = None, *args, **kwargs) -> Response:
+        if (block := self._demo_block()) is not None:
+            return block
         try:
             use_case = UpdateAlertRule(
                 rule_repo=DjangoAlertRuleRepository(),
@@ -351,6 +364,8 @@ class AlertRuleViewSet(ModelViewSet):
         return Response({'id': str(dto.id)})
 
     def destroy(self, request: Request, pk: str = None, *args, **kwargs) -> Response:
+        if (block := self._demo_block()) is not None:
+            return block
         try:
             use_case = DeleteAlertRule(
                 rule_repo=DjangoAlertRuleRepository(),
@@ -368,6 +383,8 @@ class AlertRuleViewSet(ModelViewSet):
 
     @action(detail=True, methods=['post'], url_path='pause')
     def pause(self, request: Request, pk: str = None) -> Response:
+        if (block := self._demo_block()) is not None:
+            return block
         try:
             use_case = PauseAlertRule(
                 rule_repo=DjangoAlertRuleRepository(),
@@ -385,6 +402,8 @@ class AlertRuleViewSet(ModelViewSet):
 
     @action(detail=True, methods=['post'], url_path='activate')
     def activate(self, request: Request, pk: str = None) -> Response:
+        if (block := self._demo_block()) is not None:
+            return block
         try:
             use_case = ActivateAlertRule(
                 rule_repo=DjangoAlertRuleRepository(),
@@ -402,7 +421,7 @@ class AlertRuleViewSet(ModelViewSet):
 
 
 class DashboardAlertViewSet(
-    ListModelMixin, RetrieveModelMixin, GenericViewSet
+    DemoReadOnlyMixin, ListModelMixin, RetrieveModelMixin, GenericViewSet
 ):
     serializer_class = DashboardAlertSerializer
     permission_classes = [IsStaffUser]
@@ -412,6 +431,8 @@ class DashboardAlertViewSet(
 
     @action(detail=True, methods=['post'], url_path='acknowledge')
     def acknowledge(self, request: Request, pk: str = None) -> Response:
+        if (block := self._demo_block()) is not None:
+            return block
         try:
             use_case = AcknowledgeAlert(
                 alert_repo=DjangoDashboardAlertRepository(),
@@ -429,6 +450,8 @@ class DashboardAlertViewSet(
 
     @action(detail=True, methods=['post'], url_path='resolve')
     def resolve(self, request: Request, pk: str = None) -> Response:
+        if (block := self._demo_block()) is not None:
+            return block
         try:
             use_case = ResolveAlert(
                 alert_repo=DjangoDashboardAlertRepository(),

@@ -1,8 +1,9 @@
 import { useLocation, useNavigate, Outlet } from 'react-router-dom'
 import { SidebarLayout } from '../catalyst-ui-kit/typescript/sidebar-layout'
-import { Sidebar, SidebarBody, SidebarFooter, SidebarHeader, SidebarItem, SidebarSection } from '../catalyst-ui-kit/typescript/sidebar'
+import { Sidebar, SidebarBody, SidebarDivider, SidebarFooter, SidebarHeader, SidebarHeading, SidebarItem, SidebarSection } from '../catalyst-ui-kit/typescript/sidebar'
 import { Navbar, NavbarItem, NavbarLabel } from '../catalyst-ui-kit/typescript/navbar'
 import { Link } from '../catalyst-ui-kit/typescript/link'
+import { clearAuth } from '../../lib/auth'
 import brandLogo from '../../assets/Joseph Prince Logo.png'
 
 const AUTOMATION_NAV = [
@@ -18,7 +19,7 @@ export default function AutomationLayout() {
     end ? location.pathname === href : location.pathname.startsWith(href)
 
   function handleSignOut() {
-    localStorage.removeItem('auth_token')
+    clearAuth()
     navigate('/portal/login')
   }
 
@@ -37,6 +38,12 @@ export default function AutomationLayout() {
           {AUTOMATION_NAV.map(({ href, label, end }) => (
             <SidebarItem key={href} href={href} current={isActive(href, end)}>{label}</SidebarItem>
           ))}
+        </SidebarSection>
+        <SidebarDivider />
+        <SidebarSection>
+          <SidebarHeading>Switch App</SidebarHeading>
+          <SidebarItem href="/portal">Client Portal</SidebarItem>
+          <SidebarItem href="/dashboard">Ops Dashboard</SidebarItem>
         </SidebarSection>
       </SidebarBody>
       <SidebarFooter>

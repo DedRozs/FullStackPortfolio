@@ -1,15 +1,21 @@
+import { useEffect } from 'react'
 import { useLocation, useNavigate, Outlet } from 'react-router-dom'
 import { SidebarLayout } from '../catalyst-ui-kit/typescript/sidebar-layout'
 import {
   Sidebar,
   SidebarBody,
+  SidebarDivider,
   SidebarFooter,
   SidebarHeader,
+  SidebarHeading,
   SidebarItem,
   SidebarSection,
 } from '../catalyst-ui-kit/typescript/sidebar'
 import { Navbar, NavbarItem, NavbarLabel } from '../catalyst-ui-kit/typescript/navbar'
 import { Link } from '../catalyst-ui-kit/typescript/link'
+import { isStaff, clearAuth } from '../../lib/auth'
+import { useToast } from '../tailwind-components/simple-notification'
+import { TOAST_KEY } from '../StaffRoute'
 import brandLogo from '../../assets/Joseph Prince Logo.png'
 
 const PORTAL_NAV = [
@@ -21,12 +27,26 @@ const PORTAL_NAV = [
 export default function PortalLayout() {
   const location = useLocation()
   const navigate = useNavigate()
+  const { showToast } = useToast()
+
+  useEffect(() => {
+    const raw = sessionStorage.getItem(TOAST_KEY)
+    if (raw) {
+      sessionStorage.removeItem(TOAST_KEY)
+      try {
+        const { title, message, variant } = JSON.parse(raw)
+        showToast(title, message, variant)
+      } catch {
+        // malformed entry - ignore
+      }
+    }
+  }, [])
 
   const isActive = (href: string, end?: boolean) =>
     end ? location.pathname === href : location.pathname.startsWith(href)
 
   function handleSignOut() {
-    localStorage.removeItem('auth_token')
+    clearAuth()
     navigate('/portal/login')
   }
 
@@ -53,6 +73,16 @@ export default function PortalLayout() {
             </SidebarItem>
           ))}
         </SidebarSection>
+        {isStaff() && (
+          <>
+            <SidebarDivider />
+            <SidebarSection>
+              <SidebarHeading>Switch App</SidebarHeading>
+              <SidebarItem href="/dashboard">Ops Dashboard</SidebarItem>
+              <SidebarItem href="/automations">Automations</SidebarItem>
+            </SidebarSection>
+          </>
+        )}
       </SidebarBody>
 
       <SidebarFooter>

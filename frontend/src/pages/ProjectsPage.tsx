@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { Badge } from '../components/catalyst-ui-kit/typescript/badge'
 import { Card, CardBody, CardFooter, CardHeader, CardTitle } from '../components/catalyst-ui-kit/typescript/card'
 import { Heading } from '../components/catalyst-ui-kit/typescript/heading'
+import { Link } from '../components/catalyst-ui-kit/typescript/link'
 import { Text } from '../components/catalyst-ui-kit/typescript/text'
 
 const PROJECTS = [
@@ -11,8 +12,14 @@ const PROJECTS = [
     pitch:
       'A full-stack portal where companies manage projects, files, deliverables, invoices, and approvals. Demonstrates secure permissioned multi-user workflows - the kind of software companies actually pay developers to build.',
     architectureHighlight:
-      'Object-level permissions enforce data isolation per organization without a separate tenancy model. An approval state machine tracks every transition with a full audit trail, making the business process explicit in code.',
+      'Built with Clean Architecture and DDD: 12 domain entities and 20 use cases live in a framework-free domain layer with no Django imports. Object-level permissions enforce per-organisation data isolation without a tenancy model. An explicit approval state machine keeps business rules out of views. File uploads are validated by MIME type and size before reaching storage; demo accounts are silently blocked at the boundary.',
+    nextSteps: [
+      'Real-time message notifications via WebSocket - Django Channels and Redis are already wired into the ASGI stack',
+      'Batch file operations and a downloadable audit trail per project',
+      'Stripe integration to turn invoice records into live payment requests',
+    ],
     tags: ['Django', 'DRF', 'React', 'GCS', 'SendGrid', 'Django-Q2'],
+    demoPath: '/portal',
     accent: 'cyan' as const,
   },
   {
@@ -21,8 +28,14 @@ const PROJECTS = [
     pitch:
       'An internal analytics dashboard that turns raw business data into KPIs, charts, filters, and automated alerts. Built to demonstrate executive-facing software beyond CRUD screens.',
     architectureHighlight:
-      'Alert evaluation runs as a scheduled Django-Q2 task every 15 minutes, not in the request cycle. Aggregation logic lives in a dedicated service layer - period-over-period deltas and rolling averages are testable without hitting the database.',
+      'Alert evaluation runs as a Django-Q2 scheduled task every 15 minutes, never in the request cycle - a slow rule never slows a page load. All aggregation logic (period-over-period delta, rolling averages) lives in a dedicated MetricAggregationService that is fully testable without touching the database. Metric data exports as a streaming CSV response to avoid buffering large datasets in memory.',
+    nextSteps: [
+      'Push alert notifications to Slack or an outbound webhook in addition to email',
+      'Configurable rolling window per metric (7-day, 30-day, 90-day)',
+      'Side-by-side metric comparison chart with a shared time axis',
+    ],
     tags: ['Django', 'DRF', 'React', 'Recharts', 'Django-Q2'],
+    demoPath: '/dashboard',
     accent: 'magenta' as const,
   },
   {
@@ -31,8 +44,14 @@ const PROJECTS = [
     pitch:
       'A lightweight automation system where users define triggers, conditions, and actions - an internal Zapier built for business workflows. The architectural showpiece of the three projects.',
     architectureHighlight:
-      'A decorator-based registry decouples trigger types, condition operators, and action handlers from the core engine. Dry-run mode evaluates a full rule and logs every decision without side effects - critical for validating automation logic before going live.',
+      'A decorator-based registry decouples trigger types, condition operators, and action handlers from the engine core - new behaviour is added without editing existing classes. The engine runs as a pure function over domain objects with no ORM calls inside the execution path. Dry-run mode evaluates every condition and logs each decision to a run record without executing any side effect, letting operators validate logic before it runs in production.',
+    nextSteps: [
+      'Outbound webhook triggers: fire an HTTP POST to an external URL when a rule matches',
+      'Conditional branching: different action paths based on AND/OR condition groups',
+      'Retry logic with exponential backoff for failed action executions',
+    ],
     tags: ['Django', 'DRF', 'React', 'Twilio', 'SendGrid', 'Django-Q2'],
+    demoPath: '/automations',
     accent: 'cyan' as const,
   },
 ]
@@ -119,9 +138,9 @@ export default function ProjectsPage() {
           className="flex items-center gap-3 mt-8 animate-fade-in-up"
           style={{ animationDelay: '0.3s' }}
         >
-          <span className="w-2 h-2 rounded-full bg-neon-magenta animate-pulse" />
-          <span className="text-neon-magenta text-xs font-display tracking-widest uppercase">
-            In Active Development
+          <span className="w-2 h-2 rounded-full bg-neon-cyan" />
+          <span className="text-neon-cyan text-xs font-display tracking-widest uppercase">
+            All Three Projects Live
           </span>
         </div>
       </section>
@@ -150,9 +169,14 @@ export default function ProjectsPage() {
                 <span className="font-display text-3xl font-bold text-cyber-border select-none">
                   {project.number}
                 </span>
-                <Badge color="neon-magenta" className="font-display text-[10px] tracking-widest uppercase">
-                  In Development
-                </Badge>
+                <div className="flex items-center gap-3">
+                  <Badge color="green" className="font-display text-[10px] tracking-widest uppercase">
+                    Live
+                  </Badge>
+                  <Link href={project.demoPath} className="text-xs font-display tracking-widest uppercase text-neon-cyan hover:glow-cyan transition-all">
+                    Try Demo &rarr;
+                  </Link>
+                </div>
               </div>
 
               <CardHeader>
@@ -163,13 +187,28 @@ export default function ProjectsPage() {
                 <Text className="text-sm leading-relaxed">{project.pitch}</Text>
 
                 {/* Architecture callout */}
-                <div className="mt-2 border-l-2 border-neon-cyan/40 pl-4">
+                <div className="mt-4 border-l-2 border-neon-cyan/40 pl-4">
                   <Text className="text-[10px] font-display tracking-widest uppercase text-neon-cyan/60 mb-1">
                     Architecture Highlight
                   </Text>
                   <Text className="text-sm leading-relaxed">
                     {project.architectureHighlight}
                   </Text>
+                </div>
+
+                {/* What's next */}
+                <div className="mt-4 border-l-2 border-neon-magenta/40 pl-4">
+                  <Text className="text-[10px] font-display tracking-widest uppercase text-neon-magenta/60 mb-2">
+                    What's Next
+                  </Text>
+                  <ul className="space-y-1">
+                    {project.nextSteps.map((step, j) => (
+                      <li key={j} className="flex gap-2 text-sm text-text-muted">
+                        <span className="text-neon-magenta/40 select-none shrink-0 mt-0.5">&#8250;</span>
+                        <span>{step}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </CardBody>
 

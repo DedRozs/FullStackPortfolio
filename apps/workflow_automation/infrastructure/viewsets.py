@@ -21,6 +21,7 @@ from apps.workflow_automation.application.use_cases import (
 )
 from apps.workflow_automation.domain.value_objects import ConditionOperator
 from apps.workflow_automation.infrastructure.permissions import IsStaffUser
+from core.demo_guard import DemoReadOnlyMixin
 from apps.workflow_automation.infrastructure.repositories import (
     DjangoAutomationActionRepository,
     DjangoAutomationConditionRepository,
@@ -40,13 +41,15 @@ from apps.workflow_automation.registry import get_condition_evaluator
 logger = logging.getLogger(__name__)
 
 
-class AutomationRuleViewSet(ModelViewSet):
+class AutomationRuleViewSet(DemoReadOnlyMixin, ModelViewSet):
     queryset = orm.AutomationRule.objects.all()
     serializer_class = AutomationRuleSerializer
     permission_classes = [IsStaffUser]
 
     @action(detail=True, methods=['post'])
     def enable(self, request, pk=None):
+        if (block := self._demo_block()) is not None:
+            return block
         instance = get_object_or_404(orm.AutomationRule, pk=pk)
         rule_repo = DjangoAutomationRuleRepository()
         use_case = EnableRule(rule_repo=rule_repo)
@@ -57,6 +60,8 @@ class AutomationRuleViewSet(ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def disable(self, request, pk=None):
+        if (block := self._demo_block()) is not None:
+            return block
         instance = get_object_or_404(orm.AutomationRule, pk=pk)
         rule_repo = DjangoAutomationRuleRepository()
         use_case = DisableRule(rule_repo=rule_repo)
@@ -100,7 +105,7 @@ class AutomationRuleViewSet(ModelViewSet):
         })
 
 
-class AutomationConditionViewSet(ModelViewSet):
+class AutomationConditionViewSet(DemoReadOnlyMixin, ModelViewSet):
     queryset = orm.AutomationCondition.objects.all()
     serializer_class = AutomationConditionSerializer
     permission_classes = [IsStaffUser]
@@ -112,7 +117,7 @@ class AutomationConditionViewSet(ModelViewSet):
         return orm.AutomationCondition.objects.all()
 
 
-class AutomationActionViewSet(ModelViewSet):
+class AutomationActionViewSet(DemoReadOnlyMixin, ModelViewSet):
     queryset = orm.AutomationAction.objects.all()
     serializer_class = AutomationActionSerializer
     permission_classes = [IsStaffUser]
