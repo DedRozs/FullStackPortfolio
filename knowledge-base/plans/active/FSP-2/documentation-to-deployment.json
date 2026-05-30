@@ -1,0 +1,70 @@
+{
+  "schemaVersion": "1.0",
+  "projectName": "FullStackPortfolio",
+  "ticketKey": "FSP-2",
+  "knowledgeBaseManifest": [
+    {
+      "path": "knowledge-base/content/decisions/0004-blog-domain-layer-and-supabase-vectorization.md",
+      "type": "adr",
+      "description": "ADR 0004 - Four architectural decisions for FSP-2: full blog domain layer following client_portal precedent, Supabase pgvector as write-only boundary, Django Q2 for vectorization tasks, and draft-post access restricted to staff."
+    },
+    {
+      "path": "knowledge-base/content/components/blog.md",
+      "type": "component",
+      "description": "Blog bounded context component reference - domain model, layer structure, vectorization pipeline, HTTP endpoints, environment variables, and known limitations."
+    },
+    {
+      "path": "knowledge-base/content/development/blog-runbook.md",
+      "type": "runbook",
+      "description": "Developer runbook for the blog feature - adding posts via admin, applying migrations, running unit and integration tests, testing the vectorization pipeline locally, and troubleshooting common issues."
+    },
+    {
+      "path": "README.md",
+      "type": "readme",
+      "description": "Top-level project README updated to include a Blog section describing the feature, its endpoints, semantic search capability, access control, and links to component and runbook docs."
+    }
+  ],
+  "readmePath": "README.md",
+  "runbooks": [
+    {
+      "path": "knowledge-base/content/development/blog-runbook.md",
+      "scope": "blog",
+      "audience": "developers"
+    }
+  ],
+  "adrIndex": {
+    "totalCount": 4,
+    "indexFilePath": "knowledge-base/content/decisions/README.md",
+    "entries": [
+      {
+        "id": "0001",
+        "title": "Django React Static Architecture",
+        "path": "knowledge-base/content/decisions/0001-django-react-static-architecture.md",
+        "status": "Accepted"
+      },
+      {
+        "id": "0002",
+        "title": "Cloud Run Worker for Async Tasks",
+        "path": "knowledge-base/content/decisions/0002-cloud-run-worker-for-async-tasks.md",
+        "status": "Accepted"
+      },
+      {
+        "id": "0003",
+        "title": "client_portal Domain-ORM Split",
+        "path": "knowledge-base/content/decisions/0003-client-portal-ddd-split.md",
+        "status": "Accepted"
+      },
+      {
+        "id": "0004",
+        "title": "Blog Domain Layer and Supabase Vectorization",
+        "path": "knowledge-base/content/decisions/0004-blog-domain-layer-and-supabase-vectorization.md",
+        "status": "Accepted"
+      }
+    ]
+  },
+  "decisionLog": {
+    "filePath": "knowledge-base/content/decisions/README.md",
+    "totalDecisions": 4,
+    "phasesCovered": ["Architecture", "Development", "QA"]
+  }
+}

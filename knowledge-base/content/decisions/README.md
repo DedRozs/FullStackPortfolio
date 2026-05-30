@@ -14,6 +14,7 @@ what alternatives were considered, and what the consequences are.
 | [0001](0001-django-react-static-architecture.md) | Django + React-as-static-files architecture | Accepted | 2026-05-29 |
 | [0002](0002-cloud-run-worker-for-async-tasks.md) | Cloud Run worker for async task processing | Accepted | 2026-05-29 |
 | [0003](0003-client-portal-ddd-split.md) | client_portal domain-ORM split | Accepted | 2026-05-29 |
+| [0004](0004-blog-domain-layer-and-supabase-vectorization.md) | Blog domain layer and Supabase vectorization | Accepted | 2026-05-29 |
 
 ---
 

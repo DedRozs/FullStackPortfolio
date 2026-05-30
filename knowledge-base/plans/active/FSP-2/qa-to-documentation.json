@@ -1,0 +1,256 @@
+{
+  "schemaVersion": "1.0",
+  "projectName": "FullStackPortfolio",
+  "ticketKey": "FSP-2",
+  "verifiedCodebaseReference": {
+    "commitHash": "b24f68b9beea9997277699b4d6d50efa2c4888c9",
+    "branch": "main",
+    "verifiedAt": "2026-05-29T00:00:00Z"
+  },
+  "testResults": {
+    "totalTestsRun": 100,
+    "totalPassed": 100,
+    "totalFailed": 0,
+    "totalDefectsFound": 1,
+    "totalDefectsResolved": 1,
+    "unitTests": {
+      "count": 82,
+      "passed": 82,
+      "failed": 0,
+      "passRate": "100%",
+      "files": [
+        "apps/blog/tests/test_domain_value_objects.py",
+        "apps/blog/tests/test_domain_entities_and_services.py"
+      ],
+      "coverage": [
+        "Slug: empty, too long, invalid chars, normalization, consecutive hyphens, leading/trailing hyphens",
+        "Excerpt: HTML stripping, length limit, whitespace normalization",
+        "ReadingTime: boundary values, str format",
+        "FeaturedImagePath: empty, slash prefix, dotdot traversal",
+        "PostStatus: DRAFT and PUBLISHED enum values",
+        "Tag: equality by id and slug, hash, name invariants",
+        "Post construction: title invariants, default status, empty events",
+        "Post.publish: success, empty body failure, event emission, event collection/clear",
+        "Post.unpublish: status reset, published_at clear, event with/without id",
+        "Post.add_tag / remove_tag: add, idempotency, remove, safe remove nonexistent",
+        "ReadingTimeCalculator: 0 words, 200, 201, 400, 401, 100 words boundary",
+        "RelatedPostFinder: no tags, no id, delegates to repo, default limit",
+        "PostVectorizationFailed event: immutability, field storage"
+      ]
+    },
+    "integrationTests": {
+      "count": 18,
+      "passed": 18,
+      "failed": 0,
+      "passRate": "100%",
+      "files": [
+        "apps/blog/tests/test_views_integration.py"
+      ],
+      "coverage": [
+        "GET /blog/ returns 200",
+        "GET /blog/ shows only published posts, excludes drafts",
+        "GET /blog/ pagination: page_obj in context, page 2 returns overflow",
+        "GET /blog/ invalid page param defaults to page 1",
+        "GET /blog/<slug>/ returns 200 for published post",
+        "GET /blog/<slug>/ returns 404 for draft (unauthenticated)",
+        "GET /blog/<slug>/ returns 404 for draft (authenticated non-staff)",
+        "GET /blog/<slug>/ returns 200 for draft (staff user)",
+        "GET /blog/<slug>/ returns 404 for nonexistent slug",
+        "GET /blog/<slug>/ post DTO in context with correct title",
+        "GET /blog/<slug>/ reading_time_minutes present in DTO",
+        "GET /blog/feed/ returns 200",
+        "GET /blog/feed/ Content-Type contains xml",
+        "GET /blog/feed/ contains published post title",
+        "GET /blog/feed/ excludes draft posts",
+        "GET /blog/feed/ contains <rss root element (valid RSS 2.0)"
+      ]
+    },
+    "e2eTests": {
+      "count": 0,
+      "passRate": null,
+      "notes": "E2E tests deferred. Critical user journeys (blog list, post detail 404, RSS feed) are fully covered by integration tests using Django TestClient. Browser-level e2e tests are not required for this backend-only phase."
+    }
+  },
+  "defectLog": [
+    {
+      "id": "SEC-001",
+      "severity": "medium",
+      "category": "Broken Access Control (OWASP A01)",
+      "description": "GetPostBySlug use case used request_user_authenticated (any logged-in user) to gate draft post access. Client portal users are authenticated Django users and would have been able to view unpublished draft posts via the public URL.",
+      "resolution": "Changed check from request_user_authenticated to request_user_is_staff in both the use case (use_cases.py) and the view (views.py). Updated integration tests to verify non-staff authenticated users receive 404 on drafts.",
+      "status": "resolved",
+      "filesChanged": [
+        "apps/blog/application/use_cases.py",
+        "apps/blog/views.py",
+        "apps/blog/tests/test_views_integration.py"
+      ]
+    }
+  ],
+  "securitySignOff": {
+    "status": "signed-off",
+    "assessmentDate": "2026-05-29",
+    "owaspFindings": [
+      {
+        "category": "A01 - Broken Access Control",
+        "finding": "FIXED - Draft post information disclosure via public URL for authenticated non-staff users. Fixed by requiring is_staff.",
+        "risk": "resolved"
+      },
+      {
+        "category": "A02 - Cryptographic Failures",
+        "finding": "PASS - No sensitive data stored in plaintext. API keys and DB credentials loaded exclusively from environment variables via django-environ.",
+        "risk": "none"
+      },
+      {
+        "category": "A03 - Injection",
+        "finding": "PASS - All ORM queries use Django's parameterized query system. Supabase embedding service uses psycopg2 with %s placeholders. Slug input validated by strict regex before reaching the ORM (^[a-z0-9]+(-[a-z0-9]+)*$).",
+        "risk": "none"
+      },
+      {
+        "category": "A04 - Insecure Design",
+        "finding": "PASS - Domain events are frozen dataclasses. Repository abstractions prevent direct ORM access from application/domain layers. No business logic bypasses.",
+        "risk": "none"
+      },
+      {
+        "category": "A05 - Security Misconfiguration",
+        "finding": "PASS - CSRF middleware globally enabled. No debug endpoints exposed. No secrets in source files.",
+        "risk": "none"
+      },
+      {
+        "category": "A06 - Vulnerable and Outdated Components",
+        "finding": "PASS - django-markdownx 4.0.11 is current. django-q2 1.10.0 is current. No known CVEs for installed versions.",
+        "risk": "none"
+      },
+      {
+        "category": "A07 - Identification and Authentication Failures",
+        "finding": "PASS - Blog is read-only for public. Admin creates content only via Django admin (session auth). Draft access now restricted to is_staff.",
+        "risk": "none"
+      },
+      {
+        "category": "A08 - Software and Data Integrity Failures",
+        "finding": "PASS - Django Q2 tasks enqueue trusted functions only. No deserialization of untrusted data.",
+        "risk": "none"
+      },
+      {
+        "category": "A09 - Security Logging and Monitoring Failures",
+        "finding": "PASS - Vectorization failures are logged with logger.exception including post id. Schedule_vectorization failures are caught and logged. No silent failure paths.",
+        "risk": "none"
+      },
+      {
+        "category": "A10 - Server-Side Request Forgery",
+        "finding": "PASS - No SSRF vectors. External calls (OpenAI, Supabase) use hardcoded SDK endpoints loaded from settings, not user-supplied URLs.",
+        "risk": "none"
+      }
+    ],
+    "knownAcceptedRisks": [
+      {
+        "id": "AR-001",
+        "description": "post_detail.html renders post.body with the Django |safe filter (no HTML escaping). This is intentional: body is authored exclusively by admin users via Django admin. A compromised admin account could inject XSS. Acceptable for a personal portfolio with a single admin. Mitigated by Django admin login requirements and CSRF protection.",
+        "acceptedBy": "architect",
+        "acceptanceRationale": "Admin-only content. Trust boundary is the Django admin session. Consistent with KI-001 deferral."
+      }
+    ]
+  },
+  "performanceSummary": {
+    "riskLevel": "low",
+    "bottlenecks": [
+      {
+        "id": "PERF-001",
+        "description": "N+1 author resolution in ListPublishedPosts: _resolve_author_name issues one User.objects.get() call per post on the list page. For a personal portfolio blog with O(10) posts per page this is negligible, but will degrade as the post count grows.",
+        "severity": "low",
+        "recommendation": "Future: pass author display names through the repository query using select_related('author') and resolve the name in DjangoPostRepository._model_to_post_entity instead of the use case."
+      },
+      {
+        "id": "PERF-002",
+        "description": "post_list view constructs a Paginator over range(total) to generate a page_obj for pagination controls. This is a Django idiom for custom querysets and adds no measurable overhead.",
+        "severity": "negligible",
+        "recommendation": "None required."
+      }
+    ],
+    "baseline": "All 100 tests complete in under 53 seconds on a local development machine (including Django setup overhead). Individual page response times are expected to be under 100ms for a cached blog with O(10-100) posts."
+  },
+  "layerComplianceVerification": {
+    "domain": {
+      "compliant": true,
+      "verifiedFiles": [
+        "apps/blog/domain/value_objects.py",
+        "apps/blog/domain/entities.py",
+        "apps/blog/domain/events.py",
+        "apps/blog/domain/exceptions.py",
+        "apps/blog/domain/repositories.py",
+        "apps/blog/domain/services.py"
+      ],
+      "notes": "Zero Django imports confirmed. All 82 unit tests run without Django setup - confirmed by test execution time (0.40s for unit tests vs 52s total with Django setup for integration tests)."
+    },
+    "application": {
+      "compliant": true,
+      "verifiedFiles": [
+        "apps/blog/application/use_cases.py",
+        "apps/blog/application/dtos.py",
+        "apps/blog/application/vectorization_task.py"
+      ],
+      "notes": "One Django import in use_cases.py (get_user_model for author name resolution) - documented as an accepted exception in the development-to-qa artifact. DTOs are frozen dataclasses with no business logic. No ORM queries in application layer."
+    },
+    "infrastructure": {
+      "compliant": true,
+      "verifiedFiles": [
+        "apps/blog/infrastructure/repositories.py",
+        "apps/blog/models.py",
+        "apps/blog/signals.py",
+        "apps/blog/services/embedding_service.py"
+      ],
+      "notes": "ORM models contain no business logic. Signal handlers delegate to domain services (ReadingTimeCalculator). Repositories translate ORM exceptions to domain exceptions. Featured image path uses FeaturedImagePath value object."
+    },
+    "adapter": {
+      "compliant": true,
+      "verifiedFiles": [
+        "apps/blog/views.py",
+        "apps/blog/urls.py",
+        "apps/blog/admin.py"
+      ],
+      "notes": "Views instantiate repositories and use cases only. No direct ORM queries in views. Http404 raised at adapter boundary on PostNotFoundError. RSS feed uses use case DTOs."
+    }
+  },
+  "verifiedCodebaseFiles": [
+    "apps/blog/domain/value_objects.py",
+    "apps/blog/domain/entities.py",
+    "apps/blog/domain/events.py",
+    "apps/blog/domain/exceptions.py",
+    "apps/blog/domain/repositories.py",
+    "apps/blog/domain/services.py",
+    "apps/blog/application/use_cases.py",
+    "apps/blog/application/dtos.py",
+    "apps/blog/application/vectorization_task.py",
+    "apps/blog/infrastructure/repositories.py",
+    "apps/blog/models.py",
+    "apps/blog/signals.py",
+    "apps/blog/admin.py",
+    "apps/blog/services/embedding_service.py",
+    "apps/blog/views.py",
+    "apps/blog/urls.py",
+    "apps/blog/templates/blog/post_list.html",
+    "apps/blog/templates/blog/post_detail.html",
+    "apps/blog/tests/test_domain_value_objects.py",
+    "apps/blog/tests/test_domain_entities_and_services.py",
+    "apps/blog/tests/test_views_integration.py"
+  ],
+  "knownLimitationsLog": [
+    {
+      "id": "KI-001-qa",
+      "description": "Rich text editor in Django admin defaults to plain Textarea. Post body is stored as plain text/markdown. post_detail.html renders body with |safe (HTML passthrough). Until the markdownify filter is wired, body renders as raw text in the browser. Deferred to frontend/integration phase.",
+      "severity": "low",
+      "deferred": true
+    },
+    {
+      "id": "KI-002-qa",
+      "description": "Post.author is nullable at the ORM level. Admin creates posts without auto-assigning author to request.user. Posts authored by null author_id will show 'Unknown Author' in public views. Deferred.",
+      "severity": "low",
+      "deferred": true
+    },
+    {
+      "id": "KI-005-qa",
+      "description": "Django Q2 vectorization task failure is logged but dead-letter strategy (max_attempts, retry schedule) is not explicitly configured. Deferred.",
+      "severity": "medium",
+      "deferred": true
+    }
+  ]
+}

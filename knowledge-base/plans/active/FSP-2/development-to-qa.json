@@ -1,0 +1,238 @@
+{
+  "schemaVersion": "1.0",
+  "projectName": "FullStackPortfolio",
+  "ticketKey": "FSP-2",
+  "sourceCodeManifest": [
+    {
+      "path": "apps/blog/domain/__init__.py",
+      "layer": "domain",
+      "description": "Empty package marker for the blog domain layer."
+    },
+    {
+      "path": "apps/blog/domain/value_objects.py",
+      "layer": "domain",
+      "description": "Immutable value objects: Slug, Excerpt, ReadingTime, EmbeddingVector, PostStatus (Enum), FeaturedImagePath. All validation is enforced in __post_init__. Zero Django imports."
+    },
+    {
+      "path": "apps/blog/domain/entities.py",
+      "layer": "domain",
+      "description": "Pure-Python Post and Tag entities with identity, invariant checks, state transitions (publish/unpublish), tag management, and domain event collection. Zero Django imports."
+    },
+    {
+      "path": "apps/blog/domain/events.py",
+      "layer": "domain",
+      "description": "Frozen dataclass domain events: PostPublished, PostUnpublished, PostUpdated, PostVectorized, PostVectorizationFailed."
+    },
+    {
+      "path": "apps/blog/domain/exceptions.py",
+      "layer": "domain",
+      "description": "Domain exception types: SlugConflictError, PostNotFoundError, TagNameConflictError, PublishInvariantError."
+    },
+    {
+      "path": "apps/blog/domain/repositories.py",
+      "layer": "domain",
+      "description": "Abstract repository interfaces IPostRepository and ITagRepository (ABC). Defines the contract the infrastructure layer must satisfy."
+    },
+    {
+      "path": "apps/blog/domain/services.py",
+      "layer": "domain",
+      "description": "Domain services: ReadingTimeCalculator (200 wpm, ceil, floor 1) and RelatedPostFinder (finds PUBLISHED posts sharing tags with the current post)."
+    },
+    {
+      "path": "apps/blog/application/__init__.py",
+      "layer": "application",
+      "description": "Empty package marker for the blog application layer."
+    },
+    {
+      "path": "apps/blog/application/dtos.py",
+      "layer": "application",
+      "description": "Frozen dataclass DTOs crossing the application boundary: TagDTO, PostListItemDTO, PostDetailDTO, PostFeedItemDTO."
+    },
+    {
+      "path": "apps/blog/application/use_cases.py",
+      "layer": "application",
+      "description": "Use case classes: ListPublishedPosts, GetPostBySlug (with related posts, draft 404 enforcement), ListTags, GetAllPublishedPostsForFeed. Author name resolved via Django auth at this layer."
+    },
+    {
+      "path": "apps/blog/application/vectorization_task.py",
+      "layer": "application",
+      "description": "Django Q2 async task functions: vectorize_post (upsert Supabase embedding) and delete_post_vector (remove embedding). Enqueued by the post_save signal."
+    },
+    {
+      "path": "apps/blog/infrastructure/__init__.py",
+      "layer": "infrastructure",
+      "description": "Empty package marker for the blog infrastructure layer."
+    },
+    {
+      "path": "apps/blog/infrastructure/repositories.py",
+      "layer": "infrastructure",
+      "description": "Concrete repository implementations: DjangoPostRepository and DjangoTagRepository. Map Django ORM models to domain entities. Translate ORM exceptions to domain exceptions."
+    },
+    {
+      "path": "apps/blog/models.py",
+      "layer": "infrastructure",
+      "description": "Updated ORM models. Tag model added (name, slug, created_at). Post model updated: excerpt field, status CharField (draft/published), author FK to auth.User (nullable), tags M2M to Tag, featured_image ImageField, reading_time_minutes. Removed: summary, published (BooleanField).",
+      "action": "modified"
+    },
+    {
+      "path": "apps/blog/admin.py",
+      "layer": "infrastructure",
+      "description": "Updated Django admin. TagAdmin added. PostAdmin updated with fieldsets, list_display, list_filter, search_fields, prepopulated_fields for slug, filter_horizontal for tags, readonly reading_time_minutes.",
+      "action": "modified"
+    },
+    {
+      "path": "apps/blog/signals.py",
+      "layer": "infrastructure",
+      "description": "Replaced blocking sync_embedding signal with: (1) compute_reading_time pre_save signal using ReadingTimeCalculator, (2) schedule_vectorization post_save signal that enqueues Django Q2 async tasks (vectorize_post or delete_post_vector).",
+      "action": "modified"
+    },
+    {
+      "path": "apps/blog/apps.py",
+      "layer": "infrastructure",
+      "description": "No change. BlogConfig.ready() already imports signals module.",
+      "action": "unchanged"
+    },
+    {
+      "path": "apps/blog/services/embedding_service.py",
+      "layer": "infrastructure",
+      "description": "No change. PostEmbeddingService remains the Supabase pgvector adapter. Now called exclusively from vectorization_task.py (async).",
+      "action": "unchanged"
+    },
+    {
+      "path": "apps/blog/migrations/0002_add_blog_fields.py",
+      "layer": "infrastructure",
+      "description": "Migration: creates Tag model, adds excerpt/status/author/featured_image/reading_time_minutes/tags fields to Post, removes legacy summary and published fields."
+    },
+    {
+      "path": "apps/blog/views.py",
+      "layer": "adapter",
+      "description": "Adapter/presentation layer. post_list view (paginated), post_detail view (404 for drafts to unauthenticated users), LatestPostsFeed (django.contrib.syndication RSS 2.0 feed at /blog/feed/)."
+    },
+    {
+      "path": "apps/blog/urls.py",
+      "layer": "adapter",
+      "description": "URL patterns for the blog app: /blog/ (list), /blog/feed/ (RSS), /blog/<slug>/ (detail). Namespaced as 'blog'."
+    },
+    {
+      "path": "apps/blog/templates/blog/post_list.html",
+      "layer": "adapter",
+      "description": "Blog list template. Shows paginated published posts with title, author, date, reading time, tags, excerpt, featured image, and previous/next pagination controls."
+    },
+    {
+      "path": "apps/blog/templates/blog/post_detail.html",
+      "layer": "adapter",
+      "description": "Blog detail template. Renders post body via |safe filter (HTML stored from editor), shows tags, author, date, reading time, featured image, and a related posts sidebar."
+    },
+    {
+      "path": "core/settings.py",
+      "layer": "framework",
+      "description": "Added 'django_q' and 'markdownx' to INSTALLED_APPS. Q_CLUSTER was already configured. No other changes.",
+      "action": "modified"
+    },
+    {
+      "path": "core/urls.py",
+      "layer": "framework",
+      "description": "Added path('blog/', include('apps.blog.urls', namespace='blog')) and path('markdownx/', include('markdownx.urls')) before the SPA catch-all.",
+      "action": "modified"
+    },
+    {
+      "path": "requirements.txt",
+      "layer": "framework",
+      "description": "Added django-markdownx==4.0.11. pillow already present at 12.2.0.",
+      "action": "modified"
+    }
+  ],
+  "testCoverageSummary": {
+    "unit": {
+      "count": 0,
+      "description": "No unit tests written in this implementation pass. Domain entities (Post.publish, Post.unpublish, Post.add_tag, Post.remove_tag), value objects (Slug, Excerpt, ReadingTime, FeaturedImagePath validation), and domain services (ReadingTimeCalculator, RelatedPostFinder) are fully unit-testable with no Django infrastructure required. Unit tests are deferred to the QA phase.",
+      "passRate": null
+    },
+    "integration": {
+      "count": 0,
+      "description": "No integration tests written. DjangoPostRepository and DjangoTagRepository cover the ORM mapping paths and should be integration-tested against the SQLite test database. Deferred to QA phase.",
+      "passRate": null
+    },
+    "e2e": {
+      "count": 0,
+      "description": "No e2e tests written. Critical paths are: blog list pagination, post detail 404 for drafts, RSS feed content-type, and admin save triggering Q2 vectorization task. Deferred to QA phase.",
+      "passRate": null
+    }
+  },
+  "dependencyList": [
+    {
+      "package": "django-markdownx",
+      "version": "4.0.11",
+      "purpose": "Markdown editor widget for the Post body field in Django admin. Chosen as the safe fallback over django-ckeditor-5 due to unconfirmed Django 6.0.5 compatibility for CKEditor5.",
+      "addedToRequirements": true
+    },
+    {
+      "package": "django-q2",
+      "version": "1.10.0",
+      "purpose": "Async task queue for vectorization. Already present in requirements.txt and used by the contact app (ADR-0002).",
+      "addedToRequirements": false
+    },
+    {
+      "package": "pillow",
+      "version": "12.2.0",
+      "purpose": "Required by Django ImageField for featured_image processing. Already present in requirements.txt.",
+      "addedToRequirements": false
+    }
+  ],
+  "layerComplianceSummary": {
+    "domain": {
+      "compliant": true,
+      "notes": "Zero Django imports in domain/. All invariants enforced in value objects and entities. Repository interfaces are pure ABC with no ORM references. Domain services depend only on domain interfaces."
+    },
+    "application": {
+      "compliant": true,
+      "notes": "Use cases depend on domain interfaces (IPostRepository, ITagRepository) and domain entities only. One permitted Django import: django.contrib.auth.get_user_model for author name resolution (unavoidable at this layer). No business logic in DTOs. Vectorization task is a thin adapter calling PostEmbeddingService."
+    },
+    "infrastructure": {
+      "compliant": true,
+      "notes": "DjangoPostRepository and DjangoTagRepository implement domain interfaces. Domain exceptions (SlugConflictError, PostNotFoundError) are raised instead of ORM exceptions propagating upward. ORM models contain no business logic; slug generation via slugify is infrastructure concern only. pre_save signal for reading time delegates to ReadingTimeCalculator domain service."
+    },
+    "adapter": {
+      "compliant": true,
+      "notes": "Views instantiate repositories and use cases only - no direct ORM queries. Http404 raised on PostNotFoundError (domain exception translated at the adapter boundary). RSS feed implemented via django.contrib.syndication.views.Feed using use case output DTOs."
+    }
+  },
+  "knownIssues": [
+    {
+      "id": "KI-001",
+      "severity": "low",
+      "description": "Rich text editor defaults to plain Textarea in Django admin because django-markdownx widget has not been applied to the Post.body field in PostAdmin. Applying the MarkdownxModelAdmin or MarkdownxWidget to PostAdmin.body is the next step. The stored body will be Markdown, not HTML. The post_detail.html template renders body via |safe which expects HTML - a |markdownify template filter call should be added.",
+      "deferred": true
+    },
+    {
+      "id": "KI-002",
+      "severity": "low",
+      "description": "Post.author is nullable at the ORM level to avoid migration complications. The domain entity enforces author_id as required. Admin saves should set author to request.user if not provided; this is not yet wired.",
+      "deferred": true
+    },
+    {
+      "id": "KI-003",
+      "severity": "low",
+      "description": "Blog templates (post_list.html, post_detail.html) are minimal functional HTML without any CSS or base template inheritance. They need to be integrated with the portfolio design system in the frontend phase.",
+      "deferred": true
+    },
+    {
+      "id": "KI-004",
+      "severity": "low",
+      "description": "No tag archive view (posts filtered by a single tag) is implemented. The IPostRepository.find_by_tag interface and DjangoPostRepository.find_by_tag are implemented but no view or URL pattern exists for /blog/tag/<slug>/.",
+      "deferred": true
+    },
+    {
+      "id": "KI-005",
+      "severity": "medium",
+      "description": "Django Q2 vectorization task failure is logged but not retried automatically. The Q_CLUSTER retry=120 setting re-queues failed tasks up to the cluster max_attempts, but that is not explicitly configured. A dead-letter strategy should be defined.",
+      "deferred": true
+    },
+    {
+      "id": "KI-006",
+      "severity": "low",
+      "description": "The Slug value object rejects slugs with consecutive hyphens (e.g., 'my--post') due to the strict regex. Django's slugify produces valid single-hyphen slugs, so this is not a practical issue for admin-created posts.",
+      "deferred": false
+    }
+  ]
+}

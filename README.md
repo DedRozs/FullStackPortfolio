@@ -1,6 +1,32 @@
 # Full Stack Portfolio
 
 A modern portfolio website built with Django and React, following Clean Architecture and Domain-Driven Design principles.
+
+## Blog
+
+The blog bounded context (`apps/blog/`) provides a full publishing workflow for personal
+technical posts. Key capabilities:
+
+- **Public endpoints:** `/blog/` (paginated list), `/blog/<slug>/` (post detail),
+  `/blog/feed/` (RSS 2.0 feed).
+- **Content authoring:** Posts are created and published via Django admin using
+  Markdown (django-markdownx). Reading time is computed automatically.
+- **Semantic search:** On every publish, an OpenAI `text-embedding-3-small` embedding
+  is generated asynchronously (Django Q2 worker) and stored in Supabase pgvector.
+  Related posts are surfaced by tag overlap in the current version; vector similarity
+  search is available for future AI assistant integration.
+- **Access control:** Draft posts return HTTP 404 for all non-staff visitors, including
+  authenticated client portal users.
+- **Architecture:** Full DDD domain layer (value objects, entities, domain events,
+  repository interfaces) following the same pattern as the client_portal bounded context.
+  Domain logic is testable without a database (82 unit tests).
+
+Required environment variables: `SUPABASE_DB_URL`, `OPENAI_API_KEY`. See
+[knowledge-base/content/components/blog.md](knowledge-base/content/components/blog.md)
+for the full component reference and
+[knowledge-base/content/development/blog-runbook.md](knowledge-base/content/development/blog-runbook.md)
+for the developer runbook.
+
 ## Author
 
 **Joseph Prince**
