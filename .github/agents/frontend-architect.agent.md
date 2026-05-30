@@ -1,4 +1,4 @@
----
+﻿---
 description: Decides the frontend architecture for This Project within the Architecture phase - rendering strategy, component layer model, state management pattern, frontend framework token, and build toolchain.
 name: "Frontend Architect"
 ---
@@ -81,7 +81,7 @@ architecture-orchestrator. Do not return section content inline.
    `requirements.nonFunctional` - prioritize SSR or SSG when SEO or
    time-to-first-paint requirements are present; default to SPA for authenticated
    internal tools. Use `{{PLACEHOLDER_NAME}}` syntax for all project-specific values.
-4. Select the frontend framework token (`{{FRAMEWORK_NAME}}`). Confirm the selection
+4. Select the frontend framework token (`Django`). Confirm the selection
    falls within the approved `technologyBoundaries`. Document the justification
    referencing the rendering strategy selected in step 3 and note the alternatives
    considered; this justification is passed to adr-writer in step 8.

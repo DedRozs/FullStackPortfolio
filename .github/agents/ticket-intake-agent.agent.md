@@ -75,7 +75,7 @@ point of the implement-ticket pipeline and report to `implement-ticket.prompt.md
      - `labels` (array of strings) from field `labels`; empty array if absent
    - **If `TICKET_BACKEND=jira` (default):** Also validate that JIRA_PROJECT_KEY is
      present and non-empty. Call `mcp_com_atlassian_getJiraIssue` with
-     `issueIdOrKey` = TICKET_ID and `cloudId` = `{{JIRA_CLOUD_ID}}`.
+     `issueIdOrKey` = TICKET_ID and `cloudId` = `93a7d59f-0d17-4391-a277-a7218e22a692`.
      Record the full response. Extract:
      - `summary` from `fields.summary`
      - `description` from `fields.description` (convert Atlassian Document Format to plain text)
@@ -114,7 +114,7 @@ point of the implement-ticket pipeline and report to `implement-ticket.prompt.md
 
 - Never hardcode TICKET_ID. It must come from the input fields provided by
   `implement-ticket.prompt.md`; halt immediately if it is missing.
-- In Jira mode: the Cloud ID `{{JIRA_CLOUD_ID}}` is the configured
+- In Jira mode: the Cloud ID `93a7d59f-0d17-4391-a277-a7218e22a692` is the configured
   Atlassian Cloud identifier. Pass it as `cloudId` on every `mcp_com_atlassian_getJiraIssue`
   call. Never embed it as a literal string in any parameter other than the `cloudId` field.
 - In internal mode: use `run_in_terminal` with `ticket-cli.py get` only. Never construct

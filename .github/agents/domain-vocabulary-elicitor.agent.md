@@ -61,7 +61,7 @@ discovery-orchestrator. Do not return section content inline.
 1. Read the working document from `{sessionPath}/This Project-discovery.md` using
    `read_file`. Extract the productVision and stakeholders sections.
 2. Generate a targeted set of domain elicitation questions based on the problem statement
-   and `{{DOMAIN_NAME}}`. Questions should surface: core business objects, key actions
+   and `personal-portfolio`. Questions should surface: core business objects, key actions
    the business performs, important states these objects can be in, and any terms that
    may mean different things to different stakeholder groups.
 3. Present the questions to the user one group at a time. Record all domain terms the

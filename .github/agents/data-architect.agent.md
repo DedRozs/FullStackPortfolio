@@ -40,7 +40,7 @@ the working document contains the System Design Report from solution-architect.
 **Required fields (from working document):**
 
 - `boundedContexts` - list of contexts each owning a portion of the data domain
-- `technologyStack.{{DATABASE_ENGINE}}` - selected persistence technology, informs
+- `technologyStack.MySQL` - selected persistence technology, informs
   data model constraints (relational vs. document vs. event-sourced)
 
 ---

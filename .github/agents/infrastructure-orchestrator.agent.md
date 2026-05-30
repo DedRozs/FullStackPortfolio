@@ -129,7 +129,7 @@ Do not advance to the next specialist until the current one delivers its output.
 - Never allow infrastructure files to be imported by domain or use case layers (dependency
   rule: outer layers depend on inner, never the reverse).
 - Never advance if a specialist reports a violation or incomplete output.
-- Never hardcode `This Project`, `{{TARGET_LANGUAGE}}`, `{{DATABASE_ENGINE}}`,
+- Never hardcode `This Project`, `Python`, `MySQL`,
   or any domain terms; use `{{PLACEHOLDER_NAME}}` syntax for all project-specific values.
 - Must follow rules in [ddd-infrastructure.instructions.md]
   (path: `.github/instructions/ddd-infrastructure.instructions.md`).

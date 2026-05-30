@@ -1,5 +1,5 @@
 ﻿---
-description: Designs all data transfer objects in {{TARGET_LANGUAGE}} for This Project, covering request and response shapes at use case boundaries and ensuring no domain types cross the application layer boundary.
+description: Designs all data transfer objects in Python for This Project, covering request and response shapes at use case boundaries and ensuring no domain types cross the application layer boundary.
 name: "DTO Designer"
 user-invocable: false
 ---
@@ -59,7 +59,7 @@ read files from disk using `read_file`
    that cross the application layer boundary (inputs to use cases, outputs from use
    cases, and event-sourced response payloads).
 2. For each use case, create a response DTO in
-   `presentation/dto/{{UseCaseName}}ResponseDto.{{TARGET_LANGUAGE_EXTENSION}}`:
+   `presentation/dto/{{UseCaseName}}ResponseDto.py`:
    - Include all fields needed by the presenter contract to format the response.
    - Use only primitive types, enums, and nested DTO types; no domain entity references.
    - Name fields using ubiquitous language terms.
@@ -68,7 +68,7 @@ read files from disk using `read_file`
    Create a dedicated request DTO only when the request model needs a richer or distinct
    shape for the presentation boundary.
 4. For any output port method that references an unnamed inline type, extract it into a
-   named shared DTO at `presentation/dto/{{SharedName}}Dto.{{TARGET_LANGUAGE_EXTENSION}}`.
+   named shared DTO at `presentation/dto/{{SharedName}}Dto.py`.
 5. Verify all DTO files are free of domain logic (no calculations, no invariant checks,
    no state transitions). Flag and remove any logic found.
 6. Compile the DTO Design Report. Write the report to

@@ -1,5 +1,5 @@
 ﻿---
-description: Defines input port interfaces and command or query request models in {{TARGET_LANGUAGE}} for each use case in This Project, placing interfaces at the application boundary to decouple controllers from use case implementations.
+description: Defines input port interfaces and command or query request models in Python for each use case in This Project, placing interfaces at the application boundary to decouple controllers from use case implementations.
 name: "Input Port Designer"
 user-invocable: false
 ---
@@ -56,18 +56,18 @@ case files report; read files from disk using `read_file`
 1. Receive `sessionPath`, the artifact file path, and the use case report file path.
    Read the artifact and use case files report from disk using `read_file`.
 2. For each use case in `useCaseFiles`, define an input port interface in
-   `application/commands/I{{UseCaseName}}.{{TARGET_LANGUAGE_EXTENSION}}` (or
-   `application/queries/I{{QueryName}}.{{TARGET_LANGUAGE_EXTENSION}}` for queries):
+   `application/commands/I{{UseCaseName}}.py` (or
+   `application/queries/I{{QueryName}}.py` for queries):
    - Declare a single method matching the use case's `execute` signature.
    - Use a typed request model as the method parameter, not raw primitives.
 3. For each command use case, create a command request model in
-   `application/commands/{{UseCaseName}}Request.{{TARGET_LANGUAGE_EXTENSION}}`:
+   `application/commands/{{UseCaseName}}Request.py`:
    - Include all fields required to execute the use case.
    - Use primitive types or value object names; no domain entity references.
-   - Annotate with validation rules if the `{{TARGET_LANGUAGE}}` supports it (e.g.,
+   - Annotate with validation rules if the `Python` supports it (e.g.,
      type hints, annotations, or decorators at the boundary).
 4. For each query use case, create a query request model in
-   `application/queries/{{QueryName}}Request.{{TARGET_LANGUAGE_EXTENSION}}` with
+   `application/queries/{{QueryName}}Request.py` with
    query parameters typed as primitives or value objects.
 5. Verify that the use case application service classes implement their corresponding
    input port interfaces. Flag any mismatch and report it to the orchestrator.

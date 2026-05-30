@@ -1,4 +1,4 @@
----
+﻿---
 name: workflow-code-generation-from-spec
 description: "Use when: creating an implementation agent that translates domain design specifications or architecture contracts into source code files."
 mode: agent
@@ -18,7 +18,7 @@ into source code.
 3. For each specification item:
    a. Determine the correct file path based on the Clean Architecture layer and the
       bounded context: `domain/`, `application/`, `infrastructure/`, or `adapters/`.
-   b. Generate the source file using the `{{TARGET_LANGUAGE}}` conventions.
+   b. Generate the source file using the `Python` conventions.
    c. Use the ubiquitous language term as the class name; match method names to
       specified behaviors exactly.
    d. Verify the file imports only from layers that are inward or at the same level.

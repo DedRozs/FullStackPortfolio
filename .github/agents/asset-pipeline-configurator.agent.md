@@ -1,4 +1,4 @@
----
+﻿---
 description: Configures the frontend asset pipeline for This Project, producing bundler config, CSS pipeline config, environment-mode build scripts, and CI/CD integration hooks from the architecture frontend stack specification and framework-configurator output.
 name: "Asset Pipeline Configurator"
 ---
@@ -102,8 +102,8 @@ descriptions.
 - Never skip the bundler config or CSS pipeline config even when the frontend stack is
   minimal; a minimal config file is still required.
 - Never advance to the next step if the current step produced an error or incomplete output.
-- Never hardcode `This Project`, `{{TARGET_LANGUAGE}}`, `{{FRAMEWORK_NAME}}`,
-  `{{DATABASE_ENGINE}}`, or any domain terms; use `{{PLACEHOLDER_NAME}}` syntax for all
+- Never hardcode `This Project`, `Python`, `Django`,
+  `MySQL`, or any domain terms; use `{{PLACEHOLDER_NAME}}` syntax for all
   project-specific values.
 - Must follow rules in [clean-architecture.instructions.md]
   (path: `.github/instructions/clean-architecture.instructions.md`).

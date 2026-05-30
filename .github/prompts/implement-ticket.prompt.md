@@ -1,4 +1,4 @@
----
+﻿---
 name: implement-ticket
 description: Runs the full ticket implementation pipeline - reading a ticket, enriching with codebase context, executing the ticket-size-routed SDLC phase subset, and posting implementation notes back to the ticket upon completion.
 mode: agent
@@ -22,13 +22,13 @@ step 4 vary by ticket size; all others are fixed.
 
 1. `archive-manager` - Archives any existing active artifacts scoped to `TICKET_ID` before new artifacts are written
 2. `ticket-intake-agent` - Reads the ticket, maps it to the MiniDiscoveryArtifact format, determines TicketSize and RoutedPhases
-3. `git-workflow-manager` (startMode) - Creates the feature branch from `{{GITHUB_BASE_BRANCH}}`
+3. `git-workflow-manager` (startMode) - Creates the feature branch from `main`
 4. `codebase-context-agent` - Appends a bounded-context snapshot to the MiniDiscoveryArtifact from archive history
 5. Ticket-size-routed phase orchestrators (serial, from RoutedPhases in the MiniDiscoveryArtifact):
    - `spike` or `chore`: `development-orchestrator`, `qa-orchestrator`
    - `story`: `domain-modeling-orchestrator`, `development-orchestrator`, `qa-orchestrator`, `documentation-orchestrator`
    - `epic`: all seven phase orchestrators in standard full-SDLC order
-6. `git-workflow-manager` (completionMode) - Creates PR and merges feature branch to `{{GITHUB_BASE_BRANCH}}`
+6. `git-workflow-manager` (completionMode) - Creates PR and merges feature branch to `main`
 7. `jira-ticket-updater` - Posts ImplementationNotes as a comment and transitions the ticket to Done
 
 ---
@@ -37,15 +37,16 @@ step 4 vary by ticket size; all others are fixed.
 
 - `TICKET_ID`: Issue key of the ticket to implement (e.g., `TT-42`); must match
   `^[A-Z][A-Z0-9]+-[1-9][0-9]*$`
-- `{{TARGET_LANGUAGE}}`: Primary programming language for the implementation
-- `{{FRAMEWORK_NAME}}`: Primary framework or runtime environment
+- `Python`: Primary programming language for the implementation
+- `Django`: Primary framework or runtime environment
 - `{{TICKET_BACKEND}}`: Optional; `jira` (default) or `internal`
 - `{{PRIOR_TICKET_KEY}}`: Optional; issue key of a prior completed run to use as the
   archive enrichment source in `codebase-context-agent`
 
-All other configuration (`{{JIRA_PROJECT_KEY}}`, `{{JIRA_CLOUD_ID}}`, `{{GITHUB_REPO}}`,
-`{{GITHUB_BASE_BRANCH}}`) must be pre-configured template tokens. Do not
-prompt the user for these values; read them as resolved configuration.
+All other configuration (`FSP`, `93a7d59f-0d17-4391-a277-a7218e22a692`) must be
+pre-configured template tokens. Do not prompt the user for these values; read them as
+resolved configuration. `GITHUB_REPO` = `DedRozs/FullStackPortfolio`;
+`GITHUB_BASE_BRANCH` = `main`.
 
 ---
 
@@ -59,7 +60,7 @@ fails before advancing.
    enrichment, routed phases (noting that the phase list is determined by ticket size
    after intake), PR merge, and ticket closure.
 3. Collect required input fields from the user in a single prompt: `TICKET_ID`,
-   `{{TARGET_LANGUAGE}}`, `{{FRAMEWORK_NAME}}`, `{{TICKET_BACKEND}}`, and optionally
+   `Python`, `Django`, `{{TICKET_BACKEND}}`, and optionally
    `{{PRIOR_TICKET_KEY}}`.
 4. Validate `TICKET_ID` against `^[A-Z][A-Z0-9]+-[1-9][0-9]*$`. If it does not match,
    halt and report the validation failure to the user. Do not advance until a valid key
@@ -74,16 +75,16 @@ fails before advancing.
    Wait for confirmation from `archive-manager` before proceeding.
 8. Delegate to the `ticket-intake-agent` subagent. Pass: `TICKET_ID`, `sessionPath`,
    `TICKET_BACKEND` (resolved `{{TICKET_BACKEND}}`), and `JIRA_PROJECT_KEY` (resolved
-   `{{JIRA_PROJECT_KEY}}` - required when `TICKET_BACKEND=jira`).
+   `FSP` - required when `TICKET_BACKEND=jira`).
 9. Receive the MiniDiscoveryArtifact at `{sessionPath}/{TICKET_ID}-mini-discovery.md`.
    Verify it contains: `ticketIdentity`, `summary`, `ticketSize`, and `routedPhases`.
    If any required section is missing, return to `ticket-intake-agent` for remediation.
    Do not advance until all sections are present.
 10. Present the ticket summary to the user: ticket key, summary, ticket size, and the
     routed phases that will execute. Request explicit confirmation before proceeding.
-11. If `{{GITHUB_REPO}}` is configured, delegate to `git-workflow-manager` in startMode.
-    Pass: `ticketKey` = `TICKET_ID`, `githubRepo` (resolved `{{GITHUB_REPO}}`),
-    `baseBranch` (resolved `{{GITHUB_BASE_BRANCH}}`), `issueType` from
+11. Delegate to `git-workflow-manager` in startMode.
+    Pass: `ticketKey` = `TICKET_ID`, `githubRepo` = `DedRozs/FullStackPortfolio`,
+    `baseBranch` = `main`, `issueType` from
     `ticketIdentity.issueType` in the MiniDiscoveryArtifact, and `slug` derived from the
     ticket summary (first 6 words, lowercase, hyphenated, non-alphanumeric stripped). Store the returned `branchName`.
 12. Delegate to the `codebase-context-agent` subagent. Pass: the MiniDiscoveryArtifact
@@ -97,8 +98,8 @@ fails before advancing.
     MiniDiscoveryArtifact in strict serial order. For each phase orchestrator:
     a. Delegate to the orchestrator subagent. Pass: the artifact produced by the prior
        phase (or the enriched MiniDiscoveryArtifact for the first phase), `sessionPath`,
-       `TICKET_ID`, `targetLanguage` (resolved `{{TARGET_LANGUAGE}}`), and
-       `frameworkName` (resolved `{{FRAMEWORK_NAME}}`).
+       `TICKET_ID`, `targetLanguage` (resolved `Python`), and
+       `frameworkName` (resolved `Django`).
     b. Receive the phase output artifact. Invoke `workflow-gate.prompt.md` with the
        following arguments per phase:
        - `domain-modeling-orchestrator`: `phaseName` = `domain-modeling`,
@@ -130,10 +131,10 @@ fails before advancing.
        gaps. Do not advance to the next phase until the gate returns APPROVED.
     d. Present a phase completion summary to the user and request explicit approval
        before advancing to the next phase.
-15. If `{{GITHUB_REPO}}` is configured, delegate to `git-workflow-manager` in
-    completionMode. Pass: `ticketKey` = `TICKET_ID`, `cloudId` (resolved
-    `{{JIRA_CLOUD_ID}}` - when `TICKET_BACKEND=jira`), `githubRepo` (resolved
-    `{{GITHUB_REPO}}`), `baseBranch` (resolved `{{GITHUB_BASE_BRANCH}}`), `branchName`
+15. Delegate to `git-workflow-manager` in completionMode.
+    Pass: `ticketKey` = `TICKET_ID`, `cloudId` (resolved `93a7d59f-0d17-4391-a277-a7218e22a692` - when
+    `TICKET_BACKEND=jira`), `githubRepo` = `DedRozs/FullStackPortfolio`,
+    `baseBranch` = `main`, `branchName`
     (stored from step 11), and `implementationSummary` (one-paragraph summary of what
     was built across all routed phases).
     - On `mergeStatus: merged`: record the returned PR URL and `archiveTrigger`. Pass
@@ -144,7 +145,7 @@ fails before advancing.
 16. Delegate to `jira-ticket-updater`. Pass: `TICKET_ID`, `phasesCompleted` (the ordered
     list of phase orchestrators that ran), `keyDecisions` (key decisions from each phase
     gate summary), `artifactPaths` (all phase artifact file paths), and the PR URL from
-    step 15 (include in `keyDecisions` if `{{GITHUB_REPO}}` is configured).
+    step 15 (include in `keyDecisions`).
 17. Present the final pipeline summary to the user:
     - Step completion status for all routed phases.
     - Ticket size and phases executed.
@@ -173,7 +174,7 @@ fails before advancing.
   orchestrator with specific failure details.
 - Never invoke agents in parallel; serial execution is mandatory.
 - Never store credentials, secrets, or API keys in any artifact, file, or session context.
-- Never prompt the user for pre-configured template tokens (`{{JIRA_PROJECT_KEY}}`,
-  `{{JIRA_CLOUD_ID}}`, `{{GITHUB_REPO}}`, `{{GITHUB_BASE_BRANCH}}`); read them as
-  resolved configuration.
+- Never prompt the user for pre-configured template tokens (`FSP`,
+  `93a7d59f-0d17-4391-a277-a7218e22a692`); read them as resolved configuration.
+  `GITHUB_REPO` = `DedRozs/FullStackPortfolio`; `GITHUB_BASE_BRANCH` = `main`.
 - Must follow rules in `.github/instructions/clean-architecture.instructions.md`.

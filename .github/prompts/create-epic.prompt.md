@@ -1,4 +1,4 @@
----
+﻿---
 name: create-epic
 description: Creates an Epic with prioritized child User Stories from a feature idea, running feature-scoped Discovery and backlog prioritization before writing all stories to the configured ticketing backend (Jira or internal).
 mode: agent
@@ -31,16 +31,16 @@ has explicitly approved the transition.
 ## Required Input Fields
 
 - `This Project`: Human-readable name of the project receiving the new Epic
-- `{{DOMAIN_NAME}}`: The problem domain or business area the Epic belongs to
-- `{{TARGET_LANGUAGE}}`: Primary programming language for the feature implementation
-- `{{FRAMEWORK_NAME}}`: Primary framework or runtime environment
+- `personal-portfolio`: The problem domain or business area the Epic belongs to
+- `Python`: Primary programming language for the feature implementation
+- `Django`: Primary framework or runtime environment
 - `{{PROJECT_KEY}}`: Project key where the Epic and Stories will be created (e.g., `TT`).
-  In Jira mode this is the Jira project key (resolves `{{JIRA_PROJECT_KEY}}`); in
+  In Jira mode this is the Jira project key (resolves `FSP`); in
   internal mode it is any uppercase identifier.
 - `{{EPIC_IDEA}}`: Free-text description of the feature or product area to be scoped into
   the Epic; used verbatim as the Epic summary and as the Discovery problem statement
-- `{{TICKET_BACKEND}}`: Optional; `jira` (default, requires `{{JIRA_PROJECT_KEY}}` and
-  `{{JIRA_CLOUD_ID}}`) or `internal` (uses ticket-cli.py)
+- `{{TICKET_BACKEND}}`: Optional; `jira` (default, requires `FSP` and
+  `93a7d59f-0d17-4391-a277-a7218e22a692`) or `internal` (uses ticket-cli.py)
 
 ---
 
@@ -54,7 +54,7 @@ producing agent with the user's feedback and re-run from that step.
 2. Present the 4-step pipeline overview to the user: list each step, what it produces,
    and that explicit user approval is required at each gate.
 3. Collect required input fields from the user in a single prompt: `This Project`,
-   `{{DOMAIN_NAME}}`, `{{TARGET_LANGUAGE}}`, `{{FRAMEWORK_NAME}}`, `{{PROJECT_KEY}}`,
+   `personal-portfolio`, `Python`, `Django`, `{{PROJECT_KEY}}`,
    `{{EPIC_IDEA}}`, and `{{TICKET_BACKEND}}`.
 4. Present the collected configuration back to the user and request explicit confirmation
    before proceeding. Do not advance until confirmation is received.
@@ -92,7 +92,7 @@ producing agent with the user's feedback and re-run from that step.
 12. On approval, delegate to the `jira-epic-writer` subagent. Pass: `sessionPath`,
     `PROJECT_KEY` (resolved `{{PROJECT_KEY}}`), `EPIC_IDEA` (resolved `{{EPIC_IDEA}}`),
     and `TICKET_BACKEND` (resolved `{{TICKET_BACKEND}}`). In Jira mode also pass
-    `cloudId` = `{{JIRA_CLOUD_ID}}`.
+    `cloudId` = `93a7d59f-0d17-4391-a277-a7218e22a692`.
 13. Receive the Epic creation confirmation from `jira-epic-writer`. Present verbatim to
     the user: Epic issue key and URL (or key in internal mode), total child Stories
     created, and any backlog items flagged for decomposition (estimate exceeded 13 points).

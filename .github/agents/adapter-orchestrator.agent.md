@@ -126,7 +126,7 @@ Do not advance to the next specialist until the current one delivers its output.
 - Never allow adapters to import from the infrastructure layer (DI wiring is done
   separately by `di-container-configurator`).
 - Never advance if a specialist reports a violation or incomplete output.
-- Never hardcode `This Project`, `{{TARGET_LANGUAGE}}`, or any domain terms;
+- Never hardcode `This Project`, `Python`, or any domain terms;
   use `{{PLACEHOLDER_NAME}}` syntax for all project-specific values.
 - Must follow rules in [ddd-infrastructure.instructions.md]
   (path: `.github/instructions/ddd-infrastructure.instructions.md`).

@@ -74,7 +74,7 @@ documentation file. Read the artifact using `read_file` to access the required f
    - Purpose: deploy `This Project` to `{{TARGET_ENVIRONMENT}}`
    - Audience: `engineering team`
    - Prerequisites: access to `{{DEPLOY_PLATFORM}}`, `{{SECRETS_MANAGER}}`,
-     and `{{DATABASE_ENGINE}}`
+     and `MySQL`
    - Procedure: pre-deployment checks, environment variable configuration, migration
      execution, service deployment, smoke test execution
    - Verification: health check URL `{{HEALTH_CHECK_URL}}` returns expected status

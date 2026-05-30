@@ -1,5 +1,5 @@
 ﻿---
-description: Implements anti-corruption layer adapter classes in {{TARGET_LANGUAGE}} for This Project for each third-party external service, translating between the external API's model and the domain model to prevent external concerns from leaking into the system.
+description: Implements anti-corruption layer adapter classes in Python for This Project for each third-party external service, translating between the external API's model and the domain model to prevent external concerns from leaking into the system.
 name: "External Service Integrator"
 user-invocable: false
 ---
@@ -59,7 +59,7 @@ report file path; read files from disk using `read_file` when needed
    outbound. For each service, determine the domain interface it satisfies (from
    `domainServices` or `repositoryInterfaces`).
 2. For each external service, create an ACL adapter class in
-   `infrastructure/external/{{ServiceName}}Adapter.{{TARGET_LANGUAGE_EXTENSION}}`:
+   `infrastructure/external/{{ServiceName}}Adapter.py`:
    - Implement the domain interface that this service satisfies.
    - Inject the HTTP client or SDK as a constructor dependency using a placeholder
      client type `{{ServiceName}}Client`.
@@ -71,7 +71,7 @@ report file path; read files from disk using `read_file` when needed
    - Handle external service errors and map them to domain-defined exception types;
      never let external exception types propagate past the adapter boundary.
 3. Create an HTTP client configuration stub at
-   `infrastructure/external/{{ServiceName}}Client.{{TARGET_LANGUAGE_EXTENSION}}`:
+   `infrastructure/external/{{ServiceName}}Client.py`:
    - Read API base URL from `{{SERVICE_BASE_URL_ENV_VAR}}` and API key from
      `{{SERVICE_API_KEY_ENV_VAR}}`.
    - Never hardcode credentials or URLs.

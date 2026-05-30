@@ -1,4 +1,4 @@
----
+﻿---
 name: architecture-review
 description: Runs the Architecture phase only against an existing codebase, producing an architecture-to-domain-modeling artifact capturing the current structural state and any identified concerns.
 mode: agent
@@ -15,7 +15,7 @@ Run the Architecture phase against an existing codebase to assess its structural
 ## Phase Invocation Order
 
 0. project-ticket-creator (step zero - project-driven command; create Jira issue under
-   {{JIRA_PROJECT_KEY}}, receive TICKET_KEY and sessionPath before any artifact is written;
+   FSP, receive TICKET_KEY and sessionPath before any artifact is written;
    skip this step and run in offlineRun mode if Jira integration is unavailable)
 1. architecture-orchestrator
 

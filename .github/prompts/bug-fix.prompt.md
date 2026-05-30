@@ -1,4 +1,4 @@
----
+﻿---
 name: bug-fix
 description: Runs a targeted bug-fix pipeline - QA investigation, Development repair, and QA re-verification - gating each phase transition on artifact validation and explicit user approval.
 mode: agent
@@ -35,7 +35,7 @@ and the user has explicitly approved the transition.
   reproduction steps and expected versus actual behavior
 - `{{AFFECTED_COMPONENT}}`: Name of the component, module, or layer where the bug was
   observed
-- `{{TARGET_LANGUAGE}}`: Primary programming language of the affected component
+- `Python`: Primary programming language of the affected component
 
 ---
 
@@ -50,7 +50,7 @@ the producing agent with the user's feedback and re-run from that step.
    produces, and that explicit user approval is required at each gate.
 3. Collect required input fields from the user in a single prompt: `This Project`,
    `TICKET_KEY`, `{{BUG_DESCRIPTION}}`, `{{AFFECTED_COMPONENT}}`, and
-   `{{TARGET_LANGUAGE}}`.
+   `Python`.
 4. Validate `TICKET_KEY` against `^[A-Z][A-Z0-9]+-[1-9][0-9]*$`. If it does not match,
    halt and report the validation failure to the user. Do not advance until a valid key
    is supplied.
@@ -58,15 +58,15 @@ the producing agent with the user's feedback and re-run from that step.
    before proceeding. Do not advance until confirmation is received.
 6. Set `sessionPath` = `knowledge-base/plans/active/<TICKET_KEY>/`. This pipeline always
    runs in namespacedRun mode because `TICKET_KEY` is required.
-7. If `{{GITHUB_REPO}}` is configured, delegate to `git-workflow-manager` in startMode.
-   Pass: `ticketKey` = `TICKET_KEY`, `githubRepo` (resolved `{{GITHUB_REPO}}`),
-   `baseBranch` (resolved `{{GITHUB_BASE_BRANCH}}`), `issueType` (`Bug`), and `slug`
+7. Delegate to `git-workflow-manager` in startMode.
+   Pass: `ticketKey` = `TICKET_KEY`, `githubRepo` = `DedRozs/FullStackPortfolio`,
+   `baseBranch` = `main`, `issueType` (`Bug`), and `slug`
    derived from `{{BUG_DESCRIPTION}}` (first 6 words, lowercase, hyphenated). Store the
    returned `branchName`.
 8. Delegate to the `qa-orchestrator` subagent in **investigation mode**. Pass:
    `sessionPath`, `TICKET_KEY`, `bugDescription` = `{{BUG_DESCRIPTION}}`,
    `affectedComponent` = `{{AFFECTED_COMPONENT}}`, and `targetLanguage` =
-   `{{TARGET_LANGUAGE}}`. Instruct the orchestrator to scope its work to defect
+   `Python`. Instruct the orchestrator to scope its work to defect
    investigation only: identify the root cause, document reproduction steps, classify
    severity and affected layer, and produce a `defect-report` artifact conforming to
    `contracts/schemas/defect-report.schema.json`. It must not run the full QA suite.
@@ -105,9 +105,9 @@ the producing agent with the user's feedback and re-run from that step.
     `[defectId, verificationStatus, regressionStatus, verifiedBy]`. If
     `verificationStatus` is not `resolved` or `regressionStatus` is not `none`, return
     to the defect-repair-coordinator and re-run from step 11.
-15a. If `{{GITHUB_REPO}}` is configured and `branchName` was stored in step 7, delegate
+15a. If `branchName` was stored in step 7, delegate
      to `git-workflow-manager` in completionMode. Pass: `ticketKey` = `TICKET_KEY`,
-     `githubRepo`, `baseBranch`, `branchName`, and `implementationSummary` (one
+     `githubRepo` = `DedRozs/FullStackPortfolio`, `baseBranch` = `main`, `branchName`, and `implementationSummary` (one
      paragraph describing the defect and the applied fix). On `mergeStatus: merged`,
      pass the returned `archiveTrigger` path to `archive-manager`. On
      `mergeStatus: conflict`, present the conflict details to the user and halt pending

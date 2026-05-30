@@ -1,5 +1,5 @@
 ---
-applyTo: "**/*.{py,agent.md}"
+applyTo: "**"
 description: "Use when executing any Python command in a terminal - test runners, package installers, linting tools, migration runners, or any other Python CLI invocation. Enforces mandatory virtual environment activation rules for all Python command execution to prevent system Python pollution and dependency conflicts."
 ---
 <!-- v1.0 | Created: 2026-05-02 | Pattern: Python Virtual Environment -->

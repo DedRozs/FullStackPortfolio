@@ -1,5 +1,5 @@
 ﻿---
-description: Implements controller classes in {{TARGET_LANGUAGE}} for This Project that receive external requests, perform boundary validation, map input to request models, and invoke the appropriate use case through its input port interface.
+description: Implements controller classes in Python for This Project that receive external requests, perform boundary validation, map input to request models, and invoke the appropriate use case through its input port interface.
 name: "Controller Implementer"
 user-invocable: false
 ---
@@ -57,9 +57,9 @@ file path; read files from disk using `read_file` when needed
 1. Read the `interfaceContracts` from the architecture artifact to identify all
    inbound routes, HTTP methods, and expected request schemas.
 2. For each API contract, implement a controller class in
-   `presentation/api/{{ControllerName}}.{{TARGET_LANGUAGE_EXTENSION}}`:
+   `presentation/api/{{ControllerName}}.py`:
    - Declare the route and HTTP method using the framework's routing mechanism
-     (via a placeholder annotation pattern for `{{FRAMEWORK_NAME}}`)
+     (via a placeholder annotation pattern for `Django`)
    - Validate all required fields exist and are correctly typed at the boundary;
      return `400 Bad Request` with a descriptive error if validation fails.
    - Map the incoming request payload to the appropriate request model type.

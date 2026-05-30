@@ -1,4 +1,4 @@
----
+﻿---
 name: feature-kickoff
 description: Runs a feature-scoped pipeline - Discovery (feature-scoped), Domain Modeling, Development, and QA - gating each phase transition on artifact validation and explicit user approval.
 mode: agent
@@ -35,12 +35,12 @@ transition.
 ## Required Input Fields
 
 - `This Project`: Human-readable name of the project receiving the new feature
-- `{{DOMAIN_NAME}}`: The problem domain or business area the feature belongs to
-- `{{TARGET_LANGUAGE}}`: Primary programming language for the feature implementation
-- `{{FRAMEWORK_NAME}}`: Primary framework or runtime environment
-- `{{DATABASE_ENGINE}}`: Persistence engine (use "None" if no database changes are required)
+- `personal-portfolio`: The problem domain or business area the feature belongs to
+- `Python`: Primary programming language for the feature implementation
+- `Django`: Primary framework or runtime environment
+- `MySQL`: Persistence engine (use "None" if no database changes are required)
 - `{{FEATURE_DESCRIPTION}}`: Concise description of the feature to build, including purpose and acceptance criteria
-- `{{TICKET_BACKEND}}`: Optional; `jira` (default, requires `{{JIRA_PROJECT_KEY}}` and `{{JIRA_CLOUD_ID}}`), `internal` (uses ticket-cli.py), or omit to run in offlineRun mode
+- `{{TICKET_BACKEND}}`: Optional; `jira` (default, requires `FSP` and `93a7d59f-0d17-4391-a277-a7218e22a692`), `internal` (uses ticket-cli.py), or omit to run in offlineRun mode
 
 ---
 
@@ -55,7 +55,7 @@ the producing orchestrator with the user's feedback and re-run from that phase.
    produces, what artifact it hands off, and that explicit user approval is required at
    each gate.
 3. Collect project configuration from the user in a single prompt: `This Project`,
-   `{{DOMAIN_NAME}}`, `{{TARGET_LANGUAGE}}`, `{{FRAMEWORK_NAME}}`, `{{DATABASE_ENGINE}}`,
+   `personal-portfolio`, `Python`, `Django`, `MySQL`,
    and `{{FEATURE_DESCRIPTION}}`.
 4. Present the collected configuration back to the user and request explicit confirmation
    before proceeding. Do not advance until confirmation is received.
@@ -70,19 +70,19 @@ the producing orchestrator with the user's feedback and re-run from that phase.
     - **If `{{TICKET_BACKEND}}=internal`:** Delegate to `project-ticket-creator` with
       `projectKey` (uppercase slug of `This Project`), `issueType` (`Story`), and
       `summary` (`This Project - {{FEATURE_DESCRIPTION}}` truncated to 80 characters).
-      Do not pass `cloudId`. Receive `ticketKey` and `sessionPath`. Store both. If
-      `{{GITHUB_REPO}}` is configured, delegate to `git-workflow-manager` in startMode
-      passing `ticketKey`, `githubRepo` (resolved `{{GITHUB_REPO}}`), `baseBranch`
-      (resolved `{{GITHUB_BASE_BRANCH}}`), `issueType` (`Story`), and `slug` derived
+      Do not pass `cloudId`. Receive `ticketKey` and `sessionPath`. Store both. Delegate
+      to `git-workflow-manager` in startMode passing `ticketKey`,
+      `githubRepo` = `DedRozs/FullStackPortfolio`, `baseBranch` = `main`,
+      `issueType` (`Story`), and `slug` derived
       from the feature description. Store the returned `branchName`.
-    - **If `{{TICKET_BACKEND}}=jira` (or absent) AND `{{JIRA_PROJECT_KEY}}` and
-      `{{JIRA_CLOUD_ID}}` are configured:** Delegate to `project-ticket-creator` with
-      `projectKey` (resolved `{{JIRA_PROJECT_KEY}}`), `cloudId` (resolved
-      `{{JIRA_CLOUD_ID}}`), `issueType` (`Story`), and `summary` (`This Project` plus
+    - **If `{{TICKET_BACKEND}}=jira` (or absent) AND `FSP` and
+      `93a7d59f-0d17-4391-a277-a7218e22a692` are configured:** Delegate to `project-ticket-creator` with
+      `projectKey` (resolved `FSP`), `cloudId` (resolved
+      `93a7d59f-0d17-4391-a277-a7218e22a692`), `issueType` (`Story`), and `summary` (`This Project` plus
       a one-line feature description truncated to 80 characters). Receive `ticketKey`
       and `sessionPath`. Store both. Delegate to `git-workflow-manager` in startMode
-      passing `ticketKey`, `cloudId`, `githubRepo` (resolved `{{GITHUB_REPO}}`),
-      `baseBranch` (resolved `{{GITHUB_BASE_BRANCH}}`), `issueType` (`Story`), and
+      passing `ticketKey`, `cloudId`, `githubRepo` = `DedRozs/FullStackPortfolio`,
+      `baseBranch` = `main`, `issueType` (`Story`), and
       `slug` derived from the feature description. Store the returned `branchName`.
     - **Otherwise:** Proceed in offlineRun mode. Generate a human-readable session ID
       from the confirmed project name and current UTC date and time:

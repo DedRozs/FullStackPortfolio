@@ -1,4 +1,4 @@
----
+﻿---
 description: Translates DTO shapes and API contracts into TypeScript type artifacts for the adapter layer of This Project, including type aliases, discriminated unions, branded primitives, and runtime type-guard functions.
 name: "TypeScript Type Generator"
 ---
@@ -80,10 +80,10 @@ output directory; returns only the path to the Type Generation Report
    the `isXxxDto` naming pattern (e.g., `isCreateOrderRequestDto`) for all request
    and response shapes described in the contract.
 4. Write one `{{DtoName}}.types.ts` file per DTO or contract into
-   `{{TARGET_LANGUAGE_EXTENSION}}/types/` within the adapter layer output directory.
+   `py/types/` within the adapter layer output directory.
    Each file must export only derivative types - no class declarations, no imports
    from the domain layer.
-5. Write a barrel `index.ts` at `{{TARGET_LANGUAGE_EXTENSION}}/types/index.ts` that
+5. Write a barrel `index.ts` at `py/types/index.ts` that
    re-exports all named exports from every generated `.types.ts` file using
    `export * from './{{DtoName}}.types'` statements.
 6. Write the Type Generation Report to
@@ -107,7 +107,7 @@ output directory; returns only the path to the Type Generation Report
   controller-implementer.
 - All generated type names and type-guard function names must use terms from the
   `ubiquitousLanguage` input field.
-- Use `{{TARGET_LANGUAGE_EXTENSION}}` for the output directory and `{{FRAMEWORK_NAME}}`
+- Use `py` for the output directory and `Django`
   where framework context is needed. Never hardcode language or framework names.
 - If input validation fails, escalate to adapter-orchestrator immediately; do not
   attempt partial generation.

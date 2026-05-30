@@ -34,7 +34,7 @@ deploymentTarget).
 **Required fields (from working document):**
 
 - `This Project` - project name to use in all prompts and output
-- `{{DOMAIN_NAME}}` - primary business domain (context for questions)
+- `personal-portfolio` - primary business domain (context for questions)
 
 ---
 
@@ -62,7 +62,7 @@ discovery-orchestrator. Do not return section content inline.
    `read_file`. Extract the project configuration fields (project name and domain name).
 2. Present the user with a structured vision prompt: ask them to describe the system they
    want to build, the problem it solves, and who will use it. Provide `This Project`
-   and `{{DOMAIN_NAME}}` as context.
+   and `personal-portfolio` as context.
 3. Ask the user to confirm the core problem statement in one to three sentences. Refine
    until the user confirms it is accurate.
 4. Ask the user to list the primary user groups who will benefit from the system.

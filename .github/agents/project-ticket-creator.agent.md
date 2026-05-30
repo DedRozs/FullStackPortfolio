@@ -1,4 +1,4 @@
----
+﻿---
 description: Cross-cutting utility agent that creates a ticket at pipeline start using either Jira MCP tools or the internal ticketing CLI (ticket-cli.py) depending on TICKET_BACKEND, validates the returned TICKET_KEY, and returns the TICKET_KEY and initial SessionPath to the invoking command or orchestrator.
 name: "Project Ticket Creator"
 user-invocable: false
@@ -33,7 +33,7 @@ and report directly to the invoking command or the top-level orchestrator.
 **Required fields:**
 
 - `projectKey` - string; the project key under which the ticket is created. In Jira
-  mode: resolved value of `{{JIRA_PROJECT_KEY}}`. In internal mode: any uppercase
+  mode: resolved value of `FSP`. In internal mode: any uppercase
   identifier matching `^[A-Z][A-Z0-9]+$`.
 - `summary` - string; concise one-line summary to set as the ticket title.
 - `issueType` - string; issue type name (e.g., `Story`, `Task`, `Bug`).
@@ -41,7 +41,7 @@ and report directly to the invoking command or the top-level orchestrator.
 **Conditionally required fields:**
 
 - `cloudId` - string; the Atlassian cloud ID for the target Jira instance (resolved value
-  of `{{JIRA_CLOUD_ID}}`). Required when `TICKET_BACKEND=jira`. Omit for internal mode.
+  of `93a7d59f-0d17-4391-a277-a7218e22a692`). Required when `TICKET_BACKEND=jira`. Omit for internal mode.
 
 **Optional fields:**
 
@@ -101,7 +101,7 @@ and report directly to the invoking command or the top-level orchestrator.
       proceed with an unvalidated key.
    d. Derive `sessionPath` as `knowledge-base/plans/active/<TICKET_KEY>/`.
    e. Return `ticketKey`, `sessionPath`, and `issueUrl` = the full URL to the created
-      Jira issue (`{{JIRA_SITE_URL}}/browse/<TICKET_KEY>`).
+      Jira issue (`https://ai-minion.atlassian.net/browse/<TICKET_KEY>`).
 
 ---
 

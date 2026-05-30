@@ -82,7 +82,7 @@ monitoring-configurator, health-check-validator
    - Decision authority: `{{PROD_APPROVER}}` for production; automated for lower envs
 7. Document the Database Rollback procedure:
    - Trigger: data corruption detected, migration failure, or data integrity alert
-   - Scope: `{{DATABASE_ENGINE}}` instance in the affected environment
+   - Scope: `MySQL` instance in the affected environment
    - Procedure: (1) halt all write operations; (2) notify `{{DATABASE_ADMIN_CONTACT}}`;
      (3) restore from backup using `{{RESTORE_COMMAND}}`; (4) replay transaction log
      to `{{RESTORE_POINT}}`; (5) re-run application readiness checks

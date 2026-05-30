@@ -67,7 +67,7 @@ domain-modeling-orchestrator. Do not return section content inline.
    aggregate roots involved?" If yes, assign it to that aggregate. Create a domain
    service only when the logic genuinely has no natural home in any single aggregate.
 3. Name each domain service with a verb-noun pattern using ubiquitous language
-   (e.g., `{{DOMAIN_NAME}}TransferService`, `PricingCalculationService`).
+   (e.g., `personal-portfolioTransferService`, `PricingCalculationService`).
 4. Define each service interface: method names in domain language, parameter types
    (domain entities, value objects, and IDs only), and return types.
 5. Document which aggregates each service collaborates with.

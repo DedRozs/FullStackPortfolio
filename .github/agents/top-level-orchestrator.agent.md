@@ -102,8 +102,8 @@ the producing orchestrator with the user's feedback and re-run from that phase.
 2. Present the 7-phase SDLC overview to the user: list each phase, what it produces, what
    artifact it hands off, and that explicit user approval is required at each gate.
 3. Collect project configuration from the user in a single prompt: `This Project`,
-   `{{DOMAIN_NAME}}`, `{{TARGET_LANGUAGE}}`, `{{FRAMEWORK_NAME}}`, `{{DATABASE_ENGINE}}`,
-   `{{DEPLOYMENT_TARGET}}`.
+   `personal-portfolio`, `Python`, `Django`, `MySQL`,
+   `Google App Engine`.
 4. Present the collected configuration back to the user and request explicit confirmation
    before proceeding. Do not advance until confirmation is received.
 4a. Check whether `knowledge-base/plans/active/` contains any files or subdirectories.
@@ -117,18 +117,18 @@ the producing orchestrator with the user's feedback and re-run from that phase.
     - **If `TICKET_BACKEND=internal`:** Delegate to `project-ticket-creator` with
       `projectKey` (uppercase slug of `This Project`), `issueType` (`Story`), and
       `summary` (`This Project - SDLC run`). Do not pass `cloudId`. Receive `ticketKey`
-      and `sessionPath`. Store both. If `{{GITHUB_REPO}}` is configured, delegate to
-      `git-workflow-manager` in startMode passing `ticketKey`, `githubRepo` (resolved
-      `{{GITHUB_REPO}}`), `baseBranch` (resolved `{{GITHUB_BASE_BRANCH}}`),
+      and `sessionPath`. Store both. Delegate to
+      `git-workflow-manager` in startMode passing `ticketKey`, `githubRepo`
+      (`DedRozs/FullStackPortfolio`), `baseBranch` (`main`),
       `issueType` (`Story`), and `slug` derived from the project name. Store the
       returned `branchName`.
-    - **If `TICKET_BACKEND=jira` (or absent) AND `{{JIRA_PROJECT_KEY}}` and
-      `{{JIRA_CLOUD_ID}}` are configured:** Delegate to `project-ticket-creator` with
-      `projectKey` (resolved `{{JIRA_PROJECT_KEY}}`), `cloudId` (resolved
-      `{{JIRA_CLOUD_ID}}`), `issueType` (`Story`), and `summary` (one-line project name
+    - **If `TICKET_BACKEND=jira` (or absent) AND `FSP` and
+      `93a7d59f-0d17-4391-a277-a7218e22a692` are configured:** Delegate to `project-ticket-creator` with
+      `projectKey` (resolved `FSP`), `cloudId` (resolved
+      `93a7d59f-0d17-4391-a277-a7218e22a692`), `issueType` (`Story`), and `summary` (one-line project name
       plus `- SDLC run`). Receive `ticketKey` and `sessionPath`. Store both. Delegate to
       `git-workflow-manager` in startMode passing `ticketKey`, `cloudId`, `githubRepo`
-      (resolved `{{GITHUB_REPO}}`), `baseBranch` (resolved `{{GITHUB_BASE_BRANCH}}`),
+      (resolved `DedRozs/FullStackPortfolio`), `baseBranch` (resolved `main`),
       `issueType` (`Story`), and `slug` derived from the project name. Store the
       returned `branchName`.
     - **Otherwise:** Proceed in offlineRun mode. Generate a human-readable session ID

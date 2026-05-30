@@ -1,5 +1,5 @@
 ﻿---
-description: Implements presenter classes in {{TARGET_LANGUAGE}} for This Project that receive use case results through output port interfaces and transform them into the external response format required by each API contract.
+description: Implements presenter classes in Python for This Project that receive use case results through output port interfaces and transform them into the external response format required by each API contract.
 name: "Presenter Implementer"
 user-invocable: false
 ---
@@ -57,7 +57,7 @@ and the controller report path; read files from disk using `read_file` when need
 1. Read the output port interface files and presenter contract files to understand all
    outcome variants each presenter must handle.
 2. For each output port interface, implement a concrete presenter class in
-   `presentation/api/{{UseCaseName}}Presenter.{{TARGET_LANGUAGE_EXTENSION}}`:
+   `presentation/api/{{UseCaseName}}Presenter.py`:
    - Implement every method declared in the output port interface.
    - For success outcomes: map the use case data into the appropriate response DTO,
      then serialize to `JSON` (default JSON).

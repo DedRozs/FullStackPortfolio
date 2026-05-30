@@ -34,7 +34,7 @@ StoryPoints estimate capped at 13, and appropriate labels. You report to
 - `prioritizedBacklog` - array of ranked items; each item must have `rank`, `title`, and
   `acceptanceCriteria`
 - `PROJECT_KEY` - project key provided by the user at command invocation (resolves
-  `{{JIRA_PROJECT_KEY}}` in Jira mode; any uppercase identifier in internal mode)
+  `FSP` in Jira mode; any uppercase identifier in internal mode)
 - `EPIC_IDEA` - EpicIdea string provided as the EPIC_IDEA input field; used as the Epic
   summary
 - `sessionPath` - string; required; the active artifact directory for the current pipeline run
@@ -49,7 +49,7 @@ StoryPoints estimate capped at 13, and appropriate labels. You report to
 
 **Required fields:**
 
-- Epic IssueKey and location (Jira mode: URL `{{JIRA_SITE_URL}}/browse/{epicKey}`;
+- Epic IssueKey and location (Jira mode: URL `https://ai-minion.atlassian.net/browse/{epicKey}`;
   internal mode: Epic IssueKey only)
 - Total count of child Stories created
 - List of any backlog items flagged for decomposition because their computed estimate
@@ -67,7 +67,7 @@ StoryPoints estimate capped at 13, and appropriate labels. You report to
    - **If `TICKET_BACKEND=internal`:** Run `.venv\Scripts\python.exe knowledge-base/scripts/ticket-cli.py create --project-key=<PROJECT_KEY> --type=Epic --summary="<EPIC_IDEA>"` via `run_in_terminal`. Parse the JSON object from stdout and extract the `key` field as `epicKey`.
    - **If `TICKET_BACKEND=jira` (default):** Call `mcp_com_atlassian_createJiraIssue` with
      `projectKey` = PROJECT_KEY, `issueTypeName` = "Epic", `summary` = EPIC_IDEA,
-     `cloudId` = `{{JIRA_CLOUD_ID}}`. Record the returned IssueKey as
+     `cloudId` = `93a7d59f-0d17-4391-a277-a7218e22a692`. Record the returned IssueKey as
      `epicKey`.
 4. Process each item in `prioritizedBacklog` in strict rank order (rank 1 first):
    a. Compute a StoryPoints estimate using the AcceptanceCriteria count as a complexity
@@ -84,10 +84,10 @@ StoryPoints estimate capped at 13, and appropriate labels. You report to
         `projectKey` = PROJECT_KEY, `issueTypeName` = "Story", `summary` = item title,
         `description` = formatted body,
         `additional_fields` = `{"parent": {"key": "<epicKey>"}, "labels": ["<EPIC_IDEA>"]}`,
-        `cloudId` = `{{JIRA_CLOUD_ID}}`. Record the returned IssueKey.
+        `cloudId` = `93a7d59f-0d17-4391-a277-a7218e22a692`. Record the returned IssueKey.
    e. Set StoryPoints (Jira mode only): call `mcp_com_atlassian_editJiraIssue` with the
       returned IssueKey, `fields` = `{"customfield_10016": <storyPoints>}`, and
-      `cloudId` = `{{JIRA_CLOUD_ID}}`. In internal mode, skip this
+      `cloudId` = `93a7d59f-0d17-4391-a277-a7218e22a692`. In internal mode, skip this
       step (story points are not supported by ticket-cli.py); add a note to the story
       description instead if needed.
 5. After all items are processed, present the final summary to the user: Epic IssueKey
@@ -99,7 +99,7 @@ StoryPoints estimate capped at 13, and appropriate labels. You report to
 ## Constraints
 
 - Never hardcode PROJECT_KEY; always use the value passed from the input field.
-- In Jira mode: the Cloud ID `{{JIRA_CLOUD_ID}}` is the configured
+- In Jira mode: the Cloud ID `93a7d59f-0d17-4391-a277-a7218e22a692` is the configured
   Atlassian Cloud identifier. Pass it as `cloudId` on every `mcp_com_atlassian_*` call.
 - In internal mode: use `run_in_terminal` with `ticket-cli.py` subcommands only.
   Shell-escape all string arguments (OWASP A03).

@@ -1,4 +1,4 @@
-# FullStackPortfolio - AI Assistant Guidelines
+﻿# FullStackPortfolio - AI Assistant Guidelines
 
 ## Codebase Identity
 
@@ -60,16 +60,16 @@ Ten core tokens must be configured before the first pipeline run:
 | Token | Description | Example |
 |---|---|---|
 | `This Project` | Human-readable project name | `MyApp` |
-| `{{DOMAIN_NAME}}` | Primary business domain | `e-commerce` |
-| `{{TARGET_LANGUAGE}}` | Implementation language | `Python` |
-| `{{FRAMEWORK_NAME}}` | Application framework | `FastAPI` |
-| `{{DATABASE_ENGINE}}` | Persistence technology | `PostgreSQL` |
-| `{{DEPLOYMENT_TARGET}}` | Hosting platform | `AWS ECS` |
-| `{{JIRA_PROJECT_KEY}}` | Jira project key for ticket creation | `PROJ` |
-| `{{JIRA_CLOUD_ID}}` | Jira Cloud ID (from Atlassian admin) | `93a7d59f-...` |
-| `{{JIRA_SITE_URL}}` | Jira site base URL | `https://your-site.atlassian.net` |
-| `{{GITHUB_REPO}}` | GitHub repository in owner/repo format | `myorg/my-repo` |
-| `{{GITHUB_BASE_BRANCH}}` | Base branch for feature branches | `develop` |
+| `personal-portfolio` | Primary business domain | `e-commerce` |
+| `Python` | Implementation language | `Python` |
+| `Django` | Application framework | `FastAPI` |
+| `MySQL` | Persistence technology | `PostgreSQL` |
+| `Google App Engine` | Hosting platform | `AWS ECS` |
+| `FSP` | Jira project key for ticket creation | `PROJ` |
+| `93a7d59f-0d17-4391-a277-a7218e22a692` | Jira Cloud ID (from Atlassian admin) | `93a7d59f-...` |
+| `https://ai-minion.atlassian.net` | Jira site base URL | `https://your-site.atlassian.net` |
+| `DedRozs/FullStackPortfolio` | GitHub repository in owner/repo format | `DedRozs/FullStackPortfolio` |
+| `main` | Base branch for feature branches | `main` |
 
 Run `Select-String -Path ".github\agents\*.agent.md" -Pattern "\{\{" -Recurse` (Windows) or
 `grep -r "{{" . --include="*.agent.md"` (macOS/Linux) to find unresolved tokens.

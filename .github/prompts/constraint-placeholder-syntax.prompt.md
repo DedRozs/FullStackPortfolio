@@ -1,4 +1,4 @@
----
+﻿---
 name: constraint-placeholder-syntax
 description: "Use when: authoring any template agent that must remain reusable across multiple projects and configurations."
 mode: agent
@@ -18,13 +18,13 @@ VS Code Copilot to fail silently when loading the prompt.
 Configuration values that must use placeholder syntax in body text:
 
 - Project name - use `This Project`
-- Target language - use `{{TARGET_LANGUAGE}}`
-- Framework name - use `{{FRAMEWORK_NAME}}`
-- Database engine - use `{{DATABASE_ENGINE}}`
-- Domain terms and bounded context names - use `{{DOMAIN_NAME}}` and equivalent
+- Target language - use `Python`
+- Framework name - use `Django`
+- Database engine - use `MySQL`
+- Domain terms and bounded context names - use `personal-portfolio` and equivalent
 - Environment names (dev, staging, prod) - use `{{ENVIRONMENT_NAME}}`
 - Message broker - use `{{MESSAGE_BROKER}}`
-- Cloud provider or deployment target - use `{{DEPLOYMENT_TARGET}}`
+- Cloud provider or deployment target - use `Google App Engine`
 - Secrets manager - use `{{SECRETS_MANAGER}}`
 
 If a value is project-specific and no placeholder exists in this list, introduce a new

@@ -67,12 +67,12 @@ that ticket to Done or the nearest equivalent in priority order:
    - **If `TICKET_BACKEND=internal`:** Run `.venv\Scripts\python.exe knowledge-base/scripts/ticket-cli.py add-comment <TICKET_ID> --author="Implementation Pipeline" --body="<commentBody>"` via `run_in_terminal`. If the command exits non-zero, halt and notify the user before attempting any transition.
    - **If `TICKET_BACKEND=jira` (default):** Call `mcp_com_atlassian_addCommentToJiraIssue`
      with `issueIdOrKey` = TICKET_ID, `commentBody` = the assembled Markdown,
-     `cloudId` = `{{JIRA_CLOUD_ID}}`. Record the returned comment URL.
+     `cloudId` = `93a7d59f-0d17-4391-a277-a7218e22a692`. Record the returned comment URL.
      If the call fails, halt and notify the user before attempting any transition.
 4. Fetch or determine available transitions:
    - **If `TICKET_BACKEND=internal`:** Available transitions are the fixed set [Done, Resolved, Closed, Complete]. Skip fetching.
    - **If `TICKET_BACKEND=jira`:** Call `mcp_com_atlassian_getTransitionsForJiraIssue` with
-     `issueIdOrKey` = TICKET_ID and `cloudId` = `{{JIRA_CLOUD_ID}}`.
+     `issueIdOrKey` = TICKET_ID and `cloudId` = `93a7d59f-0d17-4391-a277-a7218e22a692`.
      Record the full list of returned TransitionCandidates.
 5. Match transitions using case-insensitive name comparison in priority order:
    Done -> Resolved -> Closed -> Complete. Stop at the first match.
@@ -80,9 +80,9 @@ that ticket to Done or the nearest equivalent in priority order:
    - **If `TICKET_BACKEND=internal`:** Run `.venv\Scripts\python.exe knowledge-base/scripts/ticket-cli.py transition <TICKET_ID> <matchedTransitionName>` via `run_in_terminal`. Set TransitionOutcome = matched transition name. Present confirmation: note that the comment was posted and the transition was applied.
    - **If `TICKET_BACKEND=jira`:** Call `mcp_com_atlassian_transitionJiraIssue` with
      `issueIdOrKey` = TICKET_ID, `transition` = `{"id": "<matchedTransitionId>"}`, and
-     `cloudId` = `{{JIRA_CLOUD_ID}}`. Set TransitionOutcome = matched
+     `cloudId` = `93a7d59f-0d17-4391-a277-a7218e22a692`. Set TransitionOutcome = matched
      transition name. Present confirmation: comment URL, transition name applied, and
-     ticket URL at `{{JIRA_SITE_URL}}/browse/{TICKET_ID}`.
+     ticket URL at `https://ai-minion.atlassian.net/browse/{TICKET_ID}`.
 7. If no match is found:
    a. Set TransitionOutcome = "Halted".
    b. Present to the user: confirmation that the comment was posted, a notification that no
@@ -94,7 +94,7 @@ that ticket to Done or the nearest equivalent in priority order:
 ## Constraints
 
 - Never hardcode TICKET_ID; always use the value passed through the input contract.
-- In Jira mode: the Cloud ID `{{JIRA_CLOUD_ID}}` is the configured
+- In Jira mode: the Cloud ID `93a7d59f-0d17-4391-a277-a7218e22a692` is the configured
   Atlassian Cloud identifier. Pass it as `cloudId` on every `mcp_com_atlassian_*` call.
   Never fabricate or guess transition IDs; only use IDs returned by
   `mcp_com_atlassian_getTransitionsForJiraIssue` for the specific TICKET_ID.

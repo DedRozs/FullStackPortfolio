@@ -62,8 +62,8 @@ architecture-orchestrator. Do not return section content inline.
 - `boundedContexts` - array of objects, each with name, responsibility, and owner
 - `integrationPatterns` - list of context-to-context relationships, each with source
   context, target context, and the approved pattern applied
-- `technologyStack` - object with `{{TARGET_LANGUAGE}}`, `{{FRAMEWORK_NAME}}`,
-  `{{DATABASE_ENGINE}}`, `{{DEPLOYMENT_TARGET}}`, and additional selections as needed
+- `technologyStack` - object with `Python`, `Django`,
+  `MySQL`, `Google App Engine`, and additional selections as needed
 - `architecturalStyle` - primary architectural pattern with justification referencing
   enterprise constraints (default: Clean Architecture with DDD tactical patterns)
 
@@ -83,8 +83,8 @@ architecture-orchestrator. Do not return section content inline.
 4. Identify all context-to-context integration points. Assign an approved integration
    pattern from `enterpriseConstraints.integrationPatterns` to each relationship and
    document the justification.
-5. Select the technology stack: choose `{{TARGET_LANGUAGE}}`, `{{FRAMEWORK_NAME}}`,
-   `{{DATABASE_ENGINE}}`, and `{{DEPLOYMENT_TARGET}}` within the approved technology
+5. Select the technology stack: choose `Python`, `Django`,
+   `MySQL`, and `Google App Engine` within the approved technology
    boundaries. Justify each selection against `requirements.nonFunctional`.
 6. Declare the architectural style. For all `This Project` systems the default is
    Clean Architecture with DDD tactical patterns applied within each bounded context.

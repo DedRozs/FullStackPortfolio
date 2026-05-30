@@ -35,7 +35,7 @@ access the required fields.
 
 - `sourceCodeManifest` - array of all source files with `filePath`, `layer`, and
   `description`; adapter and infrastructure entries are the primary targets
-- `dependencyList` - all runtime dependencies including `{{DATABASE_ENGINE}}`,
+- `dependencyList` - all runtime dependencies including `MySQL`,
   message brokers, and external service clients with versions
 
 ---
@@ -69,7 +69,7 @@ qa-orchestrator. Do not return section content inline.
    are the required integration test targets.
 3. For each repository implementation: write integration tests that exercise
    `save`, `findById`, `findAll`, and `delete` operations against a real
-   `{{DATABASE_ENGINE}}` instance. Verify that domain entities are correctly
+   `MySQL` instance. Verify that domain entities are correctly
    persisted and reconstructed without data loss.
 4. For each external service adapter: write integration tests that exercise
    success paths and error paths against a realistic sandbox or stub of the

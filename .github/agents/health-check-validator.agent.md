@@ -78,7 +78,7 @@ monitoring-configurator, rollback-planner
    - Memory usage below `80`% of allocated limit
    - Disk usage below `85`% of allocated limit
 6. Define dependency checks (one entry per external dependency):
-   - `{{DATABASE_ENGINE}}` at `{{DATABASE_HOST}}`: connection test query succeeds
+   - `MySQL` at `{{DATABASE_HOST}}`: connection test query succeeds
    - `{{CACHE_ENGINE}}` at `{{CACHE_HOST}}`: ping returns PONG within 100ms
    - External service `{{EXTERNAL_SERVICE_NAME}}`: health endpoint or status page
      confirms operational status

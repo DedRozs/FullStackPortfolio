@@ -112,7 +112,7 @@ Do not advance to the next specialist until the current one delivers its output.
 - Never invoke specialists in parallel; serial order is mandatory.
 - Never allow the domain layer to import from application, adapter, or infrastructure layers.
 - Never advance if a specialist reports a violation or incomplete output.
-- Never hardcode `This Project`, `{{TARGET_LANGUAGE}}`, or any domain terms;
+- Never hardcode `This Project`, `Python`, or any domain terms;
   use `{{PLACEHOLDER_NAME}}` syntax for all project-specific values.
 - Must follow rules in [clean-architecture.instructions.md]
   (path: `.github/instructions/clean-architecture.instructions.md`).

@@ -40,11 +40,11 @@ deployment-orchestrator
 **Required fields:**
 
 - `This Project` - human-readable project name
-- `{{DOMAIN_NAME}}` - primary business domain
-- `{{TARGET_LANGUAGE}}` - programming language
-- `{{FRAMEWORK_NAME}}` - application framework
-- `{{DATABASE_ENGINE}}` - database technology
-- `{{DEPLOYMENT_TARGET}}` - hosting or cloud platform
+- `personal-portfolio` - primary business domain
+- `Python` - programming language
+- `Django` - application framework
+- `MySQL` - database technology
+- `Google App Engine` - hosting or cloud platform
 
 **Optional fields:**
 

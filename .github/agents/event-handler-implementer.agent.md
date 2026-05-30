@@ -1,5 +1,5 @@
 ﻿---
-description: Implements event handler classes in {{TARGET_LANGUAGE}} for This Project that subscribe to domain events and trigger downstream reactions, placing handlers in infrastructure/messaging/ with idempotent processing.
+description: Implements event handler classes in Python for This Project that subscribe to domain events and trigger downstream reactions, placing handlers in infrastructure/messaging/ with idempotent processing.
 name: "Event Handler Implementer"
 user-invocable: false
 ---
@@ -58,7 +58,7 @@ when needed
 1. Read the `domainEvents` specifications and identify all events with a non-empty
    consumer list.
 2. For each such event, implement a handler class in
-   `infrastructure/messaging/{{EventName}}Handler.{{TARGET_LANGUAGE_EXTENSION}}`:
+   `infrastructure/messaging/{{EventName}}Handler.py`:
    - Subscribe to the event type using the `{{MESSAGE_BROKER}}` adapter pattern.
    - Extract the `data` payload from the CloudEvents envelope.
    - Map payload fields to the appropriate use case request model.

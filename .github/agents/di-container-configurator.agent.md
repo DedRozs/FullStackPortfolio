@@ -65,7 +65,7 @@ adapter, framework, migration, external service); read files from disk using
 1. Read all prior implementation reports to build a complete inventory of every
    interface and its corresponding concrete implementation.
 2. Create the DI container configuration file at
-   `infrastructure/di/container.{{TARGET_LANGUAGE_EXTENSION}}`:
+   `infrastructure/di/container.py`:
    - Initialize the `{{DI_FRAMEWORK}}` container.
    - Register each domain repository interface bound to its concrete implementation,
      with the database connection injected from environment configuration.
@@ -76,7 +76,7 @@ adapter, framework, migration, external service); read files from disk using
      adapters that satisfy domain service interfaces).
    - Register the event publisher bound to the `{{MESSAGE_BROKER}}` adapter.
 3. Create a container bootstrap call in the framework entry point
-   (`infrastructure/{{WEB_FRAMEWORK_LOWER}}/server.{{TARGET_LANGUAGE_EXTENSION}}`):
+   (`infrastructure/{{WEB_FRAMEWORK_LOWER}}/server.py`):
    - Import the container configuration and initialize it before the server starts.
    - Inject the DI-resolved controller instances into the route registry.
 4. Verify the `bindingsSummary` covers every interface defined across all layer

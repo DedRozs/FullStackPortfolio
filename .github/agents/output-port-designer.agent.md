@@ -1,5 +1,5 @@
 ﻿---
-description: Defines output port interfaces and presenter contracts in {{TARGET_LANGUAGE}} for each use case in This Project, decoupling use case result delivery from presentation format concerns.
+description: Defines output port interfaces and presenter contracts in Python for each use case in This Project, decoupling use case result delivery from presentation format concerns.
 name: "Output Port Designer"
 user-invocable: false
 ---
@@ -56,14 +56,14 @@ and the input port report path; read files from disk using `read_file`
 
 1. Read all prior reports and the `ubiquitousLanguage` array.
 2. For each use case in `useCaseFiles`, define an output port interface in
-   `application/commands/I{{UseCaseName}}Presenter.{{TARGET_LANGUAGE_EXTENSION}}` (or
-   `application/queries/I{{QueryName}}Presenter.{{TARGET_LANGUAGE_EXTENSION}}`):
+   `application/commands/I{{UseCaseName}}Presenter.py` (or
+   `application/queries/I{{QueryName}}Presenter.py`):
    - Declare one method per outcome variant the use case can produce (success, not
      found, validation failure, etc.).
    - Parameter types are either scalars, value object names, or DTO names; no domain
      entity references.
 3. For each output port, create a presenter contract file at
-   `application/commands/{{UseCaseName}}PresenterContract.{{TARGET_LANGUAGE_EXTENSION}}`
+   `application/commands/{{UseCaseName}}PresenterContract.py`
    that documents the expected response shape for each outcome variant:
    - Describe the response fields and their types as inline documentation.
    - This contract is implemented concretely by `presenter-implementer` in the adapter

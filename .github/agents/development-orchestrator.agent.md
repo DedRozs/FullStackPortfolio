@@ -149,7 +149,7 @@ and delivers its output.
 - Never advance if any mid-level orchestrator reports an error or incomplete output.
 - Never pass natural language summaries at the phase boundary; the artifact must
   conform to `contracts/schemas/development-to-qa.schema.json`.
-- Never hardcode `This Project`, `{{TARGET_LANGUAGE}}`, `{{DATABASE_ENGINE}}`,
+- Never hardcode `This Project`, `Python`, `MySQL`,
   or any domain terms; use `{{PLACEHOLDER_NAME}}` syntax for all project-specific values.
 - Must follow rules in [clean-architecture.instructions.md]
   (path: `.github/instructions/clean-architecture.instructions.md`).

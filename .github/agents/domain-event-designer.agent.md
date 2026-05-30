@@ -68,7 +68,7 @@ domain-modeling-orchestrator. Do not return section content inline.
    (e.g., `OrderConfirmed`, `PaymentReceived`). Reject any imperative name
    (`ConfirmOrder` is a violation - rename it).
 3. Define the CloudEvents-compliant event type string in the form
-   `{{DOMAIN_NAME}}.{{aggregate_name}}.{{event_name}}`
+   `personal-portfolio.{{aggregate_name}}.{{event_name}}`
    (e.g., `orders.order.confirmed`).
 4. Define each event payload: include all fields a consumer needs to act. Exclude
    raw PII - use tokenized or encrypted representations. Note any payload expected
