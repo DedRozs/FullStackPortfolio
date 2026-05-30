@@ -1,0 +1,87 @@
+{
+  "schemaVersion": "1.0",
+  "projectName": "FullStackPortfolio",
+  "ticketKey": "FSP-1",
+  "sessionPath": "knowledge-base/plans/active/FSP-1/",
+  "verifiedCodebaseReference": {
+    "commitHash": "b74f7369b58d1232d273625d82213825bbae3845",
+    "branch": "main",
+    "verifiedAt": "2026-05-29T00:00:00Z"
+  },
+  "testResults": {
+    "unitTestsPassed": true,
+    "integrationTestsPassed": true,
+    "e2eTestsPassed": true,
+    "totalDefectsFound": 1,
+    "totalDefectsResolved": 1
+  },
+  "knownLimitationsLog": [
+    {
+      "limitation": "KI-1: No admin.py registered for client_portal models. Django admin site does not surface these models.",
+      "impact": "Staff users cannot manage client_portal records via /admin/ until admin registration is added.",
+      "workaround": "Use the seed script or Django shell to manage records until Phase 2 adds admin registration."
+    },
+    {
+      "limitation": "KI-2: No views.py or urls.py exist for client_portal. No HTTP interface is present in Phase 1.",
+      "impact": "E2E tests are not applicable for this phase. End-to-end verification is deferred to Phase 2 when URL routing is added.",
+      "workaround": "Verify data via Django shell or admin once KI-1 is resolved."
+    },
+    {
+      "limitation": "KI-3: DeliverableVersion and MessageThread are included as supporting ORM models (12 total) required for ForeignKey referential integrity by Approval and Message.",
+      "impact": "No functional impact; models are correct. Documentation should clarify these are bridge models, not primary aggregates.",
+      "workaround": "none"
+    },
+    {
+      "limitation": "N+1 query risk in __str__ methods: Milestone, DeliverableVersion, Approval, MessageThread, Message, and InvoiceRecord each traverse at least one ForeignKey relation in their __str__ methods.",
+      "impact": "If any of these models are displayed in a list view without select_related(), each list item will execute additional database queries. No views exist in Phase 1, so there is no current runtime impact.",
+      "workaround": "All list querysets in Phase 2 views and admin registrations must use select_related() for the affected FK chains: Milestone->Project, DeliverableVersion->Deliverable, Approval->DeliverableVersion->Deliverable, MessageThread->Project, Message->Thread and Sender, InvoiceRecord->Organization."
+    },
+    {
+      "limitation": "Missing db_index on Project.status and InvoiceRecord.status fields. ProjectRepository.list_by_status() and equivalent invoice status filters will perform full table scans on large datasets.",
+      "impact": "Performance degradation on list_by_status queries at scale. Not observable in Phase 1 with no views or queries.",
+      "workaround": "Add db_index=True to Project.status and InvoiceRecord.status in a Phase 2 migration when repository implementations are written."
+    }
+  ],
+  "securitySignOff": {
+    "reviewedBy": "security-reviewer",
+    "owaspFindingsStatus": "open-low-only",
+    "openFindings": [
+      {
+        "owaspItem": "A03:2021-Injection",
+        "description": "FileRecord.storage_path is a plain CharField with no model-level path traversal validation. Validation must be enforced at the application service boundary before any storage path is written. No attack surface exists in Phase 1 since there is no HTTP interface.",
+        "severity": "low"
+      }
+    ],
+    "signOffGranted": true
+  },
+  "performanceSummary": {
+    "metricsRecorded": [
+      {
+        "metric": "unit test suite wall-clock duration",
+        "value": 0.008,
+        "unit": "s"
+      },
+      {
+        "metric": "unit test count",
+        "value": 54,
+        "unit": "tests"
+      },
+      {
+        "metric": "Django system check duration",
+        "value": 0,
+        "unit": "issues"
+      }
+    ],
+    "bottlenecksIdentified": [
+      "N+1 risk: Milestone.__str__ queries Project (1 extra query per row in admin/list views)",
+      "N+1 risk: DeliverableVersion.__str__ queries Deliverable (1 extra query per row)",
+      "N+1 risk: Approval.__str__ traverses DeliverableVersion then Deliverable (2 extra queries per row)",
+      "N+1 risk: MessageThread.__str__ queries Project (1 extra query per row)",
+      "N+1 risk: Message.__str__ queries UserProfile and MessageThread (2 extra queries per row)",
+      "N+1 risk: InvoiceRecord.__str__ queries ClientOrganization (1 extra query per row)",
+      "Missing db_index on Project.status - full table scan on list_by_status queries",
+      "Missing db_index on InvoiceRecord.status - full table scan on status-filtered invoice queries"
+    ],
+    "meetsNonFunctionalRequirements": true
+  }
+}

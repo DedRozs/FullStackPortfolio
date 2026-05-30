@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'apps.contact',
     'apps.ai_assistant',
     'apps.react_app',
+    'apps.client_portal',
 ]
 
 MIDDLEWARE = [

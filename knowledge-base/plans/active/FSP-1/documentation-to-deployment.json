@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "1.0",
+  "projectName": "FullStackPortfolio",
+  "ticketKey": "FSP-1",
+  "sessionPath": "knowledge-base/plans/active/FSP-1/",
+  "knowledgeBaseManifest": [
+    {
+      "path": "knowledge-base/content/components/client-portal.md",
+      "type": "component-overview",
+      "description": "Component overview for the client_portal bounded context: domain model summary, layer structure, repository interfaces, key design decisions, deferred items, and test coverage."
+    },
+    {
+      "path": "knowledge-base/content/decisions/0003-client-portal-ddd-split.md",
+      "type": "adr",
+      "description": "ADR 0003: Decision to split domain dataclasses from Django ORM models in client_portal. Status: Accepted."
+    },
+    {
+      "path": "knowledge-base/content/decisions/README.md",
+      "type": "adr-index",
+      "description": "ADR index updated to include ADR 0003."
+    },
+    {
+      "path": "knowledge-base/scripts/README.md",
+      "type": "scripts-index",
+      "description": "Scripts README updated with entry for seed_client_portal.py."
+    }
+  ],
+  "readmePath": "knowledge-base/content/components/client-portal.md",
+  "runbooks": [],
+  "adrIndex": {
+    "totalCount": 3,
+    "indexFilePath": "knowledge-base/content/decisions/README.md",
+    "entries": [
+      {
+        "number": "0001",
+        "title": "Django + React-as-static-files architecture",
+        "status": "Accepted",
+        "path": "knowledge-base/content/decisions/0001-django-react-static-architecture.md"
+      },
+      {
+        "number": "0002",
+        "title": "Cloud Run worker for async task processing",
+        "status": "Accepted",
+        "path": "knowledge-base/content/decisions/0002-cloud-run-worker-for-async-tasks.md"
+      },
+      {
+        "number": "0003",
+        "title": "client_portal domain-ORM split",
+        "status": "Accepted",
+        "path": "knowledge-base/content/decisions/0003-client-portal-ddd-split.md"
+      }
+    ]
+  },
+  "decisionLog": {
+    "filePath": "knowledge-base/content/decisions/README.md",
+    "totalDecisions": 3,
+    "phasesCovered": [
+      "Architecture",
+      "Development"
+    ]
+  }
+}
