@@ -8,7 +8,7 @@ const HERO_VIDEO_SRC = heroVideo
 const PROJECTS_IN_DEVELOPMENT = [
   {
     title: 'Secure Client Portal',
-    pitch: 'Full-stack portal for managing projects, files, deliverables, invoices, and approvals across multiple client organisations.',
+    pitch: 'Full-stack portal for managing projects, files, deliverables, invoices, and approvals across multiple client organizations.',
     tags: ['Django', 'DRF', 'React', 'GCS', 'SendGrid'],
   },
   {
@@ -119,8 +119,8 @@ export default function HomePage() {
             className="text-text-muted text-lg max-w-2xl mt-6 leading-relaxed animate-fade-in-up"
             style={{ animationDelay: '0.3s' }}
           >
-            I build and scale production SaaS platforms. Four years growing from Director
-            to CTO at Sports Thread - owning architecture, shipping features, and keeping
+            I build and scale production SaaS platforms. Four years at Sports Thread - from
+            Marketing Manager to CTO - owning architecture, shipping features, and keeping
             systems reliable at scale.
             <br /><br />
             <span className="text-neon-cyan">Available for senior roles and consulting engagements.</span>

@@ -8,7 +8,7 @@ const PROJECTS = [
     pitch:
       'A full-stack portal where companies manage projects, files, deliverables, invoices, and approvals. Demonstrates secure permissioned multi-user workflows - the kind of software companies actually pay developers to build.',
     architectureHighlight:
-      'Object-level permissions enforce data isolation per organisation without a separate tenancy model. An approval state machine tracks every transition with a full audit trail, making the business process explicit in code.',
+      'Object-level permissions enforce data isolation per organization without a separate tenancy model. An approval state machine tracks every transition with a full audit trail, making the business process explicit in code.',
     tags: ['Django', 'DRF', 'React', 'GCS', 'SendGrid', 'Django-Q2'],
     accent: 'cyan' as const,
   },

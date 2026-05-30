@@ -4,32 +4,43 @@ import { SKILLS } from '../data/skills'
 
 const CAREER_MILESTONES = [
   {
-    title: 'Chief Technology Officer',
+    title: 'Chief Technical Officer',
     org: 'Sports Thread',
-    period: '2023 – Present',
+    period: 'Jan 2026 – Present',
     description:
       'Own architecture, scalability, and security across the full platform. Set technical direction, lead engineering execution, and remain hands-on writing and reviewing production code.',
   },
   {
-    title: 'VP of Engineering',
+    title: 'VP of Software Development',
     org: 'Sports Thread',
-    period: '2022 – 2023',
+    period: 'Nov 2023 – Jan 2026',
     description:
-      'Scaled the platform from early-stage to production-grade. Led backend infrastructure overhaul and introduced Clean Architecture across the Django codebase.',
+      'Provided strategic direction and technical leadership for software development initiatives. Designed scalable, secure, and maintainable architectures. Built internal and customer-facing tools to improve operational efficiency.',
   },
   {
-    title: 'Director of Engineering',
+    title: 'Director of Software Engineering',
     org: 'Sports Thread',
-    period: '2021 – 2022',
+    period: 'Jun 2022 – Nov 2023',
     description:
-      'First engineering leadership role. Built initial REST API layer, established CI/CD practices, and took ownership of Google Cloud Platform deployments.',
+      'Set and enforced code standards, development methodologies, and best practices. Evaluated and recommended technologies, frameworks, and tools to enhance development efficiency and product quality.',
+  },
+  {
+    title: 'Marketing Manager',
+    org: 'Sports Thread',
+    period: 'Jan 2022 – Jun 2022',
+    description:
+      'Entry point at Sports Thread. Managed marketing operations before transitioning into engineering leadership.',
   },
 ]
 
 const CREDENTIALS = [
   {
-    credential: 'B.S. Computer Science (Data Science)',
+    credential: 'B.S. Computer Science',
     institution: 'Colorado Technical University',
+  },
+  {
+    credential: 'Digital Marketing Immersion',
+    institution: 'Thinkful',
   },
   {
     credential: 'Certified Scrum Master (CSM)',
@@ -102,8 +113,8 @@ export default function AboutPage() {
           className="text-text-muted text-lg max-w-2xl leading-relaxed animate-fade-in-up"
           style={{ animationDelay: '0.2s' }}
         >
-          Four years growing from Director to CTO at Sports Thread - hands-on throughout,
-          writing production code while owning architecture, scalability, and security.
+          Over four years at Sports Thread - from Marketing Manager to Chief Technical Officer,
+          hands-on throughout, writing production code while owning architecture, scalability, and security.
         </p>
       </section>
 
@@ -119,15 +130,16 @@ export default function AboutPage() {
         />
         <div className="max-w-3xl mx-auto px-6 space-y-6 text-text-muted leading-relaxed">
           <p>
-            Joseph Prince is the Chief Technology Officer at Sports Thread, where he leads
+            Joseph Prince is the Chief Technical Officer at Sports Thread, where he leads
             technology strategy, platform development, and engineering execution. Over 4+
-            years he has grown from Director to VP to CTO - hands-on throughout, writing and
-            reviewing production code while owning architecture, scalability, and security.
+            years he has grown from Marketing Manager to Director to VP to CTO - hands-on
+            throughout, writing and reviewing production code while owning architecture,
+            scalability, and security.
           </p>
           <p>
             Proficient in Python and Django on the backend, React and TypeScript on the
             frontend, and Google Cloud Platform for deployment. Holds a B.S. in Computer
-            Science (Data Science) from Colorado Technical University and certifications in
+            Science from Colorado Technical University and certifications in
             Scrum (CSM, CSPO, CSD).
           </p>
           <p>
