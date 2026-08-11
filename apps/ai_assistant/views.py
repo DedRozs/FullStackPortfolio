@@ -125,7 +125,7 @@ idempotency-keyed payment capture, jurisdiction-aware fee calculation, expiring 
 registration. 13 Django apps, 145 tests.
 
 **Multi-Tenant Recruiting CRM** - backend architect, 88% of 156 commits, serving 600+ tenant
-organisations. Collaborative boards with realtime updates streamed to every connected
+organizations. Collaborative boards with realtime updates streamed to every connected
 teammate; REST API and WebSocket interface from a single ASGI deployment. Multi-tenancy is
 enforced at the query layer: every list endpoint scopes to the caller's tenant through the
 ownership chain rather than trusting a request parameter, and every viewset falls back to an

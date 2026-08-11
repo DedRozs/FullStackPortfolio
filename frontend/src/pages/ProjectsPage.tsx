@@ -76,7 +76,7 @@ const PRODUCTION = [
     title: 'Multi-Tenant Recruiting CRM',
     role: 'Backend architect',
     ownership: '88% of 156 commits',
-    duration: 'Serving 600+ tenant organisations',
+    duration: 'Serving 600+ tenant organizations',
     pitch:
       'A collaborative recruiting CRM built on configurable boards, columns and leads, with realtime updates streamed to every connected teammate. The backend serves a REST API and a WebSocket interface from a single ASGI deployment.',
     challengeLabel: 'Isolation Under Load',
@@ -129,7 +129,7 @@ const DEMOS = [
     number: '01',
     title: 'Secure Client Portal',
     pitch:
-      'Client organisations manage projects, files, deliverables, invoices and approvals behind per-organisation isolation.',
+      'Client organizations manage projects, files, deliverables, invoices and approvals behind per-organization isolation.',
     architectureLine:
       'A framework-free domain layer of 12 entities and 20 use cases, with an explicit approval state machine keeping business rules out of the views.',
     tags: ['Django', 'DRF', 'React', 'GCS'],

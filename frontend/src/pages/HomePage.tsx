@@ -27,7 +27,7 @@ const PRODUCTION_SYSTEMS = [
   {
     title: 'Multi-Tenant Recruiting CRM',
     pitch:
-      'Collaborative boards with realtime updates, serving 600+ tenant organisations from a single ASGI deployment.',
+      'Collaborative boards with realtime updates, serving 600+ tenant organizations from a single ASGI deployment.',
     meta: '88% authored · 340 tests',
   },
   {
@@ -60,7 +60,7 @@ const EXPERTISE = [
   {
     area: 'Technical Leadership',
     description:
-      'Setting architecture and standards across an engineering organisation - reviewing an outsourced vendor team, managing a developer, and still writing production code every week.',
+      'Setting architecture and standards across an engineering organization - reviewing an outsourced vendor team, managing a developer, and still writing production code every week.',
     tags: ['Architecture Review', 'Vendor Oversight', 'Mentoring', 'CI/CD'],
   },
 ]

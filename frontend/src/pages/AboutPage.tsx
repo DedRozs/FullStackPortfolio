@@ -21,7 +21,7 @@ const CAREER_MILESTONES = [
     org: 'Sports Thread',
     period: 'Nov 2023 – Jan 2026',
     description:
-      'Architected and wrote the platform that fronts our partner integrations and handles coach credentialing end to end - registration, waivers, payment, screening and roster provisioning. Built the multi-tenant recruiting CRM backend serving 600+ tenant organisations, and hired and now manage the frontend developer who builds against those APIs.',
+      'Architected and wrote the platform that fronts our partner integrations and handles coach credentialing end to end - registration, waivers, payment, screening and roster provisioning. Built the multi-tenant recruiting CRM backend serving 600+ tenant organizations, and hired and now manage the frontend developer who builds against those APIs.',
   },
   {
     title: 'Director of Software Engineering',

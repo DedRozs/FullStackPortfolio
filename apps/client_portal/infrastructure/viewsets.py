@@ -355,7 +355,7 @@ class MessageViewSet(DemoReadOnlyMixin, ModelViewSet):
             thread_id = UUID(request.data['thread_id'])
         except (KeyError, ValueError):
             return Response({'detail': 'Invalid or missing thread_id.'}, status=status.HTTP_400_BAD_REQUEST)
-        # Verify the thread belongs to the user's organisation.
+        # Verify the thread belongs to the user's organization.
         if not request.user.is_staff:
             owns_thread = orm.MessageThread.objects.filter(
                 pk=thread_id,

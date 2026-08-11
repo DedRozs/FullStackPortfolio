@@ -32,7 +32,7 @@ const EXPERIENCE = [
     period: 'Nov 2023 – Jan 2026',
     bullets: [
       'Architected and wrote the Django platform fronting partner integrations and coach credentialing end to end - registration, waivers, payment, third-party screening and roster provisioning (93% of 571 commits).',
-      'Built the multi-tenant recruiting CRM backend serving 600+ tenant organisations: REST and WebSocket from a single ASGI deployment, JWT with refresh-token rotation and blacklisting, async import pipeline with progress streaming (88% of 156 commits, 340 tests).',
+      'Built the multi-tenant recruiting CRM backend serving 600+ tenant organizations: REST and WebSocket from a single ASGI deployment, JWT with refresh-token rotation and blacklisting, async import pipeline with progress streaming (88% of 156 commits, 340 tests).',
       'Hired and manage the frontend developer building against these APIs.',
     ],
   },
