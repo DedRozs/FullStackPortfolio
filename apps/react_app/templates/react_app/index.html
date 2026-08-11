@@ -4,11 +4,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    {# Title and description carry the disambiguating terms deliberately. There
-       is a far more prominent public figure with this name, so the realistic
-       target is not "Joseph Prince" but "Joseph Prince software engineer",
-       "... django", "... developer", "... Sports Thread". Every metadata signal
-       should read unmistakably technical. #}
+    <!-- Title and description carry the disambiguating terms deliberately. There
+         is a far more prominent public figure with this name, so the realistic
+         target is not "Joseph Prince" but "Joseph Prince software engineer",
+         "... django", "... developer", "... Sports Thread". Every metadata signal
+         should read unmistakably technical. -->
     <meta name="description" content="Joseph Prince is a software engineer and CTO in Denver, Colorado. Backend architecture in Python and Django, React and TypeScript on the front end, deployed on Google Cloud and AWS. Four production systems, built and maintained." />
     <title>Joseph Prince - Software Engineer &amp; CTO | Python, Django, React</title>
     <link rel="canonical" href="https://www.thejosephprince.com/" />
@@ -45,10 +45,10 @@
     <link rel="preload" href="{% static 'react_app/assets/orbitron-latin-700-normal.woff2' %}" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="preload" href="{% static 'react_app/assets/orbitron-latin-900-normal.woff2' %}" as="font" type="font/woff2" crossorigin="anonymous">
 
-    {# Structured data. knowsAbout / worksFor / alumniOf exist to disambiguate
-       from the namesake: they give search engines an unambiguous software
-       engineer entity rather than a bare name that collides with a far larger
-       public figure. `@id` lets the Person be referenced as one entity. #}
+    <!-- Structured data. knowsAbout / worksFor / alumniOf exist to disambiguate
+         from the namesake: they give search engines an unambiguous software
+         engineer entity rather than a bare name that collides with a far larger
+         public figure. @id lets the Person be referenced as one entity. -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
