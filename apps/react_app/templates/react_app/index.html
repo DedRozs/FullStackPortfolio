@@ -4,8 +4,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Joseph Prince - Full Stack Developer &amp; Consultant specializing in Django, React, and AI integration." />
-    <title>Joseph Prince | Full Stack Developer</title>
+    {# Title and description carry the disambiguating terms deliberately. There
+       is a far more prominent public figure with this name, so the realistic
+       target is not "Joseph Prince" but "Joseph Prince software engineer",
+       "... django", "... developer", "... Sports Thread". Every metadata signal
+       should read unmistakably technical. #}
+    <meta name="description" content="Joseph Prince is a software engineer and CTO in Denver, Colorado. Backend architecture in Python and Django, React and TypeScript on the front end, deployed on Google Cloud and AWS. Four production systems, built and maintained." />
+    <title>Joseph Prince - Software Engineer &amp; CTO | Python, Django, React</title>
     <link rel="canonical" href="https://www.thejosephprince.com/" />
 
     <!-- Open Graph / Twitter. Without these, every link shared to LinkedIn,
@@ -40,17 +45,72 @@
     <link rel="preload" href="{% static 'react_app/assets/orbitron-latin-700-normal.woff2' %}" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="preload" href="{% static 'react_app/assets/orbitron-latin-900-normal.woff2' %}" as="font" type="font/woff2" crossorigin="anonymous">
 
-    <!-- Structured data -->
+    {# Structured data. knowsAbout / worksFor / alumniOf exist to disambiguate
+       from the namesake: they give search engines an unambiguous software
+       engineer entity rather than a bare name that collides with a far larger
+       public figure. `@id` lets the Person be referenced as one entity. #}
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "Person",
-      "name": "Joseph Prince",
-      "jobTitle": "Full Stack Developer & Consultant",
-      "description": "Full Stack Developer and Consultant specializing in Django, React, and AI integration.",
-      "sameAs": [
-        "https://linkedin.com/in/thejprince",
-        "https://github.com/dedrozs"
+      "@graph": [
+        {
+          "@type": "Person",
+          "@id": "https://www.thejosephprince.com/#person",
+          "name": "Joseph Prince",
+          "url": "https://www.thejosephprince.com/",
+          "image": "{% static 'react_app/og-card.png' %}",
+          "jobTitle": "Chief Technology Officer",
+          "description": "Software engineer and CTO. Primary author of four production backend systems in Python and Django, with React and TypeScript on the front end.",
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Denver",
+            "addressRegion": "CO",
+            "addressCountry": "US"
+          },
+          "worksFor": {
+            "@type": "Organization",
+            "name": "Sports Thread",
+            "url": "https://info.sportsthread.com/"
+          },
+          "alumniOf": {
+            "@type": "CollegeOrUniversity",
+            "name": "Colorado Technical University"
+          },
+          "knowsAbout": [
+            "Software Engineering",
+            "Backend Development",
+            "Python",
+            "Django",
+            "Django REST Framework",
+            "React",
+            "TypeScript",
+            "REST API Design",
+            "Clean Architecture",
+            "Domain-Driven Design",
+            "Multi-Tenant SaaS Architecture",
+            "WebSockets",
+            "Google Cloud Platform",
+            "Amazon Web Services",
+            "MySQL",
+            "Redis",
+            "CI/CD",
+            "AI Integration"
+          ],
+          "sameAs": [
+            "https://linkedin.com/in/thejprince",
+            "https://github.com/dedrozs"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://www.thejosephprince.com/#website",
+          "url": "https://www.thejosephprince.com/",
+          "name": "Joseph Prince - Software Engineer",
+          "description": "Portfolio of Joseph Prince, software engineer and CTO working in Python, Django, React and TypeScript.",
+          "inLanguage": "en-US",
+          "about": { "@id": "https://www.thejosephprince.com/#person" },
+          "publisher": { "@id": "https://www.thejosephprince.com/#person" }
+        }
       ]
     }
     </script>

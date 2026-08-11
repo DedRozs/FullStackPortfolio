@@ -1,0 +1,20 @@
+# Local-only dependencies. NOT installed in CI or on App Engine.
+#
+# Install alongside the runtime deps when working on the resume PDF:
+#     pip install -r requirements.txt -r requirements-dev.txt
+#
+# ironpdf is a .NET library (pulls pythonnet + clr-loader and a bundled Chrome
+# runtime - hundreds of MB). It is used by exactly one code path:
+#
+#     python manage.py generate_resume_pdf
+#
+# which renders apps/react_app/templates/react_app/resume_pdf.html and writes
+# apps/react_app/generated/joseph-prince-resume.pdf. That PDF is committed, and
+# the server only ever streams the committed file (apps/react_app/views.py ->
+# resume_pdf). Nothing imports ironpdf at runtime - the import inside the
+# command's handle() is deferred precisely so the module stays importable
+# without it.
+#
+# Keeping it out of requirements.txt takes the pre-deployment test job from
+# ~12 minutes back to ~1.
+ironpdf==2025.9.1.4
