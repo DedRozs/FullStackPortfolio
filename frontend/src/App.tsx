@@ -15,6 +15,7 @@ const BlogPostPage = lazy(() => import('./pages/BlogPostPage'))
 const ContactPage = lazy(() => import('./pages/ContactPage'))
 const HomePage = lazy(() => import('./pages/HomePage'))
 const ProjectsPage = lazy(() => import('./pages/ProjectsPage'))
+const ResumePage = lazy(() => import('./pages/ResumePage'))
 const LoginPage = lazy(() => import('./pages/LoginPage'))
 const PortalDashboardPage = lazy(() => import('./pages/portal/PortalDashboardPage'))
 const PortalProjectDetailPage = lazy(() => import('./pages/portal/PortalProjectDetailPage'))
@@ -40,6 +41,7 @@ export default function App() {
             <Route path="blog/:slug" element={<BlogPostPage />} />
             <Route path="ai" element={<AIAssistantPage />} />
             <Route path="about" element={<AboutPage />} />
+            <Route path="resume" element={<ResumePage />} />
             <Route path="contact" element={<ContactPage />} />
           </Route>
           <Route path="portal/login" element={<LoginPage />} />

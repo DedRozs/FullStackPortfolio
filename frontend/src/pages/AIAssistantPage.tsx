@@ -12,7 +12,9 @@ interface Message {
   content: string
 }
 
-type ModelKey = 'gpt-4o' | 'claude-sonnet-4-6'
+// These keys are validated against ALL_MODELS in apps/ai_assistant/views.py -
+// a key that isn't in that whitelist comes back as a 400. Change both together.
+type ModelKey = 'gpt-4o' | 'claude-opus-4-8'
 
 interface ModelOption {
   key: ModelKey
@@ -22,10 +24,10 @@ interface ModelOption {
 
 const MODELS: ModelOption[] = [
   { key: 'gpt-4o', label: 'GPT-4o', provider: 'openai' },
-  { key: 'claude-sonnet-4-6', label: 'Claude Sonnet 4.6', provider: 'anthropic' },
+  { key: 'claude-opus-4-8', label: 'Claude Opus 4.8', provider: 'anthropic' },
 ]
 
-const DEFAULT_MODEL: ModelKey = 'claude-sonnet-4-6'
+const DEFAULT_MODEL: ModelKey = 'claude-opus-4-8'
 
 const INTRO: Message = {
   role: 'assistant',

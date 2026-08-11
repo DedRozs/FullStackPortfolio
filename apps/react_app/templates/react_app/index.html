@@ -6,6 +6,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Joseph Prince - Full Stack Developer &amp; Consultant specializing in Django, React, and AI integration." />
     <title>Joseph Prince | Full Stack Developer</title>
+    <link rel="canonical" href="https://www.thejosephprince.com/" />
+
+    <!-- Open Graph / Twitter. Without these, every link shared to LinkedIn,
+         Slack or X renders as a bare grey rectangle. og:image must be an
+         absolute URL - the static tag resolves to the CDN origin in production. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Joseph Prince" />
+    <meta property="og:url" content="https://www.thejosephprince.com/" />
+    <meta property="og:title" content="Joseph Prince | Full Stack Developer &amp; CTO" />
+    <meta property="og:description" content="Production systems and architecture - Django, React and cloud platforms built to survive years of production traffic." />
+    <meta property="og:image" content="{% static 'react_app/og-card.png' %}" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Joseph Prince - Full Stack Developer and CTO" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Joseph Prince | Full Stack Developer &amp; CTO" />
+    <meta name="twitter:description" content="Production systems and architecture - Django, React and cloud platforms built to survive years of production traffic." />
+    <meta name="twitter:image" content="{% static 'react_app/og-card.png' %}" />
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="{% static 'react_app/assets/JPrince.png' %}" />

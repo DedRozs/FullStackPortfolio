@@ -80,6 +80,7 @@ jobs:
             CONTACT_RECIPIENT_EMAIL: "${{ secrets.CONTACT_RECIPIENT_EMAIL }}"
             SUPABASE_DB_URL: "${{ secrets.SUPABASE_DB_URL }}"
             REDIS_URL: "${{ secrets.REDIS_URL }}"
+            IRON_PDF_KEY: "${{ secrets.IRON_PDF_KEY }}"
           automatic_scaling:
             target_cpu_utilization: 0.65
             min_instances: 1
@@ -160,6 +161,7 @@ jobs:
             ANTHROPIC_API_KEY: "${{ secrets.ANTHROPIC_API_KEY }}"
             SUPABASE_DB_URL: "${{ secrets.SUPABASE_DB_URL }}"
             REDIS_URL: "${{ secrets.REDIS_URL }}"
+            IRON_PDF_KEY: "${{ secrets.IRON_PDF_KEY }}"
           EOF
 
       - name: Deploy Worker to Google App Engine

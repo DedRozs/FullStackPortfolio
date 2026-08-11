@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<style>
+/* IronPDF renders with Chromium, so @page and margin collapse work correctly. */
+@page {
+    size: Letter;
+    margin: 0.45in 0.55in;
+}
+
+:root {
+    --accent: #0e7490;        /* print-safe deep cyan, echoes site brand */
+    --accent-dark: #155e75;
+    --ink: #16181d;
+    --ink-soft: #3d4148;
+    --ink-muted: #6b7078;
+    --hairline: #d5dade;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+    font-size: 9.5pt;
+    color: var(--ink);
+    line-height: 1.38;
+}
+
+/* ---- section headers ---- */
+.section-label {
+    font-size: 8.5pt;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent-dark);
+    border-bottom: 1.5px solid var(--accent);
+    padding-bottom: 2px;
+    margin-bottom: 7px;
+}
+
+/* ---- header ---- */
+header {
+    border-bottom: 2.5px solid var(--accent);
+    padding-bottom: 9px;
+    margin-bottom: 12px;
+}
+
+h1 {
+    font-size: 21pt;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    color: var(--ink);
+    line-height: 1.05;
+}
+
+.subtitle {
+    font-size: 9.5pt;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-top: 4px;
+}
+
+.contact {
+    font-size: 8.5pt;
+    color: var(--ink-soft);
+    margin-top: 5px;
+}
+
+.contact a { color: var(--accent-dark); text-decoration: none; font-weight: 600; }
+
+/* ---- summary ---- */
+.summary { font-size: 9.3pt; color: var(--ink-soft); }
+
+/* ---- experience ---- */
+.role { margin-bottom: 10px; page-break-inside: avoid; }
+.role:last-child { margin-bottom: 0; }
+
+.role-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 2px;
+}
+
+.role-title {
+    font-size: 10pt;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.role-org { font-weight: 600; color: var(--accent-dark); }
+
+.role-period {
+    font-size: 8.5pt;
+    font-weight: 600;
+    color: var(--ink-muted);
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    margin-left: 8px;
+    flex-shrink: 0;
+}
+
+.bullets { margin-top: 2px; padding-left: 13px; }
+
+.bullets li {
+    font-size: 9.1pt;
+    color: var(--ink-soft);
+    margin-bottom: 2.5px;
+    list-style: disc;
+}
+
+.bullets li::marker { color: var(--accent); }
+
+/* ---- systems ---- */
+.system {
+    margin-bottom: 9px;
+    padding-left: 9px;
+    border-left: 2.5px solid var(--accent);
+    page-break-inside: avoid;
+}
+.system:last-child { margin-bottom: 0; }
+
+.system-name {
+    font-size: 10pt;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.system-scope {
+    font-size: 8pt;
+    font-weight: 600;
+    color: var(--accent-dark);
+    letter-spacing: 0.03em;
+    margin-top: 1px;
+}
+
+.system-summary { font-size: 9.1pt; color: var(--ink-soft); margin-top: 2px; }
+
+.system-stack {
+    font-size: 8pt;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+    margin-top: 2px;
+}
+
+/* ---- skills ---- */
+.skills-grid {
+    display: grid;
+    grid-template-columns: 105px 1fr;
+    gap: 4px 10px;
+}
+
+.skill-area {
+    font-size: 8pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent-dark);
+    padding-top: 0.5px;
+}
+
+.skill-list { font-size: 9.1pt; color: var(--ink-soft); }
+
+/* ---- credentials ---- */
+.credentials { list-style: none; }
+
+.credentials li {
+    font-size: 9.1pt;
+    color: var(--ink-soft);
+    margin-bottom: 2.5px;
+}
+
+/* ---- section spacing ---- */
+section { margin-bottom: 0; }
+.section-gap { margin-top: 13px; }
+
+.note {
+    font-size: 8pt;
+    color: var(--ink-muted);
+    font-style: italic;
+    margin-bottom: 6px;
+}
+</style>
+</head>
+<body>
+
+<header>
+    <h1>Joseph Prince</h1>
+    <p class="subtitle">CTO &middot; Staff-Level Backend Engineer</p>
+    <p class="contact">
+        Remote (US) &middot; Denver, Colorado (MT) &middot;
+        <a href="https://www.thejosephprince.com">thejosephprince.com</a> &middot;
+        <a href="https://linkedin.com/in/thejprince">linkedin.com/in/thejprince</a> &middot;
+        <a href="https://github.com/dedrozs">github.com/dedrozs</a>
+    </p>
+</header>
+
+<section>
+    <p class="section-label">Summary</p>
+    <p class="summary">
+        Engineering leader who never stopped shipping. Primary author of four production
+        backend systems - regulated compliance workflows, payment and screening pipelines,
+        multi-tenant realtime services - built and maintained over four years at the same
+        company while progressing from a non-technical marketing role to CTO, fully remote
+        the entire time. Manages a developer, directs an outsourced vendor team, and still
+        writes and reviews production code every week.
+    </p>
+</section>
+
+<section class="section-gap">
+    <p class="section-label">Experience</p>
+
+    <div class="role">
+        <div class="role-header">
+            <span class="role-title">Chief Technology Officer <span class="role-org">&middot; Sports Thread</span></span>
+            <span class="role-period">Jan 2026 &ndash; Present</span>
+        </div>
+        <ul class="bullets">
+            <li>Own architecture, scalability and security across the platform, and set technical direction for all engineering work.</li>
+            <li>Provide engineering oversight of the outsourced vendor team maintaining the core platform: audited their codebase and produced a cost-engineering assessment that sized each remediation and reclassified a misdiagnosed infrastructure issue.</li>
+            <li>Authored a technical proposal analysing four independent authentication systems across roughly 350 routes; accepted and implemented.</li>
+            <li>Remain the highest-output individual contributor on the team - authored commit volume has increased every year since 2022, with 2026 the highest to date.</li>
+        </ul>
+    </div>
+
+    <div class="role">
+        <div class="role-header">
+            <span class="role-title">VP of Software Development <span class="role-org">&middot; Sports Thread</span></span>
+            <span class="role-period">Nov 2023 &ndash; Jan 2026</span>
+        </div>
+        <ul class="bullets">
+            <li>Architected and wrote the Django platform fronting partner integrations and coach credentialing end to end - registration, waivers, payment, third-party screening and roster provisioning (93% of 571 commits).</li>
+            <li>Built the multi-tenant recruiting CRM backend serving 600+ tenant organisations: REST and WebSocket from a single ASGI deployment, JWT with refresh-token rotation and blacklisting, async import pipeline with progress streaming (88% of 156 commits, 340 tests).</li>
+            <li>Hired and manage the frontend developer building against these APIs.</li>
+        </ul>
+    </div>
+
+    <div class="role">
+        <div class="role-header">
+            <span class="role-title">Director of Software Engineering <span class="role-org">&middot; Sports Thread</span></span>
+            <span class="role-period">Jun 2022 &ndash; Nov 2023</span>
+        </div>
+        <ul class="bullets">
+            <li>Built the age-verification and compliance platform that remains the operational backbone of event certification - 26 Django apps, 413 tests, 90% of 433 commits sustained over 3.5 years.</li>
+            <li>Reimplemented business rules from a vendor-maintained service written in another language and held them to behavioural parity, down to byte-identical JSON serialisation so records stayed interoperable across both systems.</li>
+            <li>Established the Clean Architecture and domain-driven design standard that every subsequent backend was built on.</li>
+        </ul>
+    </div>
+
+    <div class="role">
+        <div class="role-header">
+            <span class="role-title">Marketing Manager <span class="role-org">&middot; Sports Thread</span></span>
+            <span class="role-period">Jan 2022 &ndash; Jun 2022</span>
+        </div>
+        <ul class="bullets">
+            <li>Hired into a non-technical role and began writing production code against real company problems within weeks; the engineering title followed six months later.</li>
+        </ul>
+    </div>
+</section>
+
+<section class="section-gap">
+    <p class="section-label">Selected Production Systems</p>
+    <p class="note">
+        Closed source. Client, vendor and partner identities withheld; architecture and personal contribution described in full.
+    </p>
+
+    <div class="system">
+        <div class="system-name">Age Verification &amp; Compliance Platform</div>
+        <div class="system-scope">Sole architect &middot; 90% of 433 commits &middot; 3.5 years</div>
+        <p class="system-summary">Compliance engine evaluating every athlete registration in an event against a status-priority algorithm to surface exactly what blocks certification. Duplicate-registration detection across name/DOB collisions, cross-roster conflict flagging, and document-request workflows across three verification-failure modes.</p>
+        <div class="system-stack">Django &middot; MySQL &middot; Clean Architecture &middot; DDD &middot; GCP</div>
+    </div>
+
+    <div class="system">
+        <div class="system-name">Coach Credentialing &amp; Background Check Platform</div>
+        <div class="system-scope">Architect &middot; 93% of 571 commits &middot; active</div>
+        <p class="system-summary">Onboarding end to end across multiple external partner integrations. Screening is performed by a regulated third-party agency; built the boundary around it - duplicate adverse actions refused, local state and an immutable audit record committed in a single transaction, agency failures surfaced as gateway errors rather than masked.</p>
+        <div class="system-stack">Django &middot; DRF &middot; MySQL &middot; Payments &middot; State machines</div>
+    </div>
+
+    <div class="system">
+        <div class="system-name">Multi-Tenant Recruiting CRM (backend)</div>
+        <div class="system-scope">Backend architect &middot; 88% of 156 commits &middot; 600+ tenants</div>
+        <p class="system-summary">Collaborative boards with realtime updates streamed to every connected teammate. Tenant isolation enforced at the query layer: every endpoint scopes through the ownership chain rather than trusting a request parameter, and every viewset defaults to an empty queryset so a missing scope leaks nothing.</p>
+        <div class="system-stack">Django &middot; Channels &middot; Redis &middot; ASGI &middot; WebSockets</div>
+    </div>
+
+    <div class="system">
+        <div class="system-name">Competitive Rating &amp; Entity Resolution</div>
+        <div class="system-scope">Sole implementer &middot; methodology developed with the business</div>
+        <p class="system-summary">Rating system for teams that never share a full schedule, propagating strength of schedule transitively through the opponent graph. Built the entity resolution layer that stops one real-world club counting as several - a shared-staff gate prevents false merges, and tiered confidence routes ambiguous pairs to human review rather than guessing.</p>
+        <div class="system-stack">Python &middot; Django &middot; MySQL &middot; Graph traversal</div>
+    </div>
+</section>
+
+<section class="section-gap">
+    <p class="section-label">Skills</p>
+    <div class="skills-grid">
+        <span class="skill-area">Backend</span>
+        <span class="skill-list">Python &middot; Django &middot; Django REST Framework &middot; Clean Architecture &middot; DDD &middot; REST APIs</span>
+
+        <span class="skill-area">Frontend</span>
+        <span class="skill-list">React &middot; TypeScript &middot; Tailwind CSS &middot; Vite</span>
+
+        <span class="skill-area">Data &amp; Messaging</span>
+        <span class="skill-list">MySQL &middot; Redis &middot; WebSockets (ASGI) &middot; Background task queues &middot; pgvector</span>
+
+        <span class="skill-area">Cloud &amp; Delivery</span>
+        <span class="skill-list">Google Cloud &middot; AWS &middot; Docker &middot; CI/CD &middot; GitHub Actions</span>
+
+        <span class="skill-area">AI Integration</span>
+        <span class="skill-list">Anthropic API &middot; OpenAI API &middot; Embeddings &amp; retrieval</span>
+
+        <span class="skill-area">Leadership</span>
+        <span class="skill-list">Architecture review &middot; Vendor oversight &middot; Mentoring &middot; Technical writing</span>
+    </div>
+</section>
+
+<section class="section-gap">
+    <p class="section-label">Education &amp; Certifications</p>
+    <ul class="credentials">
+        <li>B.S. Computer Science &mdash; Colorado Technical University (2026)</li>
+        <li>Certified Scrum Master, Product Owner &amp; Developer (CSM, CSPO, CSD) &mdash; Scrum Alliance</li>
+        <li>Digital Marketing Immersion &mdash; Thinkful</li>
+    </ul>
+</section>
+
+</body>
+</html>

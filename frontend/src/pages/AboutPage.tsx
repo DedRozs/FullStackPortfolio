@@ -2,48 +2,55 @@ import { useEffect, useRef } from 'react'
 import { Button } from '../components/catalyst-ui-kit/typescript/button'
 import { Heading } from '../components/catalyst-ui-kit/typescript/heading'
 import { Text } from '../components/catalyst-ui-kit/typescript/text'
-import { SKILLS } from '../data/skills'
+import { SKILL_GROUPS } from '../data/skills'
 import headshot from '../assets/Headshot.png'
 
+/* Written from what was actually shipped in each period rather than from job
+   descriptions. Same disclosure rule as the projects page: no vendor, partner
+   or client names, and no commercial figures. */
 const CAREER_MILESTONES = [
   {
-    title: 'Chief Technical Officer',
+    title: 'Chief Technology Officer',
     org: 'Sports Thread',
     period: 'Jan 2026 – Present',
     description:
-      'Own architecture, scalability, and security across the full platform. Set technical direction, lead engineering execution, and remain hands-on writing and reviewing production code.',
+      'Own architecture, scalability and security across the platform, and provide the engineering oversight of the outsourced vendor team that maintains its core. Authored a cost-engineering assessment that audited their codebase and reclassified a misdiagnosed infrastructure issue, and a technical proposal analysing four independent authentication systems across roughly 350 routes - accepted and implemented. Still shipping: 2026 is my highest-output year of authored code to date.',
   },
   {
     title: 'VP of Software Development',
     org: 'Sports Thread',
     period: 'Nov 2023 – Jan 2026',
     description:
-      'Provided strategic direction and technical leadership for software development initiatives. Designed scalable, secure, and maintainable architectures. Built internal and customer-facing tools to improve operational efficiency.',
+      'Architected and wrote the platform that fronts our partner integrations and handles coach credentialing end to end - registration, waivers, payment, screening and roster provisioning. Built the multi-tenant recruiting CRM backend serving 600+ tenant organisations, and hired and now manage the frontend developer who builds against those APIs.',
   },
   {
     title: 'Director of Software Engineering',
     org: 'Sports Thread',
     period: 'Jun 2022 – Nov 2023',
     description:
-      'Set and enforced code standards, development methodologies, and best practices. Evaluated and recommended technologies, frameworks, and tools to enhance development efficiency and product quality.',
+      'Built the age-verification and compliance platform that is still the operational backbone of event certification, reimplementing verification rules from a vendor-maintained service in another language and holding them to behavioural parity. Set the architectural standard - Clean Architecture with a framework-free domain layer - that the later systems were built on.',
   },
   {
     title: 'Marketing Manager',
     org: 'Sports Thread',
     period: 'Jan 2022 – Jun 2022',
     description:
-      'Entry point at Sports Thread. Managed marketing operations before transitioning into engineering leadership.',
+      'Hired into a non-technical marketing role and started writing code against the company’s real problems within weeks. The title caught up six months later - the work came first. The marketing half is not incidental: it is why I evaluate technical decisions against business outcomes rather than treating them as separate questions.',
   },
 ]
 
+/* `note` gives an entry context a bare credential line can't carry - the
+   marketing immersion is the origin of the career pivot, not a stray cert. */
 const CREDENTIALS = [
   {
     credential: 'B.S. Computer Science',
     institution: 'Colorado Technical University',
+    note: 'Completed 2026, while serving as VP and then CTO.',
   },
   {
     credential: 'Digital Marketing Immersion',
     institution: 'Thinkful',
+    note: 'Where the career started - and why business context drives the engineering.',
   },
   {
     credential: 'Certified Scrum Master (CSM)',
@@ -104,7 +111,7 @@ export default function AboutPage() {
           className="text-neon-magenta text-xs font-display tracking-[0.4em] uppercase mb-3 animate-fade-in-up"
           style={{ animationDelay: '0s' }}
         >
-          CTO &amp; Full-Stack Developer
+          CTO &middot; Staff-Level Backend Engineer
         </Text>
         <Heading
           level={1}
@@ -117,9 +124,22 @@ export default function AboutPage() {
           className="text-lg max-w-2xl leading-relaxed animate-fade-in-up"
           style={{ animationDelay: '0.2s' }}
         >
-          Over four years at Sports Thread - from Marketing Manager to Chief Technical Officer,
-          hands-on throughout, writing production code while owning architecture, scalability, and security.
+          Over four years at Sports Thread - from Marketing Manager to Chief Technology Officer,
+          fully remote and hands-on throughout, writing production code while owning architecture,
+          scalability, and security.
         </Text>
+
+        <div
+          className="flex flex-wrap gap-4 mt-8 justify-center animate-fade-in-up"
+          style={{ animationDelay: '0.3s' }}
+        >
+          <a
+            href="/resume"
+            className="px-5 py-2.5 text-xs font-display tracking-widest uppercase text-neon-cyan border border-neon-cyan/50 rounded hover:border-neon-cyan hover:glow-cyan transition-all"
+          >
+            View R&eacute;sum&eacute; &rarr;
+          </a>
+        </div>
       </section>
 
       {/* Bio */}
@@ -153,21 +173,28 @@ export default function AboutPage() {
             {/* Bio text */}
             <div className="space-y-6 text-text-muted leading-relaxed">
               <Text>
-                Joseph Prince is the Chief Technical Officer at Sports Thread, where he leads
-                technology strategy, platform development, and engineering execution. Over 4+
-                years he has grown from Marketing Manager to Director to VP to CTO - hands-on
-                throughout, writing and reviewing production code while owning architecture,
-                scalability, and security.
+                Joseph Prince is the Chief Technology Officer at Sports Thread, a youth sports
+                technology platform. He joined in 2022 as a non-technical marketing manager and
+                was writing code against the company&apos;s own problems within weeks; the title
+                caught up six months later. Marketing Manager to Director to VP to CTO in four
+                years.
               </Text>
               <Text>
-                Proficient in Python and Django on the backend, React and TypeScript on the
-                frontend, and Google Cloud Platform for deployment. Holds a B.S. in Computer
-                Science from Colorado Technical University and certifications in
-                Scrum (CSM, CSPO, CSD).
+                Most engineering leaders stop writing code somewhere on that path.{' '}
+                <span className="text-neon-cyan">
+                  His authored commit volume has increased every year instead
+                </span>
+                {' '}- he is the primary author of four production backend systems, manages a
+                frontend developer, and provides the engineering oversight of an outsourced
+                vendor team maintaining the core platform.
               </Text>
               <Text>
-                Available for consulting engagements. Focused on clean architecture,
-                maintainable code, and AI integration.
+                Python and Django on the backend, React and TypeScript on the frontend, deployed
+                across GCP and AWS. Focused on clean architecture, systems that stay maintainable
+                years later, and AI integration that works in production rather than in a demo.
+              </Text>
+              <Text>
+                Open to senior engineering roles and consulting engagements.
               </Text>
             </div>
           </div>
@@ -243,16 +270,26 @@ export default function AboutPage() {
             </Heading>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4" ref={skillsRef}>
-            {SKILLS.map((skill, i) => (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5" ref={skillsRef}>
+            {SKILL_GROUPS.map((group, i) => (
               <div
-                key={skill}
-                data-delay={i * 50}
-                className="reveal bg-cyber-elevated border border-cyber-border rounded-xl px-4 py-3 text-center hover:border-neon-cyan/50 transition-colors"
+                key={group.area}
+                data-delay={i * 80}
+                className="reveal bg-cyber-elevated border border-cyber-border rounded-xl px-5 py-5 hover:border-neon-cyan/50 transition-colors"
               >
-                <span className="text-sm font-display tracking-wider text-text-primary uppercase">
-                  {skill}
-                </span>
+                <Text className="text-[10px] font-display tracking-widest uppercase text-neon-cyan/70 mb-3">
+                  {group.area}
+                </Text>
+                <div className="flex flex-wrap gap-1.5">
+                  {group.skills.map((skill) => (
+                    <span
+                      key={skill}
+                      className="px-2 py-1 text-[11px] font-display tracking-wide text-text-muted border border-cyber-border rounded uppercase"
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
               </div>
             ))}
           </div>
@@ -291,6 +328,11 @@ export default function AboutPage() {
                 <Text className="text-xs font-display tracking-widest uppercase">
                   {item.institution}
                 </Text>
+                {item.note && (
+                  <Text className="text-xs leading-relaxed mt-2 text-text-muted/80">
+                    {item.note}
+                  </Text>
+                )}
               </div>
             ))}
           </div>

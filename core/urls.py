@@ -3,7 +3,7 @@ from django.urls import include, path, re_path
 from rest_framework.throttling import AnonRateThrottle
 from dj_rest_auth.views import LoginView
 
-from apps.react_app.views import index as spa_index
+from apps.react_app.views import index as spa_index, resume_pdf
 
 
 class LoginRateThrottle(AnonRateThrottle):
@@ -25,6 +25,8 @@ urlpatterns = [
     path('api/portal/', include('apps.client_portal.api_urls')),
     path('api/dashboard/', include('apps.ops_dashboard.api_urls')),
     path('api/workflow/', include('apps.workflow_automation.api_urls')),
+    # Server-side PDF - must precede the SPA catch-all.
+    path('resume/pdf/', resume_pdf, name='resume_pdf'),
     # Catch-all: serve the React SPA for every non-API route.
     # React Router handles client-side navigation.
     re_path(r'^.*$', spa_index, name='spa'),

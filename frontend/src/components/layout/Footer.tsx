@@ -10,6 +10,12 @@ export default function Footer() {
         </Text>
         <div className="flex gap-6">
           <Link
+            href="/resume"
+            className="text-text-muted hover:text-neon-cyan transition-colors text-sm"
+          >
+            R&eacute;sum&eacute;
+          </Link>
+          <Link
             href="https://linkedin.com/in/thejprince"
             target="_blank"
             rel="noopener noreferrer"

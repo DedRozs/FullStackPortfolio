@@ -322,3 +322,63 @@ body {
   padding: 0.5rem 0.75rem;
   color: var(--color-text-muted);
 }
+
+/* ---------------------------------------------------------------------------
+   Print — used by /resume so the browser's own "Save as PDF" produces a clean
+   document. The site chrome (nav, footer, scanlines, glows, dark background)
+   is stripped; only <article> content survives onto the page.
+   --------------------------------------------------------------------------- */
+@media print {
+  /* Site chrome and screen-only affordances never print. */
+  header,
+  footer,
+  .no-print {
+    display: none !important;
+  }
+
+  /* The app shell scrolls <main> rather than the document, which clips print
+     output to a single viewport-height page. Release that so content paginates. */
+  html,
+  body,
+  #root,
+  main {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  /* Decorative layers: radial glows, scanlines, neon text-shadow. */
+  .scanlines::before,
+  .scanlines::after,
+  [aria-hidden='true'] {
+    display: none !important;
+  }
+
+  /* Force ink on every descendant rather than trusting a print: variant to be
+     present on each element. The theme's default text is near-white, so a
+     single missed utility prints as invisible text on white - this makes that
+     failure impossible. Uniform black is correct for a résumé anyway. */
+  .resume-root,
+  .resume-root * {
+    color: #000 !important;
+    background: transparent !important;
+    border-color: #d4d4d4 !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+  }
+
+  .resume-root a {
+    text-decoration: none !important;
+  }
+
+  /* Print the URL of external links so a paper copy stays actionable. */
+  .resume-root a[href^='http']::after {
+    content: '';
+  }
+
+  @page {
+    margin: 14mm 16mm;
+  }
+}

@@ -6,16 +6,18 @@ import { Link } from '../catalyst-ui-kit/typescript/link'
 import brandLogo from '../../assets/Joseph Prince Logo.png'
 import Footer from './Footer'
 
+/* Primary navigation only.
+   The demo apps (/portal, /dashboard, /automations) deliberately live off this
+   list: they are auth-gated, so a visitor clicking them from the top bar hits a
+   login wall. They are reachable from the projects page and the home page demo
+   strip, which is the context where they make sense. */
 const NAV_LINKS = [
   { href: '/', label: 'Home', end: true },
   { href: '/projects', label: 'Projects' },
+  { href: '/about', label: 'About' },
   { href: '/blog', label: 'Blog' },
   { href: '/ai', label: 'AI Assistant' },
-  { href: '/about', label: 'About' },
   { href: '/contact', label: 'Contact' },
-  { href: '/portal', label: 'Portal' },
-  { href: '/dashboard', label: 'Dashboard' },
-  { href: '/automations', label: 'Automations' },
 ]
 
 export default function Layout() {
@@ -34,14 +36,23 @@ export default function Layout() {
     <StackedLayout
       navbar={
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center w-full">
-          <Link href="/" className="flex items-center mr-6">
+          {/* shrink-0 on both the link and the image: as flex children they
+              default to flex-shrink:1, so a crowded navbar squeezes the image
+              width while h-10 pins its height. With object-fit:fill that
+              stretches the wordmark - it was rendering 57% narrower than its
+              native 3.38 aspect. object-contain is the backstop. */}
+          <Link href="/" className="flex items-center mr-6 shrink-0">
             <img
               src={brandLogo}
               alt="Joseph Prince"
-              className="h-10 w-auto drop-shadow-[0_0_8px_rgba(0,255,255,0.6)]"
+              className="h-10 w-auto shrink-0 object-contain drop-shadow-[0_0_8px_rgba(0,255,255,0.6)]"
             />
           </Link>
-          <div className="hidden sm:flex flex-1">
+          {/* lg, not sm: logo (135) + gap (24) + six nav items (620) + page
+              padding (48) needs ~830px. At the sm breakpoint the bar clipped
+              its own trailing links. Must stay in step with the menu-button
+              breakpoint in stacked-layout.tsx. */}
+          <div className="hidden lg:flex flex-1">
             <Navbar>
               <NavbarSection>
                 {NAV_LINKS.map(({ href, label, end }) => (

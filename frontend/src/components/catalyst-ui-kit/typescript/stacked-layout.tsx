@@ -4,10 +4,15 @@ import * as Headless from '@headlessui/react'
 import React, { useState } from 'react'
 import { NavbarItem } from './navbar'
 
+// Catalyst ships a two-bar menu glyph whose artwork spans only y=6..14 of a
+// 20x20 box - a 1.9:1 content ratio that reads as squashed. This is a
+// conventional three-bar hamburger, evenly spaced and filling the box.
 function OpenMenuIcon() {
   return (
-    <svg data-slot="icon" viewBox="0 0 20 20" aria-hidden="true">
-      <path d="M2 6.75C2 6.33579 2.33579 6 2.75 6H17.25C17.6642 6 18 6.33579 18 6.75C18 7.16421 17.6642 7.5 17.25 7.5H2.75C2.33579 7.5 2 7.16421 2 6.75ZM2 13.25C2 12.8358 2.33579 12.5 2.75 12.5H17.25C17.6642 12.5 18 12.8358 18 13.25C18 13.6642 17.6642 14 17.25 14H2.75C2.33579 14 2 13.6642 2 13.25Z" />
+    <svg data-slot="icon" viewBox="0 0 20 20" aria-hidden="true" fill="currentColor">
+      <rect x="2.5" y="4.2" width="15" height="1.6" rx="0.8" />
+      <rect x="2.5" y="9.2" width="15" height="1.6" rx="0.8" />
+      <rect x="2.5" y="14.2" width="15" height="1.6" rx="0.8" />
     </svg>
   )
 }
@@ -22,7 +27,7 @@ function CloseMenuIcon() {
 
 function MobileSidebar({ open, close, children }: React.PropsWithChildren<{ open: boolean; close: () => void }>) {
   return (
-    <Headless.Dialog open={open} onClose={close} className="sm:hidden">
+    <Headless.Dialog open={open} onClose={close} className="lg:hidden">
       <Headless.DialogBackdrop
         transition
         className="fixed inset-0 bg-black/50 transition data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in"
@@ -53,16 +58,16 @@ export function StackedLayout({
   let [showSidebar, setShowSidebar] = useState(false)
 
   return (
-    <div className="relative isolate flex h-svh w-full flex-col overflow-hidden bg-cyber-dark">
+    <div className="relative isolate flex h-svh w-full flex-col overflow-hidden bg-cyber-dark print:h-auto print:overflow-visible">
       {/* Sidebar on mobile */}
       <MobileSidebar open={showSidebar} close={() => setShowSidebar(false)}>
         {sidebar}
       </MobileSidebar>
 
       {/* Navbar */}
-      <header className="shrink-0 z-50 flex items-center bg-cyber-surface/90 backdrop-blur border-b border-cyber-border">
+      <header className="shrink-0 z-50 flex items-center bg-cyber-surface/90 backdrop-blur border-b border-cyber-border print:hidden">
         <div className="min-w-0 flex-1">{navbar}</div>
-        <div className="py-2.5 pr-4 sm:hidden">
+        <div className="py-2.5 pr-4 lg:hidden">
           <NavbarItem onClick={() => setShowSidebar(true)} aria-label="Open navigation">
             <OpenMenuIcon />
           </NavbarItem>
@@ -70,7 +75,7 @@ export function StackedLayout({
       </header>
 
       {/* Content + footer scroll together */}
-      <main className="flex-1 overflow-y-auto min-h-0">
+      <main className="flex-1 overflow-y-auto min-h-0 print:overflow-visible">
         {children}
         {footer}
       </main>
