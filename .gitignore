@@ -82,3 +82,5 @@ twilio_2FA_recovery_code.txt
 # Knowledge base - temporary and working files only
 knowledge-base/temp/*
 !knowledge-base/temp/.gitkeep
+# Local analytics exports
+SinglePostAnalytics*.xlsx

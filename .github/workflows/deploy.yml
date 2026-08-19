@@ -58,7 +58,7 @@ jobs:
             GAE_SERVICE_ACCOUNT: "ai-fullstack-portfolio@appspot.gserviceaccount.com"
             DJANGO_SETTINGS_MODULE: "core.settings"
             DEBUG: "False"
-            ALLOWED_HOSTS: "ai-fullstack-portfolio.uc.r.appspot.com,www.thejosephprince.com"
+            ALLOWED_HOSTS: "ai-fullstack-portfolio.uc.r.appspot.com,www.thejosephprince.com,thejosephprince.com,portfolio.thejosephprince.com"
             DB_NAME: "${{ secrets.DB_NAME }}"
             DB_USER: "${{ secrets.DB_USER }}"
             DB_PASSWORD: "${{ secrets.DB_PASSWORD }}"
