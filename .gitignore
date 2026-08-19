@@ -84,3 +84,6 @@ knowledge-base/temp/*
 !knowledge-base/temp/.gitkeep
 # Local analytics exports
 SinglePostAnalytics*.xlsx
+
+# Job application materials (local only)
+applications/

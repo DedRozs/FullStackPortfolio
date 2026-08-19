@@ -11,7 +11,7 @@ export interface SkillGroup {
 export const SKILL_GROUPS: readonly SkillGroup[] = [
   {
     area: 'Backend',
-    skills: ['Python', 'Django', 'Django REST Framework', 'Clean Architecture', 'DDD', 'REST APIs'],
+    skills: ['Python', 'Django', 'Django REST Framework', 'Clean Architecture', 'DDD', 'REST APIs', 'System design', 'Data modeling'],
   },
   {
     area: 'Frontend',

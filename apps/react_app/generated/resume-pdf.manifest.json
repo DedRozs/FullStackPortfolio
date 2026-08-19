@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-08-19T14:52:49+00:00",
-  "pdf_bytes": 74618,
-  "pdf_sha256": "6defa788952b5f6ae75bd4bb6957102dda39aaa63fc5635ee9a7711ae0af3744",
-  "source_sha256": "3d20bead8b8165dc49e392e3dc3329a091a45e46530cc0087722a15264932abd",
+  "generated_at": "2026-08-19T15:12:26+00:00",
+  "pdf_bytes": 74880,
+  "pdf_sha256": "c90652d700ae08f0ebbbe6d8b3b994bae80e0d487bc30599cf744878c466bbe1",
+  "source_sha256": "cd8f1c4c40b0cea4141321cc588dd72701702bd44de5d64084b1366b4560c42d",
   "template": "react_app/resume_pdf.html"
 }

@@ -156,8 +156,9 @@ export default function ResumePage() {
             backend systems - regulated compliance workflows, payment and screening pipelines,
             multi-tenant realtime services - built and maintained over four years at the same
             company while progressing from a non-technical marketing role to CTO, fully remote
-            the entire time. Manages a developer, directs an outsourced vendor team, and still
-            writes and reviews production code every week.
+            the entire time. A high-ownership IC first - system design, data modeling, and API
+            architecture from schema to production - while managing a developer, directing an
+            outsourced vendor team, and still shipping production code every week.
           </p>
         </section>
 
