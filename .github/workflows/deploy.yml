@@ -119,13 +119,22 @@ jobs:
 
       - name: Run Database Migrations
         env:
-          DB_NAME: ${{ secrets.DB_NAME }}
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_HOST: ${{ secrets.DB_HOST }}
-          DB_PORT: ${{ secrets.DB_PORT }}
+          # settings.py resolves the database from DATABASE_URL only; without it
+          # this step silently migrated a throwaway SQLite file on the runner and
+          # reported success while production received nothing.
+          DATABASE_URL: "mysql://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@${{ secrets.DB_HOST }}:${{ secrets.DB_PORT }}/${{ secrets.DB_NAME }}"
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
         run: |
+          # Fail loudly if the runner cannot reach Cloud SQL, rather than
+          # falling through to a migrate that appears to succeed.
+          python - <<'PY'
+          import os, sys
+          from urllib.parse import urlparse
+          url = urlparse(os.environ["DATABASE_URL"])
+          if not url.hostname:
+              sys.exit("DATABASE_URL has no host; refusing to run migrations.")
+          print(f"Migrating {url.scheme} database on port {url.port}.")
+          PY
           python manage.py migrate --noinput
 
       - name: Deploy Main App to Google App Engine
