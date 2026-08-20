@@ -125,15 +125,13 @@ jobs:
           DATABASE_URL: "mysql://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@${{ secrets.DB_HOST }}:${{ secrets.DB_PORT }}/${{ secrets.DB_NAME }}"
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
         run: |
-          # Fail loudly if the runner cannot reach Cloud SQL, rather than
-          # falling through to a migrate that appears to succeed.
+          # Refuse to migrate a SQLite fallback. Never parse or echo any part of
+          # DATABASE_URL: a parse error puts the offending component into the
+          # exception message, which can surface a credential in the build log.
           python - <<'PY'
           import os, sys
-          from urllib.parse import urlparse
-          url = urlparse(os.environ["DATABASE_URL"])
-          if not url.hostname:
-              sys.exit("DATABASE_URL has no host; refusing to run migrations.")
-          print(f"Migrating {url.scheme} database on port {url.port}.")
+          if not os.environ.get("DATABASE_URL", "").startswith("mysql://"):
+              sys.exit("DATABASE_URL is not a MySQL URL; refusing to run migrations.")
           PY
           python manage.py migrate --noinput
 
