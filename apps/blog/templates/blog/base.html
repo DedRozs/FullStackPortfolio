@@ -1,0 +1,213 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Blog - Joseph Prince{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}Notes on backend architecture, Django, and running systems in production.{% endblock %}">
+  <link rel="canonical" href="{% block canonical %}https://www.thejosephprince.com/blog/{% endblock %}">
+  <link rel="icon" type="image/png" href="{% static 'react_app/assets/JPrince.png' %}">
+  <link rel="alternate" type="application/rss+xml" title="Joseph Prince - Engineering Blog" href="/blog/feed/">
+
+  <link rel="preload" href="{% static 'react_app/assets/inter-latin-400-normal.woff2' %}" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="preload" href="{% static 'react_app/assets/orbitron-latin-400-normal.woff2' %}" as="font" type="font/woff2" crossorigin="anonymous">
+
+  <style>
+    @font-face {
+      font-family: 'Inter'; font-style: normal; font-weight: 400; font-display: swap;
+      src: url('{% static "react_app/assets/inter-latin-400-normal.woff2" %}') format('woff2');
+    }
+    @font-face {
+      font-family: 'Inter'; font-style: normal; font-weight: 600; font-display: swap;
+      src: url('{% static "react_app/assets/inter-latin-600-normal.woff2" %}') format('woff2');
+    }
+    @font-face {
+      font-family: 'Orbitron'; font-style: normal; font-weight: 400; font-display: swap;
+      src: url('{% static "react_app/assets/orbitron-latin-400-normal.woff2" %}') format('woff2');
+    }
+
+    :root {
+      --cyber-dark: #0b0619;
+      --cyber-surface: #130d30;
+      --cyber-elevated: #1e1248;
+      --cyber-border: #3b1b72;
+      --neon-cyan: #00ffff;
+      --neon-magenta: #ff00ff;
+      --neon-green: #00ff88;
+      --text-primary: #f5f0ff;
+      --text-muted: #c8c4d8;
+      --font-display: 'Orbitron', 'Share Tech Mono', ui-monospace, monospace;
+      --font-body: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      --font-mono: ui-monospace, 'Cascadia Code', 'Source Code Pro', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--cyber-dark);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      font-size: 17px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .wrap { max-width: 760px; margin: 0 auto; padding: 0 1.25rem; }
+
+    header.site {
+      border-bottom: 1px solid var(--cyber-border);
+      background: rgba(11, 6, 25, 0.9);
+      position: sticky; top: 0; z-index: 10;
+      backdrop-filter: blur(8px);
+    }
+    header.site .wrap {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 1rem; padding-top: 0.9rem; padding-bottom: 0.9rem;
+    }
+    header.site a.brand {
+      font-family: var(--font-display);
+      font-size: 0.95rem; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--neon-cyan); text-decoration: none;
+    }
+    header.site nav { display: flex; gap: 1.1rem; flex-wrap: wrap; }
+    header.site nav a {
+      color: var(--text-muted); text-decoration: none; font-size: 0.85rem;
+      letter-spacing: 0.05em; text-transform: uppercase;
+    }
+    header.site nav a:hover { color: var(--neon-cyan); }
+
+    main { padding: 2.5rem 0 4rem; }
+
+    h1, h2, h3, h4 { font-family: var(--font-display); line-height: 1.25; color: var(--text-primary); }
+    h1 { font-size: clamp(1.75rem, 4.5vw, 2.5rem); margin: 0 0 0.6rem; }
+    h2 { font-size: 1.4rem; margin: 2.4rem 0 0.8rem; color: var(--neon-cyan); }
+    h3 { font-size: 1.12rem; margin: 1.9rem 0 0.6rem; }
+
+    a { color: var(--neon-cyan); text-decoration: none; border-bottom: 1px solid rgba(0,255,255,0.3); }
+    a:hover { border-bottom-color: var(--neon-cyan); }
+
+    .meta {
+      color: var(--text-muted); font-size: 0.85rem;
+      letter-spacing: 0.04em; text-transform: uppercase; margin: 0 0 1.5rem;
+    }
+    .tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0 0 2rem; padding: 0; list-style: none; }
+    .tags li {
+      font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--neon-magenta); border: 1px solid var(--cyber-border);
+      border-radius: 999px; padding: 0.15rem 0.7rem;
+    }
+
+    .post-body > * + * { margin-top: 1.15rem; }
+    .post-body ul, .post-body ol { padding-left: 1.4rem; }
+    .post-body li + li { margin-top: 0.4rem; }
+    .post-body blockquote {
+      margin: 1.6rem 0; padding: 0.2rem 0 0.2rem 1.1rem;
+      border-left: 3px solid var(--neon-magenta);
+      color: var(--text-muted); font-style: italic;
+    }
+    .post-body img { max-width: 100%; height: auto; border-radius: 6px; }
+    .post-body hr { border: none; border-top: 1px solid var(--cyber-border); margin: 2.5rem 0; }
+
+    .post-body :not(pre) > code {
+      font-family: var(--font-mono); font-size: 0.86em;
+      background: var(--cyber-elevated); color: var(--neon-green);
+      padding: 0.12em 0.4em; border-radius: 4px;
+    }
+    .post-body pre, .codehilite {
+      background: var(--cyber-surface) !important;
+      border: 1px solid var(--cyber-border); border-radius: 8px;
+      padding: 1rem 1.1rem; overflow-x: auto;
+    }
+    .post-body pre code { font-family: var(--font-mono); font-size: 0.84rem; line-height: 1.6; background: none; padding: 0; color: var(--text-primary); }
+
+    .table-scroll { overflow-x: auto; }
+    .post-body table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+    .post-body th, .post-body td { border: 1px solid var(--cyber-border); padding: 0.55rem 0.8rem; text-align: left; }
+    .post-body th { background: var(--cyber-elevated); font-family: var(--font-display); font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; }
+
+    pre.mermaid { background: var(--cyber-surface); border: 1px solid var(--cyber-border); border-radius: 8px; padding: 1.2rem; overflow-x: auto; text-align: center; }
+    pre.mermaid:not([data-processed]) { color: var(--text-muted); font-family: var(--font-mono); font-size: 0.8rem; text-align: left; }
+
+    /* Pygments - monokai-ish on the cyber surface */
+    .codehilite .k, .codehilite .kd, .codehilite .kn, .codehilite .kc { color: #ff79c6; }
+    .codehilite .s, .codehilite .s1, .codehilite .s2, .codehilite .sb { color: #f1fa8c; }
+    .codehilite .c, .codehilite .c1, .codehilite .cm { color: #8b86a8; font-style: italic; }
+    .codehilite .nf, .codehilite .fm { color: #50fa7b; }
+    .codehilite .nc, .codehilite .nn { color: #8be9fd; }
+    .codehilite .mi, .codehilite .mf, .codehilite .m { color: #bd93f9; }
+    .codehilite .o, .codehilite .ow { color: #ff79c6; }
+    .codehilite .nb { color: #8be9fd; }
+    .codehilite .nd { color: #ffb86c; }
+
+    footer.site {
+      border-top: 1px solid var(--cyber-border); padding: 1.6rem 0;
+      color: var(--text-muted); font-size: 0.82rem;
+    }
+    footer.site .wrap { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+
+    @media (max-width: 600px) {
+      body { font-size: 16px; }
+      header.site .wrap { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+    }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <header class="site">
+    <div class="wrap">
+      <a class="brand" href="/">Joseph Prince</a>
+      <nav>
+        <a href="/projects">Projects</a>
+        <a href="/blog/">Blog</a>
+        <a href="/resume">Résumé</a>
+        <a href="/contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <span>&copy; {% now "Y" %} Joseph Prince</span>
+      <span><a href="/blog/feed/">RSS</a></span>
+    </div>
+  </footer>
+
+  <script type="module">
+    // The Markdown filter emits diagrams as <pre class="mermaid">. Only pull the
+    // library down when a page actually contains one.
+    if (document.querySelector('pre.mermaid')) {
+      const { default: mermaid } = await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs');
+      mermaid.initialize({
+        startOnLoad: false,
+        securityLevel: 'strict',
+        theme: 'dark',
+        themeVariables: {
+          background: '#130d30',
+          primaryColor: '#1e1248',
+          primaryTextColor: '#f5f0ff',
+          primaryBorderColor: '#3b1b72',
+          lineColor: '#00ffff',
+          fontFamily: "'Inter', system-ui, sans-serif",
+        },
+      });
+      await mermaid.run({ querySelector: 'pre.mermaid' });
+    }
+
+    // Wide tables should scroll inside their own box, never the page.
+    document.querySelectorAll('.post-body table').forEach((table) => {
+      if (table.parentElement.classList.contains('table-scroll')) return;
+      const box = document.createElement('div');
+      box.className = 'table-scroll';
+      table.replaceWith(box);
+      box.appendChild(table);
+    });
+  </script>
+  {% block extra_body %}{% endblock %}
+</body>
+</html>

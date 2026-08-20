@@ -1,52 +1,58 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Blog</title>
-</head>
-<body>
-<main>
+{% extends "blog/base.html" %}
+
+{% block title %}Blog - Joseph Prince{% endblock %}
+{% block canonical %}https://www.thejosephprince.com/blog/{% endblock %}
+
+{% block content %}
   <h1>Blog</h1>
+  <p class="meta">Backend architecture, Django, and running systems in production.</p>
 
   {% if posts %}
-    <ul>
+    <ul class="post-index">
       {% for post in posts %}
-      <li>
-        {% if post.featured_image_url %}
-          <img src="{{ post.featured_image_url }}" alt="{{ post.title }}">
-        {% endif %}
-        <h2><a href="/blog/{{ post.slug }}/">{{ post.title }}</a></h2>
-        <p>
-          By {{ post.author_display_name }} |
-          {{ post.published_at|date:"N j, Y" }} |
-          {{ post.reading_time_minutes }} min read
-        </p>
-        {% if post.tags %}
-          <p>
-            {% for tag in post.tags %}
-              <span>{{ tag.name }}</span>{% if not forloop.last %}, {% endif %}
-            {% endfor %}
+        <li>
+          <h2><a href="/blog/{{ post.slug }}/">{{ post.title }}</a></h2>
+          <p class="meta">
+            {{ post.published_at|date:"N j, Y" }} &middot; {{ post.reading_time_minutes }} min read
           </p>
-        {% endif %}
-        <p>{{ post.excerpt }}</p>
-        <a href="/blog/{{ post.slug }}/">Read more</a>
-      </li>
+          {% if post.tags %}
+            <ul class="tags">
+              {% for tag in post.tags %}<li>{{ tag.name }}</li>{% endfor %}
+            </ul>
+          {% endif %}
+          <p class="excerpt">{{ post.excerpt }}</p>
+          <a href="/blog/{{ post.slug }}/">Read more &rarr;</a>
+        </li>
       {% endfor %}
     </ul>
 
-    <nav>
-      {% if page_obj.has_previous %}
-        <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
-      {% endif %}
-      <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-      {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}">Next</a>
-      {% endif %}
-    </nav>
+    {% if page_obj.paginator.num_pages > 1 %}
+      <nav class="pagination">
+        {% if page_obj.has_previous %}
+          <a href="?page={{ page_obj.previous_page_number }}">&larr; Newer</a>
+        {% else %}<span></span>{% endif %}
+        <span class="meta">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}">Older &rarr;</a>
+        {% else %}<span></span>{% endif %}
+      </nav>
+    {% endif %}
   {% else %}
-    <p>No posts yet.</p>
+    <p class="excerpt">No posts yet.</p>
   {% endif %}
-</main>
-</body>
-</html>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+  .post-index { list-style: none; padding: 0; margin: 0; }
+  .post-index > li { padding: 1.75rem 0; border-top: 1px solid var(--cyber-border); }
+  .post-index > li:first-child { border-top: none; padding-top: 0.5rem; }
+  .post-index h2 { margin: 0 0 0.35rem; font-size: 1.3rem; }
+  .post-index h2 a { color: var(--text-primary); border-bottom: none; }
+  .post-index h2 a:hover { color: var(--neon-cyan); }
+  .post-index .meta { margin: 0 0 0.75rem; }
+  .post-index .tags { margin-bottom: 0.85rem; }
+  .excerpt { color: var(--text-muted); margin: 0 0 0.85rem; }
+  .pagination { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid var(--cyber-border); }
+</style>
+{% endblock %}

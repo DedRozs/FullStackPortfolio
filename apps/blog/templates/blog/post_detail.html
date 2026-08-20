@@ -1,26 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ post.title }}</title>
-</head>
-<body>
-<main>
+{% extends "blog/base.html" %}
+{% load markdown_tags %}
+
+{% block title %}{{ post.title }} - Joseph Prince{% endblock %}
+{% block meta_description %}{{ post.excerpt }}{% endblock %}
+{% block canonical %}https://www.thejosephprince.com/blog/{{ post.slug }}/{% endblock %}
+
+{% block content %}
   <article>
     <h1>{{ post.title }}</h1>
-    <p>
-      By {{ post.author_display_name }} |
-      {{ post.published_at|date:"N j, Y" }} |
-      {{ post.reading_time_minutes }} min read
+    <p class="meta">
+      {{ post.published_at|date:"N j, Y" }} &middot; {{ post.reading_time_minutes }} min read
     </p>
 
     {% if post.tags %}
-      <p>
-        {% for tag in post.tags %}
-          <span>{{ tag.name }}</span>{% if not forloop.last %}, {% endif %}
-        {% endfor %}
-      </p>
+      <ul class="tags">
+        {% for tag in post.tags %}<li>{{ tag.name }}</li>{% endfor %}
+      </ul>
     {% endif %}
 
     {% if post.featured_image_url %}
@@ -28,28 +23,34 @@
     {% endif %}
 
     <div class="post-body">
-      {{ post.body|safe }}
+      {{ post.body|render_markdown }}
     </div>
   </article>
 
   {% if post.related_posts %}
-    <aside>
-      <h2>Related Posts</h2>
+    <aside class="related">
+      <h2>Related</h2>
       <ul>
         {% for related in post.related_posts %}
           <li>
-            {% if related.featured_image_url %}
-              <img src="{{ related.featured_image_url }}" alt="{{ related.title }}">
-            {% endif %}
             <a href="/blog/{{ related.slug }}/">{{ related.title }}</a>
-            <p>{{ related.excerpt }}</p>
+            <p class="excerpt">{{ related.excerpt }}</p>
           </li>
         {% endfor %}
       </ul>
     </aside>
   {% endif %}
 
-  <p><a href="/blog/">Back to blog</a></p>
-</main>
-</body>
-</html>
+  <p class="back"><a href="/blog/">&larr; All posts</a></p>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+  .related { margin-top: 3.5rem; padding-top: 1.5rem; border-top: 1px solid var(--cyber-border); }
+  .related h2 { margin-top: 0; font-size: 1.05rem; }
+  .related ul { list-style: none; padding: 0; margin: 0; }
+  .related li + li { margin-top: 1.1rem; }
+  .related .excerpt { color: var(--text-muted); font-size: 0.9rem; margin: 0.3rem 0 0; }
+  .back { margin-top: 3rem; }
+</style>
+{% endblock %}

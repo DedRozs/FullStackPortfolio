@@ -30,4 +30,7 @@ jobs:
           SECRET_KEY: test-secret-key-ci
           DATABASE_URL: sqlite:///test.db
           DEBUG: "True"
-        run: python manage.py test --verbosity=2
+        # pytest, not `manage.py test`: unittest discovery cannot collect
+        # module-level test functions, which is most of this suite. Under the
+        # unittest runner 120 of 301 tests were silently skipped.
+        run: pytest -q
