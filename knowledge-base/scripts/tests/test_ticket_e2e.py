@@ -9,11 +9,14 @@ import json
 import os
 import pathlib
 import subprocess
+import sys
 
 import pytest
 
 WORKSPACE = pathlib.Path(__file__).resolve().parents[3]
-PYTHON = WORKSPACE / ".venv" / "Scripts" / "python.exe"
+# The interpreter running the tests - portable across OSes and CI, where
+# there is no local virtualenv.
+PYTHON = sys.executable
 SCRIPT = WORKSPACE / "knowledge-base" / "scripts" / "ticket-cli.py"
 QA_PARITY_SCRIPT = WORKSPACE / "knowledge-base" / "scripts" / "qa-field-parity-check.py"
 
