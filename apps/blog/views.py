@@ -50,9 +50,9 @@ def post_detail(request, slug: str):
 
 class LatestPostsFeed(Feed):
     feed_type = Rss201rev2Feed
-    title = 'Blog - FullStackPortfolio'
+    title = 'Joseph Prince - Engineering Blog'
     link = '/blog/'
-    description = 'Latest posts from the FullStackPortfolio blog.'
+    description = 'Notes on backend architecture, Django, and running systems in production.'
 
     def items(self):
         post_repo = DjangoPostRepository()

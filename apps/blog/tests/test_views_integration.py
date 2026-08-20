@@ -209,3 +209,15 @@ class TestRSSFeed(TestCase):
         response = self.client.get(reverse('blog:post_feed'))
         content = response.content.decode('utf-8')
         self.assertIn('<rss', content)
+
+    def test_feed_links_use_the_real_domain(self):
+        """Absolute URLs come from the Site record - never the framework default."""
+        _make_post(title='Domain Check', slug='domain-check', author=self.author)
+        response = self.client.get(reverse('blog:post_feed'))
+        content = response.content.decode('utf-8')
+        self.assertNotIn('example.com', content)
+        self.assertIn('www.thejosephprince.com', content)
+
+    def test_feed_metadata_does_not_leak_the_repo_name(self):
+        response = self.client.get(reverse('blog:post_feed'))
+        self.assertNotContains(response, 'FullStackPortfolio')
