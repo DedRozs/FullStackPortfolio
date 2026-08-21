@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="430" viewBox="0 0 560 430" role="img" aria-labelledby="gcT gcD">
+  <title id="gcT">The gate cycle at a phase boundary</title>
+  <desc id="gcD">A phase orchestrator emits an artifact JSON. Validation either returns a gap list to the orchestrator or passes the artifact to human approval. The human either requests changes, returning it to the orchestrator, or approves it, releasing the next phase.</desc>
+  <defs>
+    <marker id="gcArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#00ffff"/>
+    </marker>
+    <marker id="gcBack" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#ff00ff"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="560" height="430" fill="#130d30"/>
+
+  <!-- forward path -->
+  <g stroke="#00ffff" stroke-width="2" fill="none" marker-end="url(#gcArrow)">
+    <path d="M330,74 L330,116"/>
+    <path d="M330,164 L330,206"/>
+    <path d="M330,262 L330,300"/>
+    <path d="M330,368 L330,392"/>
+  </g>
+
+  <!-- return paths -->
+  <g stroke="#ff00ff" stroke-width="2" fill="none" stroke-dasharray="6 4" marker-end="url(#gcBack)">
+    <path d="M232,230 L150,230 L150,50 L232,50"/>
+    <path d="M232,334 L80,334 L80,38 L232,38"/>
+  </g>
+
+  <g font-family="Inter, Segoe UI, system-ui, sans-serif" text-anchor="middle">
+    <!-- nodes -->
+    <g>
+      <rect x="232" y="26" width="196" height="48" rx="8" fill="#1e1248" stroke="#3b1b72" stroke-width="2"/>
+      <text x="330" y="56" fill="#f5f0ff" font-size="15">Phase orchestrator</text>
+    </g>
+    <g>
+      <rect x="232" y="116" width="196" height="48" rx="8" fill="#1e1248" stroke="#3b1b72" stroke-width="2"/>
+      <text x="330" y="146" fill="#f5f0ff" font-size="15">Artifact JSON</text>
+    </g>
+    <g>
+      <rect x="232" y="206" width="196" height="56" rx="8" fill="#1e1248" stroke="#3b1b72" stroke-width="2"/>
+      <text x="330" y="229" fill="#f5f0ff" font-size="15">Validate</text>
+      <text x="330" y="249" fill="#c8c4d8" font-size="13">required fields</text>
+    </g>
+    <g>
+      <path d="M330,300 L438,334 L330,368 L222,334 z" fill="#1e1248" stroke="#f5ff00" stroke-width="2"/>
+      <text x="330" y="330" fill="#f5f0ff" font-size="15">Human</text>
+      <text x="330" y="348" fill="#f5f0ff" font-size="15">approval</text>
+    </g>
+    <g>
+      <rect x="232" y="392" width="196" height="38" rx="8" fill="#130d30" stroke="#00ffff" stroke-width="2"/>
+      <text x="330" y="416" fill="#00ffff" font-size="15">Next phase</text>
+    </g>
+
+    <!-- edge labels -->
+    <g font-size="12.5">
+      <text x="196" y="224" fill="#ff00ff" text-anchor="end">gap list</text>
+      <text x="196" y="328" fill="#ff00ff" text-anchor="end">changes</text>
+      <text x="342" y="192" fill="#c8c4d8" text-anchor="start">complete</text>
+      <text x="342" y="386" fill="#c8c4d8" text-anchor="start">approved</text>
+    </g>
+  </g>
+</svg>
